@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
 
 export default function LoginForm({
   onNavigateToRegister,
@@ -7,6 +8,7 @@ export default function LoginForm({
 }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState("");
 
@@ -46,7 +48,10 @@ export default function LoginForm({
   };
 
   const handleQuickAccess = (type) => {
-    if (type === "vendor") {
+    if (type === "customer") {
+      setEmail("customer@eventpulse.com");
+      setPassword("customer123");
+    } else if (type === "vendor") {
       setEmail("vendor@eventpulse.com");
       setPassword("vendor123");
     } else if (type === "admin") {
@@ -93,13 +98,35 @@ export default function LoginForm({
         {/* Password */}
         <div className="form-group">
           <label htmlFor="password">Password</label>
-          <input
-            type="password"
-            id="password"
-            placeholder="Enter your password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
+          <div style={{ position: "relative", width: "100%" }}>
+            <input
+              type={showPassword ? "text" : "password"}
+              id="password"
+              placeholder="Enter your password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              style={{ width: "100%", paddingRight: "40px", boxSizing: "border-box" }}
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              style={{
+                position: "absolute",
+                right: "10px",
+                top: "50%",
+                transform: "translateY(-50%)",
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                color: "#64748b",
+                display: "flex",
+                alignItems: "center"
+              }}
+              aria-label={showPassword ? "Hide password" : "Show password"}
+            >
+              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
+          </div>
         </div>
 
         {/* Options Row */}
@@ -140,6 +167,10 @@ export default function LoginForm({
       {/* Developer Quick Access */}
       <div className="quick-access-box">
         Quick access:{" "}
+        <span className="form-link" onClick={() => handleQuickAccess("customer")}>
+          Customer
+        </span>{" "}
+        •{" "}
         <span className="form-link" onClick={() => handleQuickAccess("vendor")}>
           Vendor
         </span>{" "}

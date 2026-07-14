@@ -14,7 +14,18 @@ import RegisterPage from "./pages/auth/RegisterPage";
 import LoginPage from "./pages/auth/LoginPage";
 import ResetPasswordForm from "./pages/auth/ResetPasswordForm";
 import EventListingPage from "./pages/guest/EventListingPage";
+import DiscoverPage from "./pages/guest/DiscoverPage";
 import EventDetailsPage from "./pages/customer/EventDetailsPage";
+import CustomerLayout from "./components/dashboard/CustomerLayout";
+import DashboardPage from "./pages/customer/DashboardPage";
+import MyBookingsPage from "./pages/customer/MyBookingsPage";
+import BookingHistoryPage from "./pages/customer/BookingHistoryPage";
+import FavoritesPage from "./pages/customer/FavoritesPage";
+import SettingsPage from "./pages/customer/SettingsPage";
+import ProfilePage from "./pages/customer/ProfilePage";
+import BookingPage from "./pages/customer/BookingPage";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import VendorDashboard from "./pages/vendor/VendorDashboard";
 import { eventsData, categoriesData, testimonialsData } from "./data/events";
 
 export default function App() {
@@ -34,7 +45,23 @@ export default function App() {
   const [toast, setToast] = useState(null);
 
   // Auth Routing & Session state
-  const [currentPage, setCurrentPage] = useState("landing"); // landing, login, register, forgot, events, event-details
+  const [currentPage, setCurrentPage] = useState(() => {
+    const savedPage = localStorage.getItem("eventpulse_page");
+    if (savedPage) return savedPage;
+    
+    const savedUserStr = localStorage.getItem("eventpulse_user");
+    if (savedUserStr) {
+      try {
+        const user = JSON.parse(savedUserStr);
+        if (user.role === "admin") return "admin-dashboard";
+        if (user.role === "vendor") return "vendor-dashboard";
+        if (user.role === "customer") return "customer-dashboard";
+      } catch (e) {
+        // Fallback on parse error
+      }
+    }
+    return "landing";
+  });
   const [eventsPageCategory, setEventsPageCategory] = useState("all");
   const [eventsPageSearch, setEventsPageSearch] = useState("");
   const [eventsPageLocation, setEventsPageLocation] = useState("");
@@ -61,6 +88,11 @@ export default function App() {
       localStorage.removeItem("eventpulse_user");
     }
   }, [currentUser]);
+
+  // Sync current page with localStorage
+  useEffect(() => {
+    localStorage.setItem("eventpulse_page", currentPage);
+  }, [currentPage]);
 
   // Filter events whenever criteria changes
   const applyFilters = () => {
@@ -145,19 +177,22 @@ export default function App() {
   const handleInitiateBooking = (eventItem, qty) => {
     if (!currentUser) {
       showToast("Please log in to book tickets.");
-      setRedirectAfterLogin({ page: "event-details", event: eventItem, quantity: qty });
+      setRedirectAfterLogin({ page: "customer-booking", event: eventItem, quantity: qty });
       setCurrentPage("login");
       return;
     }
     setSelectedEvent(eventItem);
     setBookingQuantity(qty);
-    setIsBookingModalOpen(true);
+    setCurrentPage("customer-booking");
   };
 
   // Auth Action Handlers
   const handleLogout = () => {
-    setCurrentUser(null);
-    showToast("Logged out successfully.");
+    if (window.confirm("Are you sure you want to log out?")) {
+      setCurrentUser(null);
+      setCurrentPage("landing");
+      showToast("Logged out successfully.");
+    }
   };
 
   const handleRegisterSuccess = (userData) => {
@@ -174,8 +209,15 @@ export default function App() {
       setIsBookingModalOpen(true);
       setCurrentPage(redirectAfterLogin.page);
       setRedirectAfterLogin(null);
-    } else {
-      setCurrentPage("landing");
+      if (userData.role === "admin") {
+        setCurrentPage("admin-dashboard");
+      } else if (userData.role === "vendor") {
+        setCurrentPage("vendor-dashboard");
+      } else if (userData.role === "customer") {
+        setCurrentPage("customer-dashboard");
+      } else {
+        setCurrentPage("landing");
+      }
     }
   };
 
@@ -194,7 +236,15 @@ export default function App() {
       setCurrentPage(redirectAfterLogin.page);
       setRedirectAfterLogin(null);
     } else {
-      setCurrentPage("landing");
+      if (userData.role === "admin") {
+        setCurrentPage("admin-dashboard");
+      } else if (userData.role === "vendor") {
+        setCurrentPage("vendor-dashboard");
+      } else if (userData.role === "customer") {
+        setCurrentPage("customer-dashboard");
+      } else {
+        setCurrentPage("landing");
+      }
     }
   };
 
@@ -207,13 +257,16 @@ export default function App() {
   const featuredEvents = filteredEvents.filter((e) => e.featured);
   const upcomingEvents = filteredEvents.filter((e) => !e.featured);
 
-  return (
-    <>
-      {/* Scrollable container & Header */}
-      <Navbar 
-        onMobileDrawerOpen={() => setMobileDrawerOpen(true)} 
+  const isCustomerPage = currentPage.startsWith("customer-");
+  const isAdminPage = currentPage === "admin-dashboard";
+  const isVendorPage = currentPage === "vendor-dashboard";
+
+  if (isCustomerPage) {
+    return (
+      <CustomerLayout 
+        currentPage={currentPage} 
         onNavigate={(page) => {
-          if (page === "events") {
+          if (page === "events" || page === "discover" || page === "customer-events") {
             setEventsPageCategory("all");
             setEventsPageSearch("");
             setEventsPageLocation("");
@@ -221,12 +274,82 @@ export default function App() {
           setCurrentPage(page);
         }} 
         currentUser={currentUser} 
-        onLogout={handleLogout} 
-        isAuthPage={currentPage !== "landing"}
-      />
+        onLogout={handleLogout}
+      >
+        {currentPage === "customer-dashboard" && (
+          <DashboardPage currentUser={currentUser} events={events} onBookClick={handleBookClick} onNavigate={setCurrentPage} />
+        )}
+        {currentPage === "customer-events" && (
+          <EventListingPage
+            events={events}
+            onBookClick={handleBookClick}
+            initialCategory={eventsPageCategory}
+            initialSearchQuery={eventsPageSearch}
+            initialLocationQuery={eventsPageLocation}
+            isDashboardContext={true}
+          />
+        )}
+        {currentPage === "customer-bookings" && (
+          <MyBookingsPage events={events} />
+        )}
+        {currentPage === "customer-history" && (
+          <BookingHistoryPage events={events} />
+        )}
+        {currentPage === "customer-favorites" && (
+          <FavoritesPage events={events} onBookClick={handleBookClick} />
+        )}
+        {currentPage === "customer-settings" && (
+          <SettingsPage />
+        )}
+        {currentPage === "customer-profile" && (
+          <ProfilePage currentUser={currentUser} />
+        )}
+        {currentPage === "customer-booking" && (
+          <BookingPage 
+            event={selectedEvent} 
+            initialQuantity={bookingQuantity} 
+            onBookingSuccess={handleBookingSuccess} 
+            onNavigate={setCurrentPage} 
+          />
+        )}
+      </CustomerLayout>
+    );
+  }
+
+  return (
+    <>
+      {/* Scrollable container & Header */}
+      {!isAdminPage && !isVendorPage && (
+        <Navbar 
+          onMobileDrawerOpen={() => setMobileDrawerOpen(true)} 
+          onNavigate={(page) => {
+            if (page === "events" || page === "discover") {
+              setEventsPageCategory("all");
+              setEventsPageSearch("");
+              setEventsPageLocation("");
+            }
+            setCurrentPage(page);
+          }} 
+          currentUser={currentUser} 
+          onLogout={handleLogout} 
+          isAuthPage={currentPage !== "landing"}
+        />
+      )}
+      
+      {(isAdminPage || isVendorPage) && (
+        <Navbar 
+          onMobileDrawerOpen={() => setMobileDrawerOpen(true)} 
+          onNavigate={setCurrentPage} 
+          currentUser={currentUser} 
+          onLogout={handleLogout} 
+          isAuthPage={true}
+        />
+      )}
 
       {currentPage !== "landing" ? (
         <>
+          {currentPage === "admin-dashboard" && <AdminDashboard currentUser={currentUser} />}
+          {currentPage === "vendor-dashboard" && <VendorDashboard currentUser={currentUser} />}
           {currentPage === "events" && (
             <EventListingPage
               events={events}
@@ -234,6 +357,17 @@ export default function App() {
               initialCategory={eventsPageCategory}
               initialSearchQuery={eventsPageSearch}
               initialLocationQuery={eventsPageLocation}
+            />
+          )}
+          {currentPage === "discover" && (
+            <DiscoverPage
+              events={events}
+              categories={categoriesData}
+              onBookClick={handleBookClick}
+              setActiveCategory={(cat) => {
+                setEventsPageCategory(cat);
+                setCurrentPage("events");
+              }}
             />
           )}
           {currentPage === "event-details" && (
@@ -272,6 +406,9 @@ export default function App() {
                 />
               )}
             </AuthLayout>
+          )}
+          {(currentPage === "events" || currentPage === "discover" || currentPage === "event-details") && (
+            <Footer />
           )}
         </>
       ) : (

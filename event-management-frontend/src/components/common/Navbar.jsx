@@ -35,7 +35,7 @@ export default function Header({ onMobileDrawerOpen, onNavigate, currentUser, on
           {/* Desktop Nav Links */}
           <nav className="nav-links">
             <span className="nav-link" style={{ cursor: "pointer" }} onClick={() => onNavigate("events")}>Events</span>
-            <span className="nav-link" style={{ cursor: "pointer" }} onClick={() => onNavigate("events")}>Discover</span>
+            <span className="nav-link" style={{ cursor: "pointer" }} onClick={() => onNavigate("discover")}>Discover</span>
           </nav>
 
           {/* Desktop Actions */}

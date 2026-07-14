@@ -7,9 +7,11 @@ export default function EventsPage({
   onBookClick,
   initialCategory = "all",
   initialSearchQuery = "",
-  initialLocationQuery = ""
+  initialLocationQuery = "",
+  isDashboardContext = false
 }) {
   // Filter States
+  const [showFilters, setShowFilters] = useState(true);
   const [searchQuery, setSearchQuery] = useState(initialSearchQuery);
   const [locationQuery, setLocationQuery] = useState(initialLocationQuery);
   const [selectedDate, setSelectedDate] = useState("all");
@@ -136,12 +138,21 @@ export default function EventsPage({
   });
 
   return (
-    <section className="events-dashboard">
+    <section className="events-dashboard" style={isDashboardContext ? { paddingTop: '1rem', marginTop: 0 } : {}}>
       <div className="container">
-        {/* Page Title */}
-        <div className="events-header-area">
-          <h2 className="events-page-title">Browse Events</h2>
-          <p className="events-page-subtitle">Discover experiences across all categories</p>
+        {/* Page Title & Toggle */}
+        <div className="events-header-area" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "1rem" }}>
+          <div>
+            <h2 className="events-page-title">Browse Events</h2>
+            <p className="events-page-subtitle">Discover experiences across all categories</p>
+          </div>
+          <button 
+            onClick={() => setShowFilters(!showFilters)}
+            style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.5rem 1rem", backgroundColor: "white", border: "1px solid #e2e8f0", borderRadius: "0.5rem", cursor: "pointer", fontWeight: "500", color: "#0f172a" }}
+          >
+            <Tag size={16} />
+            {showFilters ? "Hide Filters" : "Show Filters"}
+          </button>
         </div>
 
         {/* Top Search bar with date filter */}
@@ -177,9 +188,10 @@ export default function EventsPage({
         </div>
 
         {/* Sidebar + Main Grid Split Layout */}
-        <div className="events-layout">
+        <div className="events-layout" style={{ display: "flex", gap: "2rem", flexDirection: showFilters ? "row" : "column" }}>
           {/* Sidebar Filter panels */}
-          <aside className="events-sidebar">
+          {showFilters && (
+            <aside className="events-sidebar" style={{ minWidth: "250px" }}>
             {/* Category Filter */}
             <div className="sidebar-card">
               <h4 className="sidebar-card-title">
@@ -239,9 +251,10 @@ export default function EventsPage({
               </ul>
             </div>
           </aside>
+          )}
 
-          {/* Results dashboard grid */}
-          <div className="events-results-panel">
+          {/* Main Content Area */}
+          <div className="events-results-panel" style={{ flex: 1 }}>
             {/* Header controls for count & sorting */}
             <div className="events-results-header">
               <div>
