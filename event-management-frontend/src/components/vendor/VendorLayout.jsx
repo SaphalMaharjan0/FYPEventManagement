@@ -4,7 +4,7 @@ import VendorTopbar from "./VendorTopbar";
 
 export default function VendorLayout({ children, currentPage, onNavigate, currentUser, onLogout }) {
   return (
-    <div style={{ display: "flex", minHeight: "100vh", backgroundColor: "#f8fafc" }}>
+    <div style={{ display: "flex", minHeight: "100vh", backgroundColor: "var(--color-slate-50)" }}>
       {/* Sidebar - fixed width */}
       <VendorSidebar 
         currentPage={currentPage}

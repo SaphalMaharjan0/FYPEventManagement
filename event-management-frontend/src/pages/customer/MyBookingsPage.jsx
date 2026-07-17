@@ -38,12 +38,12 @@ export default function MyBookingsPage({ events }) {
 
   return (
     <div>
-      <h1 style={{ fontSize: "1.5rem", fontWeight: "bold", color: "#0f172a", marginBottom: "2rem" }}>My Bookings</h1>
+      <h1 style={{ fontSize: "1.5rem", fontWeight: "bold", color: "var(--color-slate-900)", marginBottom: "2rem" }}>My Bookings</h1>
 
       <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
         {bookings.map((booking, idx) => (
           <div key={idx} style={{
-            backgroundColor: "white",
+            backgroundColor: "var(--color-white)",
             border: "1px solid #e2e8f0",
             borderRadius: "0.75rem",
             padding: "1.5rem",
@@ -60,8 +60,8 @@ export default function MyBookingsPage({ events }) {
             <div style={{ flex: 1 }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                 <div>
-                  <h3 style={{ fontSize: "1.1rem", fontWeight: "bold", color: "#0f172a", marginBottom: "0.25rem" }}>{booking.title}</h3>
-                  <p style={{ fontSize: "0.85rem", color: "#64748b", marginBottom: "0.75rem" }}>{booking.date} · {booking.venue}</p>
+                  <h3 style={{ fontSize: "1.1rem", fontWeight: "bold", color: "var(--color-slate-900)", marginBottom: "0.25rem" }}>{booking.title}</h3>
+                  <p style={{ fontSize: "0.85rem", color: "var(--color-slate-500)", marginBottom: "0.75rem" }}>{booking.date} · {booking.venue}</p>
                 </div>
                 
                 {booking.status === "Active" && (
@@ -75,13 +75,13 @@ export default function MyBookingsPage({ events }) {
                   </span>
                 )}
                 {booking.status === "Inactive" && (
-                  <span style={{ backgroundColor: "#fef2f2", color: "#ef4444", padding: "0.25rem 0.75rem", borderRadius: "1rem", fontSize: "0.75rem", fontWeight: "600" }}>
+                  <span style={{ backgroundColor: "var(--color-red-50)", color: "var(--color-red-500)", padding: "0.25rem 0.75rem", borderRadius: "1rem", fontSize: "0.75rem", fontWeight: "600" }}>
                     Inactive
                   </span>
                 )}
               </div>
 
-              <div style={{ display: "flex", alignItems: "center", gap: "1.5rem", fontSize: "0.85rem", color: "#64748b", marginBottom: "1.5rem" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "1.5rem", fontSize: "0.85rem", color: "var(--color-slate-500)", marginBottom: "1.5rem" }}>
                 <span><strong>{booking.tickets} Tickets</strong> - ${booking.pricePaid}</span>
                 <span>Booking ID: {booking.bookingId}</span>
               </div>
@@ -91,8 +91,8 @@ export default function MyBookingsPage({ events }) {
                   onClick={() => setSelectedTicket(booking)}
                   style={{ 
                     padding: "0.4rem 1rem", 
-                    backgroundColor: "#eff6ff", 
-                    color: "#2563eb", 
+                    backgroundColor: "var(--color-blue-50)", 
+                    color: "var(--color-blue-600)", 
                     border: "none", 
                     borderRadius: "0.5rem",
                     fontSize: "0.85rem",
@@ -104,8 +104,8 @@ export default function MyBookingsPage({ events }) {
                 </button>
                 <button style={{ 
                   padding: "0.4rem 1rem", 
-                  backgroundColor: "white", 
-                  color: "#64748b", 
+                  backgroundColor: "var(--color-white)", 
+                  color: "var(--color-slate-500)", 
                   border: "1px solid #e2e8f0", 
                   borderRadius: "0.5rem",
                   fontSize: "0.85rem",
@@ -133,7 +133,7 @@ export default function MyBookingsPage({ events }) {
           padding: "1rem"
         }}>
           <div style={{
-            backgroundColor: "white",
+            backgroundColor: "var(--color-white)",
             borderRadius: "1rem",
             width: "100%",
             maxWidth: "400px",
@@ -143,33 +143,33 @@ export default function MyBookingsPage({ events }) {
             <div style={{ padding: "1.5rem", borderBottom: "2px dashed #e2e8f0", position: "relative" }}>
               <button 
                 onClick={() => setSelectedTicket(null)}
-                style={{ position: "absolute", top: "1rem", right: "1rem", background: "none", border: "none", cursor: "pointer", color: "#64748b" }}
+                style={{ position: "absolute", top: "1rem", right: "1rem", background: "none", border: "none", cursor: "pointer", color: "var(--color-slate-500)" }}
               >
                 <X size={20} />
               </button>
-              <h2 style={{ fontSize: "1.25rem", fontWeight: "bold", color: "#0f172a", marginBottom: "0.5rem", paddingRight: "2rem" }}>
+              <h2 style={{ fontSize: "1.25rem", fontWeight: "bold", color: "var(--color-slate-900)", marginBottom: "0.5rem", paddingRight: "2rem" }}>
                 {selectedTicket.title}
               </h2>
-              <p style={{ color: "#64748b", fontSize: "0.9rem", marginBottom: "0.25rem" }}>{selectedTicket.date} • {selectedTicket.time}</p>
-              <p style={{ color: "#64748b", fontSize: "0.9rem" }}>{selectedTicket.venue}</p>
+              <p style={{ color: "var(--color-slate-500)", fontSize: "0.9rem", marginBottom: "0.25rem" }}>{selectedTicket.date} • {selectedTicket.time}</p>
+              <p style={{ color: "var(--color-slate-500)", fontSize: "0.9rem" }}>{selectedTicket.venue}</p>
             </div>
             
-            <div style={{ padding: "1.5rem", backgroundColor: "#f8fafc", display: "flex", flexDirection: "column", alignItems: "center" }}>
-              <div style={{ backgroundColor: "white", padding: "1rem", borderRadius: "0.5rem", marginBottom: "1rem", border: "1px solid #e2e8f0" }}>
-                <QrCode size={120} color="#0f172a" />
+            <div style={{ padding: "1.5rem", backgroundColor: "var(--color-slate-50)", display: "flex", flexDirection: "column", alignItems: "center" }}>
+              <div style={{ backgroundColor: "var(--color-white)", padding: "1rem", borderRadius: "0.5rem", marginBottom: "1rem", border: "1px solid #e2e8f0" }}>
+                <QrCode size={120} color="var(--color-slate-900)" />
               </div>
-              <div style={{ fontSize: "1.1rem", fontWeight: "bold", letterSpacing: "2px", color: "#0f172a", marginBottom: "1.5rem" }}>
+              <div style={{ fontSize: "1.1rem", fontWeight: "bold", letterSpacing: "2px", color: "var(--color-slate-900)", marginBottom: "1.5rem" }}>
                 {selectedTicket.bookingId}
               </div>
               
               <div style={{ display: "flex", width: "100%", justifyContent: "space-between", borderTop: "1px solid #e2e8f0", paddingTop: "1rem" }}>
                 <div>
-                  <div style={{ fontSize: "0.75rem", color: "#64748b", textTransform: "uppercase" }}>Type</div>
-                  <div style={{ fontWeight: "600", color: "#0f172a" }}>General Admission</div>
+                  <div style={{ fontSize: "0.75rem", color: "var(--color-slate-500)", textTransform: "uppercase" }}>Type</div>
+                  <div style={{ fontWeight: "600", color: "var(--color-slate-900)" }}>General Admission</div>
                 </div>
                 <div style={{ textAlign: "right" }}>
-                  <div style={{ fontSize: "0.75rem", color: "#64748b", textTransform: "uppercase" }}>Admit</div>
-                  <div style={{ fontWeight: "600", color: "#0f172a" }}>{selectedTicket.tickets} {selectedTicket.tickets === 1 ? 'Person' : 'People'}</div>
+                  <div style={{ fontSize: "0.75rem", color: "var(--color-slate-500)", textTransform: "uppercase" }}>Admit</div>
+                  <div style={{ fontWeight: "600", color: "var(--color-slate-900)" }}>{selectedTicket.tickets} {selectedTicket.tickets === 1 ? 'Person' : 'People'}</div>
                 </div>
               </div>
             </div>

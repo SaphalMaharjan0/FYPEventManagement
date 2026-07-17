@@ -38,7 +38,7 @@ export default function ServiceListingsPage({ onNavigate }) {
   return (
     <div style={{ maxWidth: "1400px", margin: "0 auto" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2rem" }}>
-        <h1 style={{ fontSize: "1.75rem", fontWeight: "bold", color: "#0f172a" }}>Service Listings</h1>
+        <h1 style={{ fontSize: "1.75rem", fontWeight: "bold", color: "var(--color-slate-900)" }}>Service Listings</h1>
         <button 
           onClick={() => onNavigate("vendor-add-service")}
           style={{ 
@@ -46,8 +46,8 @@ export default function ServiceListingsPage({ onNavigate }) {
             alignItems: "center", 
             gap: "0.5rem", 
             padding: "0.6rem 1.25rem", 
-            backgroundColor: "#3b82f6", 
-            color: "white", 
+            backgroundColor: "var(--color-blue-500)", 
+            color: "var(--color-white)", 
             border: "none", 
             borderRadius: "0.5rem",
             fontWeight: "500",
@@ -61,7 +61,7 @@ export default function ServiceListingsPage({ onNavigate }) {
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: "1.5rem" }}>
         {services.map(service => (
           <div key={service.id} style={{ 
-            backgroundColor: "white", 
+            backgroundColor: "var(--color-white)", 
             borderRadius: "0.75rem", 
             border: "1px solid #e2e8f0", 
             overflow: "hidden",
@@ -70,7 +70,7 @@ export default function ServiceListingsPage({ onNavigate }) {
             flexDirection: "column"
           }}>
             {/* Image Section */}
-            <div style={{ height: "180px", backgroundColor: "#f8fafc", position: "relative" }}>
+            <div style={{ height: "180px", backgroundColor: "var(--color-slate-50)", position: "relative" }}>
               {service.image ? (
                 <img src={service.image} alt={service.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
               ) : null}
@@ -83,8 +83,8 @@ export default function ServiceListingsPage({ onNavigate }) {
                 borderRadius: "1rem",
                 fontSize: "0.75rem",
                 fontWeight: "600",
-                backgroundColor: service.status === "Active" ? "#10b981" : "#f59e0b",
-                color: "white"
+                backgroundColor: service.status === "Active" ? "var(--color-green-500)" : "var(--color-amber-500)",
+                color: "var(--color-white)"
               }}>
                 {service.status}
               </span>
@@ -92,15 +92,15 @@ export default function ServiceListingsPage({ onNavigate }) {
 
             {/* Content Section */}
             <div style={{ padding: "1.25rem", display: "flex", flexDirection: "column", flex: 1 }}>
-              <h3 style={{ fontSize: "1.05rem", fontWeight: "700", color: "#0f172a", marginBottom: "0.25rem" }}>{service.title}</h3>
-              <p style={{ color: "#64748b", fontSize: "0.85rem", marginBottom: "1rem" }}>{service.category}</p>
+              <h3 style={{ fontSize: "1.05rem", fontWeight: "700", color: "var(--color-slate-900)", marginBottom: "0.25rem" }}>{service.title}</h3>
+              <p style={{ color: "var(--color-slate-500)", fontSize: "0.85rem", marginBottom: "1rem" }}>{service.category}</p>
               
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: "1.5rem", flex: 1 }}>
                 <div>
-                  <span style={{ fontSize: "1.1rem", fontWeight: "700", color: "#3b82f6" }}>{service.price}</span>
-                  <span style={{ color: "#64748b", fontSize: "0.85rem" }}>/{service.unit}</span>
+                  <span style={{ fontSize: "1.1rem", fontWeight: "700", color: "var(--color-blue-500)" }}>{service.price}</span>
+                  <span style={{ color: "var(--color-slate-500)", fontSize: "0.85rem" }}>/{service.unit}</span>
                 </div>
-                <div style={{ color: "#64748b", fontSize: "0.85rem" }}>
+                <div style={{ color: "var(--color-slate-500)", fontSize: "0.85rem" }}>
                   {service.requests} requests
                 </div>
               </div>
@@ -114,10 +114,10 @@ export default function ServiceListingsPage({ onNavigate }) {
                   justifyContent: "center", 
                   gap: "0.5rem", 
                   padding: "0.5rem", 
-                  backgroundColor: "white", 
+                  backgroundColor: "var(--color-white)", 
                   border: "1px solid #e2e8f0", 
                   borderRadius: "0.5rem",
-                  color: "#0f172a",
+                  color: "var(--color-slate-900)",
                   fontWeight: "500",
                   cursor: "pointer",
                   fontSize: "0.9rem"
@@ -129,10 +129,10 @@ export default function ServiceListingsPage({ onNavigate }) {
                   alignItems: "center", 
                   justifyContent: "center", 
                   padding: "0.5rem", 
-                  backgroundColor: "white", 
+                  backgroundColor: "var(--color-white)", 
                   border: "1px solid #fca5a5", 
                   borderRadius: "0.5rem",
-                  color: "#ef4444",
+                  color: "var(--color-red-500)",
                   cursor: "pointer"
                 }}>
                   <Trash2 size={18} />

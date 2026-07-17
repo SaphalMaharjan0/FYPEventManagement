@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { User, Store, Eye, EyeOff } from "lucide-react";
+import { useAuth } from "../../hooks/useAuth";
 
 export default function RegisterForm({ onNavigateToLogin, onRegisterSuccess }) {
   const [firstName, setFirstName] = useState("");
@@ -11,10 +12,14 @@ export default function RegisterForm({ onNavigateToLogin, onRegisterSuccess }) {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [role, setRole] = useState("customer"); // 'customer' or 'vendor'
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
-  const handleSubmit = (e) => {
+  const { register } = useAuth();
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    setSuccess("");
 
     if (!firstName.trim() || !lastName.trim() || !email.trim() || !password || !confirmPassword) {
       setError("Please fill in all form fields.");
@@ -36,13 +41,20 @@ export default function RegisterForm({ onNavigateToLogin, onRegisterSuccess }) {
       return;
     }
 
-    // Success register
-    onRegisterSuccess({
-      firstName,
-      lastName,
-      email,
-      role
-    });
+    try {
+      await register({
+        fullName: `${firstName} ${lastName}`,
+        email,
+        password,
+        role
+      });
+      setSuccess("Account creation was successful! Redirecting to login...");
+      setTimeout(() => {
+        onNavigateToLogin();
+      }, 2000);
+    } catch (err) {
+      setError(err.message || "Failed to register. Please try again.");
+    }
   };
 
   return (
@@ -53,8 +65,14 @@ export default function RegisterForm({ onNavigateToLogin, onRegisterSuccess }) {
       </div>
 
       {error && (
-        <div style={{ color: "#ef4444", fontSize: "0.8rem", fontWeight: 700, backgroundColor: "#fef2f2", border: "1px solid #fca5a5", padding: "0.75rem", borderRadius: "8px", marginBottom: "1rem" }}>
+        <div style={{ color: "var(--color-red-500)", fontSize: "0.8rem", fontWeight: 700, backgroundColor: "var(--color-red-50)", border: "1px solid #fca5a5", padding: "0.75rem", borderRadius: "8px", marginBottom: "1rem" }}>
           {error}
+        </div>
+      )}
+      
+      {success && (
+        <div style={{ color: "var(--color-green-700)", fontSize: "0.8rem", fontWeight: 700, backgroundColor: "var(--color-green-50)", border: "1px solid #86efac", padding: "0.75rem", borderRadius: "8px", marginBottom: "1rem" }}>
+          {success}
         </div>
       )}
 
@@ -118,7 +136,7 @@ export default function RegisterForm({ onNavigateToLogin, onRegisterSuccess }) {
                 background: "none",
                 border: "none",
                 cursor: "pointer",
-                color: "#64748b",
+                color: "var(--color-slate-500)",
                 display: "flex",
                 alignItems: "center"
               }}
@@ -152,7 +170,7 @@ export default function RegisterForm({ onNavigateToLogin, onRegisterSuccess }) {
                 background: "none",
                 border: "none",
                 cursor: "pointer",
-                color: "#64748b",
+                color: "var(--color-slate-500)",
                 display: "flex",
                 alignItems: "center"
               }}

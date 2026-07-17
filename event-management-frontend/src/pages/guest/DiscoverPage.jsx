@@ -9,7 +9,7 @@ export default function DiscoverPage({ events, categories, onBookClick, setActiv
   const recommendedEvents = events.filter((e) => !e.featured).slice(0, 3);
 
   return (
-    <div style={{ paddingTop: "8rem", paddingBottom: "5rem", minHeight: "80vh", backgroundColor: "#f8fafc" }}>
+    <div style={{ paddingTop: "8rem", paddingBottom: "5rem", minHeight: "80vh", backgroundColor: "var(--color-slate-50)" }}>
       <div className="container">
         <div style={{ marginBottom: "3rem", textAlign: "center" }}>
           <h2 style={{ fontSize: "2rem", color: "var(--text-dark)", display: "flex", alignItems: "center", justifyContent: "center", gap: "0.75rem" }}>
@@ -31,7 +31,7 @@ export default function DiscoverPage({ events, categories, onBookClick, setActiv
         {trendingEvents.length > 0 && (
           <section style={{ marginBottom: "4rem" }}>
             <h3 style={{ fontSize: "1.5rem", marginBottom: "1.5rem", color: "var(--text-dark)", display: "flex", alignItems: "center", gap: "0.5rem" }}>
-              <TrendingUp size={24} color="#ef4444" />
+              <TrendingUp size={24} color="var(--color-red-500)" />
               Trending Now
             </h3>
             <div className="cards-grid">

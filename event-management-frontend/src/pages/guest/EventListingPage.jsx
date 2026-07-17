@@ -148,7 +148,7 @@ export default function EventsPage({
           </div>
           <button 
             onClick={() => setShowFilters(!showFilters)}
-            style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.5rem 1rem", backgroundColor: "white", border: "1px solid #e2e8f0", borderRadius: "0.5rem", cursor: "pointer", fontWeight: "500", color: "#0f172a" }}
+            style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.5rem 1rem", backgroundColor: "var(--color-white)", border: "1px solid #e2e8f0", borderRadius: "0.5rem", cursor: "pointer", fontWeight: "500", color: "var(--color-slate-900)" }}
           >
             <Tag size={16} />
             {showFilters ? "Hide Filters" : "Show Filters"}

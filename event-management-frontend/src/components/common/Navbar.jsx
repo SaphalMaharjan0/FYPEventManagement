@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { Menu, X, Calendar } from "lucide-react";
+import { Menu, X, Calendar, Moon, Sun } from "lucide-react";
 
-export default function Header({ onMobileDrawerOpen, onNavigate, currentUser, onLogout, isAuthPage }) {
+export default function Header({ onMobileDrawerOpen, onNavigate, currentUser, onLogout, isAuthPage, isDarkMode, toggleDarkMode }) {
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
@@ -40,18 +40,37 @@ export default function Header({ onMobileDrawerOpen, onNavigate, currentUser, on
 
           {/* Desktop Actions */}
           <div className="header-actions">
+            <button 
+              onClick={toggleDarkMode}
+              style={{
+                background: "rgba(255, 255, 255, 0.1)",
+                border: "1px solid rgba(255, 255, 255, 0.2)",
+                color: "var(--color-white)",
+                borderRadius: "50%",
+                width: "36px",
+                height: "36px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                cursor: "pointer",
+                marginRight: "0.5rem"
+              }}
+              title="Toggle Dark Mode"
+            >
+              {isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
+            </button>
             {currentUser ? (
               <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
                 <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", justifyContent: "center" }}>
-                  <span style={{ color: "white", fontSize: "0.85rem", fontWeight: 700 }}>{currentUser.name}</span>
+                  <span style={{ color: "var(--color-white)", fontSize: "0.85rem", fontWeight: 700 }}>{currentUser.name}</span>
                   <span style={{ color: "rgba(255, 255, 255, 0.6)", fontSize: "0.7rem", fontWeight: 600, textTransform: "uppercase" }}>{currentUser.role}</span>
                 </div>
                 <div style={{
                   width: "36px",
                   height: "36px",
                   borderRadius: "50%",
-                  backgroundColor: currentUser.role === "admin" ? "#ef4444" : currentUser.role === "vendor" ? "#16a34a" : "#2563eb",
-                  color: "white",
+                  backgroundColor: currentUser.role === "admin" ? "var(--color-red-500)" : currentUser.role === "vendor" ? "#16a34a" : "var(--color-blue-600)",
+                  color: "var(--color-white)",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
@@ -66,7 +85,7 @@ export default function Header({ onMobileDrawerOpen, onNavigate, currentUser, on
                   onClick={onLogout}
                   style={{
                     backgroundColor: "transparent",
-                    color: "#ef4444",
+                    color: "var(--color-red-500)",
                     fontSize: "0.85rem",
                     fontWeight: 600,
                     cursor: "pointer",

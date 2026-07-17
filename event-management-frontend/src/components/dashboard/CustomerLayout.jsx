@@ -4,7 +4,7 @@ import Topbar from "./Topbar";
 
 export default function CustomerLayout({ children, currentPage, onNavigate, currentUser, onLogout }) {
   return (
-    <div style={{ display: "flex", minHeight: "100vh", backgroundColor: "#f8fafc" }}>
+    <div style={{ display: "flex", minHeight: "100vh", backgroundColor: "var(--color-slate-50)" }}>
       <Sidebar 
         currentPage={currentPage} 
         onNavigate={onNavigate} 

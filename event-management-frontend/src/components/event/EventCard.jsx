@@ -60,7 +60,7 @@ export default function EventCard({ event, onBookClick }) {
           <div className="progress-bar-bg">
             <div 
               className="progress-bar-fill" 
-              style={{ width: `${percentageAvailable}%`, backgroundColor: isSoldOut ? "#ef4444" : "var(--primary)" }}
+              style={{ width: `${percentageAvailable}%`, backgroundColor: isSoldOut ? "var(--color-red-500)" : "var(--primary)" }}
             ></div>
           </div>
         </div>
@@ -78,7 +78,7 @@ export default function EventCard({ event, onBookClick }) {
               onBookClick(event);
             }}
             disabled={isSoldOut}
-            style={isSoldOut ? { opacity: 0.5, cursor: "not-allowed", backgroundColor: "#f1f5f9", color: "#94a3b8" } : {}}
+            style={isSoldOut ? { opacity: 0.5, cursor: "not-allowed", backgroundColor: "var(--color-slate-100)", color: "var(--color-slate-400)" } : {}}
           >
             {isSoldOut ? "Sold Out" : "Book Now"}
           </button>

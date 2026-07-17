@@ -24,8 +24,8 @@ export default function Sidebar({ currentPage, onNavigate, currentUser, onLogout
   return (
     <aside style={{
       width: "260px",
-      backgroundColor: "#0f172a", // Dark blue from the screenshot
-      color: "white",
+      backgroundColor: "var(--color-slate-900)", // Dark blue from the screenshot
+      color: "var(--color-white)",
       display: "flex",
       flexDirection: "column",
       height: "100vh",
@@ -37,7 +37,7 @@ export default function Sidebar({ currentPage, onNavigate, currentUser, onLogout
       {/* Brand */}
       <div style={{ padding: "1.5rem", display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "1rem" }}>
         <div style={{
-          backgroundColor: "#3b82f6",
+          backgroundColor: "var(--color-blue-500)",
           borderRadius: "0.25rem",
           width: "24px",
           height: "24px",
@@ -45,12 +45,12 @@ export default function Sidebar({ currentPage, onNavigate, currentUser, onLogout
           alignItems: "center",
           justifyContent: "center"
         }}>
-          <Compass size={16} color="white" />
+          <Compass size={16} color="var(--color-white)" />
         </div>
         <span style={{ fontSize: "1.25rem", fontWeight: "bold" }}>EventPulse</span>
       </div>
 
-      <div style={{ padding: "0 1.5rem", fontSize: "0.75rem", color: "#64748b", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "0.5rem" }}>
+      <div style={{ padding: "0 1.5rem", fontSize: "0.75rem", color: "var(--color-slate-500)", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "0.5rem" }}>
         Customer
       </div>
 
@@ -71,8 +71,8 @@ export default function Sidebar({ currentPage, onNavigate, currentUser, onLogout
                 gap: "0.75rem",
                 padding: "0.75rem 1rem",
                 borderRadius: "0.5rem",
-                backgroundColor: isActive ? "#3b82f6" : "transparent",
-                color: isActive ? "white" : "#94a3b8",
+                backgroundColor: isActive ? "var(--color-blue-500)" : "transparent",
+                color: isActive ? "var(--color-white)" : "var(--color-slate-400)",
                 border: "none",
                 cursor: "pointer",
                 textAlign: "left",
@@ -81,10 +81,10 @@ export default function Sidebar({ currentPage, onNavigate, currentUser, onLogout
                 transition: "all 0.2s"
               }}
               onMouseEnter={(e) => {
-                if (!isActive) e.currentTarget.style.color = "white";
+                if (!isActive) e.currentTarget.style.color = "var(--color-white)";
               }}
               onMouseLeave={(e) => {
-                if (!isActive) e.currentTarget.style.color = "#94a3b8";
+                if (!isActive) e.currentTarget.style.color = "var(--color-slate-400)";
               }}
             >
               <Icon size={18} />
@@ -111,25 +111,25 @@ export default function Sidebar({ currentPage, onNavigate, currentUser, onLogout
             width: "32px",
             height: "32px",
             borderRadius: "50%",
-            backgroundColor: "#2563eb",
-            color: "white",
+            backgroundColor: "var(--color-blue-600)",
+            color: "var(--color-white)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             fontWeight: "bold",
             fontSize: "0.8rem"
           }}>
-            {currentUser?.name?.split(" ").map(n => n[0]).join("") || "U"}
+            {currentUser?.fullName ? currentUser.fullName.split(" ").map(n => n[0]).join("") : "U"}
           </div>
           <div style={{ flex: 1, overflow: "hidden" }}>
-            <div style={{ fontSize: "0.85rem", fontWeight: "600", color: "white", whiteSpace: "nowrap", textOverflow: "ellipsis" }}>
-              {currentUser?.name || "User"}
+            <div style={{ fontSize: "0.85rem", fontWeight: "600", color: "var(--color-white)", whiteSpace: "nowrap", textOverflow: "ellipsis" }}>
+              {currentUser?.fullName || "User"}
             </div>
-            <div style={{ fontSize: "0.7rem", color: "#64748b", whiteSpace: "nowrap", textOverflow: "ellipsis" }}>
+            <div style={{ fontSize: "0.7rem", color: "var(--color-slate-500)", whiteSpace: "nowrap", textOverflow: "ellipsis" }}>
               {currentUser?.email || "user@example.com"}
             </div>
           </div>
-          <ChevronRight size={16} color="#64748b" />
+          <ChevronRight size={16} color="var(--color-slate-500)" />
         </div>
         
         <button
@@ -141,12 +141,12 @@ export default function Sidebar({ currentPage, onNavigate, currentUser, onLogout
             padding: "0.5rem 0.5rem",
             background: "none",
             border: "none",
-            color: "#94a3b8",
+            color: "var(--color-slate-400)",
             cursor: "pointer",
             fontSize: "0.85rem"
           }}
-          onMouseEnter={(e) => e.currentTarget.style.color = "white"}
-          onMouseLeave={(e) => e.currentTarget.style.color = "#94a3b8"}
+          onMouseEnter={(e) => e.currentTarget.style.color = "var(--color-white)"}
+          onMouseLeave={(e) => e.currentTarget.style.color = "var(--color-slate-400)"}
         >
           <LogOut size={16} />
           Sign Out

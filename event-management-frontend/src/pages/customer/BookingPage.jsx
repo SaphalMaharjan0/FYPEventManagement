@@ -11,7 +11,7 @@ export default function BookingPage({ event, initialQuantity, onBookingSuccess, 
         <h2 style={{ fontSize: "1.5rem", marginBottom: "1rem" }}>No event selected</h2>
         <button 
           onClick={() => onNavigate("events")}
-          style={{ padding: "0.75rem 1.5rem", backgroundColor: "#3b82f6", color: "white", borderRadius: "0.5rem", border: "none", cursor: "pointer" }}
+          style={{ padding: "0.75rem 1.5rem", backgroundColor: "var(--color-blue-500)", color: "var(--color-white)", borderRadius: "0.5rem", border: "none", cursor: "pointer" }}
         >
           Browse Events
         </button>
@@ -41,33 +41,33 @@ export default function BookingPage({ event, initialQuantity, onBookingSuccess, 
 
   if (isSuccess) {
     return (
-      <div style={{ maxWidth: "600px", margin: "0 auto", padding: "2rem", backgroundColor: "white", borderRadius: "1rem", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)", textAlign: "center" }}>
+      <div style={{ maxWidth: "600px", margin: "0 auto", padding: "2rem", backgroundColor: "var(--color-white)", borderRadius: "1rem", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)", textAlign: "center" }}>
         <div style={{ width: "80px", height: "80px", backgroundColor: "#dcfce7", color: "#166534", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 1.5rem" }}>
           <Check size={40} />
         </div>
-        <h1 style={{ fontSize: "2rem", fontWeight: "bold", color: "#0f172a", marginBottom: "1rem" }}>Booking Confirmed!</h1>
-        <p style={{ color: "#64748b", marginBottom: "2rem", fontSize: "1.1rem" }}>
+        <h1 style={{ fontSize: "2rem", fontWeight: "bold", color: "var(--color-slate-900)", marginBottom: "1rem" }}>Booking Confirmed!</h1>
+        <p style={{ color: "var(--color-slate-500)", marginBottom: "2rem", fontSize: "1.1rem" }}>
           You have successfully booked {quantity} ticket{quantity > 1 ? "s" : ""} to <strong>{event.title}</strong>.
         </p>
 
-        <div style={{ backgroundColor: "#f8fafc", padding: "1.5rem", borderRadius: "0.75rem", border: "1px solid #e2e8f0", textAlign: "left", marginBottom: "2rem" }}>
+        <div style={{ backgroundColor: "var(--color-slate-50)", padding: "1.5rem", borderRadius: "0.75rem", border: "1px solid #e2e8f0", textAlign: "left", marginBottom: "2rem" }}>
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "1rem", fontSize: "0.95rem" }}>
-            <span style={{ color: "#64748b" }}>Order Reference:</span>
-            <span style={{ fontWeight: "600", color: "#0f172a" }}>EP-{Math.floor(100000 + Math.random() * 900000)}</span>
+            <span style={{ color: "var(--color-slate-500)" }}>Order Reference:</span>
+            <span style={{ fontWeight: "600", color: "var(--color-slate-900)" }}>EP-{Math.floor(100000 + Math.random() * 900000)}</span>
           </div>
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "1rem", fontSize: "0.95rem" }}>
-            <span style={{ color: "#64748b" }}>Tickets:</span>
-            <span style={{ fontWeight: "600", color: "#0f172a" }}>{quantity}x General Admission</span>
+            <span style={{ color: "var(--color-slate-500)" }}>Tickets:</span>
+            <span style={{ fontWeight: "600", color: "var(--color-slate-900)" }}>{quantity}x General Admission</span>
           </div>
           <div style={{ display: "flex", justifyContent: "space-between", borderTop: "1px solid #e2e8f0", paddingTop: "1rem", fontSize: "1.1rem" }}>
-            <span style={{ color: "#64748b", fontWeight: "500" }}>Total Paid:</span>
-            <span style={{ fontWeight: "bold", color: "#10b981" }}>${totalPrice}</span>
+            <span style={{ color: "var(--color-slate-500)", fontWeight: "500" }}>Total Paid:</span>
+            <span style={{ fontWeight: "bold", color: "var(--color-green-500)" }}>${totalPrice}</span>
           </div>
         </div>
 
         <button 
           onClick={() => onNavigate("customer-bookings")}
-          style={{ width: "100%", padding: "1rem", backgroundColor: "#3b82f6", color: "white", borderRadius: "0.5rem", border: "none", fontWeight: "600", fontSize: "1rem", cursor: "pointer" }}
+          style={{ width: "100%", padding: "1rem", backgroundColor: "var(--color-blue-500)", color: "var(--color-white)", borderRadius: "0.5rem", border: "none", fontWeight: "600", fontSize: "1rem", cursor: "pointer" }}
         >
           View My Bookings
         </button>
@@ -79,7 +79,7 @@ export default function BookingPage({ event, initialQuantity, onBookingSuccess, 
     <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
       <button 
         onClick={() => onNavigate("event-details")}
-        style={{ display: "flex", alignItems: "center", gap: "0.5rem", background: "none", border: "none", color: "#64748b", fontWeight: "500", cursor: "pointer", marginBottom: "2rem" }}
+        style={{ display: "flex", alignItems: "center", gap: "0.5rem", background: "none", border: "none", color: "var(--color-slate-500)", fontWeight: "500", cursor: "pointer", marginBottom: "2rem" }}
       >
         <ArrowLeft size={16} />
         Back to Event Details
@@ -89,16 +89,16 @@ export default function BookingPage({ event, initialQuantity, onBookingSuccess, 
         
         {/* Left Column: Event Summary */}
         <div>
-          <h1 style={{ fontSize: "1.75rem", fontWeight: "bold", color: "#0f172a", marginBottom: "1.5rem" }}>Checkout</h1>
-          <div style={{ backgroundColor: "white", borderRadius: "1rem", border: "1px solid #e2e8f0", overflow: "hidden" }}>
+          <h1 style={{ fontSize: "1.75rem", fontWeight: "bold", color: "var(--color-slate-900)", marginBottom: "1.5rem" }}>Checkout</h1>
+          <div style={{ backgroundColor: "var(--color-white)", borderRadius: "1rem", border: "1px solid #e2e8f0", overflow: "hidden" }}>
             <img src={event.image} alt={event.title} style={{ width: "100%", height: "200px", objectFit: "cover" }} />
             <div style={{ padding: "1.5rem" }}>
-              <h2 style={{ fontSize: "1.25rem", fontWeight: "bold", color: "#0f172a", marginBottom: "0.5rem" }}>{event.title}</h2>
-              <p style={{ color: "#64748b", fontSize: "0.9rem", marginBottom: "1.5rem" }}>{event.date} · {event.venue}</p>
+              <h2 style={{ fontSize: "1.25rem", fontWeight: "bold", color: "var(--color-slate-900)", marginBottom: "0.5rem" }}>{event.title}</h2>
+              <p style={{ color: "var(--color-slate-500)", fontSize: "0.9rem", marginBottom: "1.5rem" }}>{event.date} · {event.venue}</p>
               
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderTop: "1px solid #e2e8f0", paddingTop: "1.5rem" }}>
-                <span style={{ fontWeight: "600", color: "#0f172a" }}>General Admission</span>
-                <span style={{ fontWeight: "600", color: "#0f172a" }}>${event.price} / ticket</span>
+                <span style={{ fontWeight: "600", color: "var(--color-slate-900)" }}>General Admission</span>
+                <span style={{ fontWeight: "600", color: "var(--color-slate-900)" }}>${event.price} / ticket</span>
               </div>
             </div>
           </div>
@@ -109,36 +109,36 @@ export default function BookingPage({ event, initialQuantity, onBookingSuccess, 
           <form onSubmit={handleCheckoutSubmit} style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
             
             {/* Ticket Selector */}
-            <div style={{ backgroundColor: "white", padding: "1.5rem", borderRadius: "1rem", border: "1px solid #e2e8f0" }}>
-              <h3 style={{ fontSize: "1.1rem", fontWeight: "600", color: "#0f172a", marginBottom: "1rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+            <div style={{ backgroundColor: "var(--color-white)", padding: "1.5rem", borderRadius: "1rem", border: "1px solid #e2e8f0" }}>
+              <h3 style={{ fontSize: "1.1rem", fontWeight: "600", color: "var(--color-slate-900)", marginBottom: "1rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
                 <Ticket size={18} />
                 Select Tickets
               </h3>
               
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                 <div>
-                  <div style={{ fontWeight: "500", color: "#0f172a" }}>Quantity</div>
-                  <div style={{ fontSize: "0.85rem", color: "#64748b" }}>Max {event.seatsLeft} available</div>
+                  <div style={{ fontWeight: "500", color: "var(--color-slate-900)" }}>Quantity</div>
+                  <div style={{ fontSize: "0.85rem", color: "var(--color-slate-500)" }}>Max {event.seatsLeft} available</div>
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-                  <button type="button" onClick={handleDecrement} disabled={quantity <= 1} style={{ width: "32px", height: "32px", borderRadius: "50%", border: "1px solid #e2e8f0", backgroundColor: quantity <= 1 ? "#f8fafc" : "white", cursor: quantity <= 1 ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.2rem", color: "#0f172a" }}>-</button>
+                  <button type="button" onClick={handleDecrement} disabled={quantity <= 1} style={{ width: "32px", height: "32px", borderRadius: "50%", border: "1px solid #e2e8f0", backgroundColor: quantity <= 1 ? "var(--color-slate-50)" : "var(--color-white)", cursor: quantity <= 1 ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.2rem", color: "var(--color-slate-900)" }}>-</button>
                   <span style={{ fontWeight: "600", fontSize: "1.1rem", width: "20px", textAlign: "center" }}>{quantity}</span>
-                  <button type="button" onClick={handleIncrement} disabled={quantity >= event.seatsLeft} style={{ width: "32px", height: "32px", borderRadius: "50%", border: "1px solid #e2e8f0", backgroundColor: quantity >= event.seatsLeft ? "#f8fafc" : "white", cursor: quantity >= event.seatsLeft ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.2rem", color: "#0f172a" }}>+</button>
+                  <button type="button" onClick={handleIncrement} disabled={quantity >= event.seatsLeft} style={{ width: "32px", height: "32px", borderRadius: "50%", border: "1px solid #e2e8f0", backgroundColor: quantity >= event.seatsLeft ? "var(--color-slate-50)" : "var(--color-white)", cursor: quantity >= event.seatsLeft ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.2rem", color: "var(--color-slate-900)" }}>+</button>
                 </div>
               </div>
             </div>
 
             {/* Total Calculation */}
-            <div style={{ backgroundColor: "#f8fafc", padding: "1.5rem", borderRadius: "1rem", border: "1px solid #e2e8f0" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.75rem", color: "#64748b" }}>
+            <div style={{ backgroundColor: "var(--color-slate-50)", padding: "1.5rem", borderRadius: "1rem", border: "1px solid #e2e8f0" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.75rem", color: "var(--color-slate-500)" }}>
                 <span>Subtotal ({quantity} tickets)</span>
                 <span>${totalPrice}</span>
               </div>
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "1rem", color: "#64748b" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "1rem", color: "var(--color-slate-500)" }}>
                 <span>Taxes & Fees</span>
                 <span>$0.00</span>
               </div>
-              <div style={{ display: "flex", justifyContent: "space-between", borderTop: "1px solid #e2e8f0", paddingTop: "1rem", fontSize: "1.25rem", fontWeight: "bold", color: "#0f172a" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", borderTop: "1px solid #e2e8f0", paddingTop: "1rem", fontSize: "1.25rem", fontWeight: "bold", color: "var(--color-slate-900)" }}>
                 <span>Total</span>
                 <span>${totalPrice}</span>
               </div>
@@ -146,9 +146,9 @@ export default function BookingPage({ event, initialQuantity, onBookingSuccess, 
 
             <button 
               type="submit"
-              style={{ width: "100%", padding: "1rem", backgroundColor: "#3b82f6", color: "white", border: "none", borderRadius: "0.5rem", fontSize: "1.1rem", fontWeight: "bold", cursor: "pointer", transition: "background-color 0.2s" }}
-              onMouseEnter={(e) => e.target.style.backgroundColor = "#2563eb"}
-              onMouseLeave={(e) => e.target.style.backgroundColor = "#3b82f6"}
+              style={{ width: "100%", padding: "1rem", backgroundColor: "var(--color-blue-500)", color: "var(--color-white)", border: "none", borderRadius: "0.5rem", fontSize: "1.1rem", fontWeight: "bold", cursor: "pointer", transition: "background-color 0.2s" }}
+              onMouseEnter={(e) => e.target.style.backgroundColor = "var(--color-blue-600)"}
+              onMouseLeave={(e) => e.target.style.backgroundColor = "var(--color-blue-500)"}
             >
               Confirm Booking • ${totalPrice}
             </button>

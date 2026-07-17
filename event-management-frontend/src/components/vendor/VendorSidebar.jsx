@@ -30,7 +30,7 @@ export default function VendorSidebar({ currentPage, onNavigate, currentUser, on
     <aside style={{
       width: "250px",
       backgroundColor: "#111827", // Dark blue-gray
-      color: "white",
+      color: "var(--color-white)",
       height: "100vh",
       position: "fixed",
       top: 0,
@@ -49,14 +49,14 @@ export default function VendorSidebar({ currentPage, onNavigate, currentUser, on
         cursor: "pointer"
       }} onClick={() => onNavigate("landing")}>
         <div style={{ 
-          backgroundColor: "#3b82f6", 
+          backgroundColor: "var(--color-blue-500)", 
           padding: "0.5rem", 
           borderRadius: "0.5rem",
           display: "flex",
           alignItems: "center",
           justifyContent: "center"
         }}>
-          <Hexagon size={20} color="white" fill="white" />
+          <Hexagon size={20} color="var(--color-white)" fill="var(--color-white)" />
         </div>
         <span style={{ fontSize: "1.25rem", fontWeight: "bold", letterSpacing: "-0.5px" }}>EventPulse</span>
       </div>
@@ -83,8 +83,8 @@ export default function VendorSidebar({ currentPage, onNavigate, currentUser, on
                   marginLeft: "0.75rem",
                   marginRight: "0.75rem",
                   padding: "0.85rem 1rem",
-                  backgroundColor: isActive ? "#3b82f6" : "transparent",
-                  color: isActive ? "white" : "#9ca3af",
+                  backgroundColor: isActive ? "var(--color-blue-500)" : "transparent",
+                  color: isActive ? "var(--color-white)" : "#9ca3af",
                   border: "none",
                   borderRadius: "0.5rem",
                   cursor: "pointer",
@@ -96,7 +96,7 @@ export default function VendorSidebar({ currentPage, onNavigate, currentUser, on
                 onMouseEnter={(e) => {
                   if (!isActive) {
                     e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.05)";
-                    e.currentTarget.style.color = "white";
+                    e.currentTarget.style.color = "var(--color-white)";
                   }
                 }}
                 onMouseLeave={(e) => {
@@ -130,18 +130,18 @@ export default function VendorSidebar({ currentPage, onNavigate, currentUser, on
             width: "36px", 
             height: "36px", 
             borderRadius: "50%", 
-            backgroundColor: "#3b82f6", 
+            backgroundColor: "var(--color-blue-500)", 
             display: "flex", 
             alignItems: "center", 
             justifyContent: "center",
             fontWeight: "bold",
             fontSize: "0.9rem"
           }}>
-            {currentUser?.name ? currentUser.name.split(' ').map(n => n[0]).join('') : 'MC'}
+            {currentUser?.fullName ? currentUser.fullName.split(' ').map(n => n[0]).join('') : 'MC'}
           </div>
           <div style={{ flex: 1, overflow: "hidden" }}>
             <div style={{ fontWeight: "600", fontSize: "0.9rem", whiteSpace: "nowrap", textOverflow: "ellipsis", overflow: "hidden" }}>
-              {currentUser?.name || "Marcus Chen"}
+              {currentUser?.fullName || "Marcus Chen"}
             </div>
             <div style={{ color: "#9ca3af", fontSize: "0.75rem", whiteSpace: "nowrap", textOverflow: "ellipsis", overflow: "hidden" }}>
               {currentUser?.email || "alex@example.com"}
@@ -166,7 +166,7 @@ export default function VendorSidebar({ currentPage, onNavigate, currentUser, on
             width: "100%",
             textAlign: "left"
           }}
-          onMouseEnter={(e) => e.currentTarget.style.color = "white"}
+          onMouseEnter={(e) => e.currentTarget.style.color = "var(--color-white)"}
           onMouseLeave={(e) => e.currentTarget.style.color = "#9ca3af"}
         >
           <LogOut size={16} />

@@ -111,6 +111,25 @@ export default function App() {
     return saved ? JSON.parse(saved) : null;
   });
 
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    const saved = localStorage.getItem("eventpulse_theme");
+    return saved === "dark";
+  });
+
+  const toggleDarkMode = () => {
+    setIsDarkMode(prev => !prev);
+  };
+
+  useEffect(() => {
+    if (isDarkMode) {
+      document.documentElement.setAttribute('data-theme', 'dark');
+      localStorage.setItem("eventpulse_theme", "dark");
+    } else {
+      document.documentElement.removeAttribute('data-theme');
+      localStorage.setItem("eventpulse_theme", "light");
+    }
+  }, [isDarkMode]);
+
   // Sync events with localStorage
   useEffect(() => {
     localStorage.setItem("eventpulse_events", JSON.stringify(events));
@@ -275,12 +294,8 @@ export default function App() {
   };
 
   const handleLoginSuccess = (userData) => {
-    showToast(`Welcome back, ${userData.name}!`);
-    setCurrentUser({
-      name: userData.name,
-      email: userData.email,
-      role: userData.role
-    });
+    showToast(`Welcome back, ${userData.fullName}!`);
+    setCurrentUser(userData);
     
     if (redirectAfterLogin) {
       setSelectedEvent(redirectAfterLogin.event);
@@ -328,6 +343,8 @@ export default function App() {
         }} 
         currentUser={currentUser} 
         onLogout={handleLogout}
+        isDarkMode={isDarkMode}
+        toggleDarkMode={toggleDarkMode}
       >
         {currentPage === "customer-dashboard" && (
           <DashboardPage currentUser={currentUser} events={events} onBookClick={handleBookClick} onNavigate={setCurrentPage} />
@@ -355,7 +372,7 @@ export default function App() {
           <SettingsPage />
         )}
         {currentPage === "customer-profile" && (
-          <ProfilePage currentUser={currentUser} />
+          <ProfilePage currentUser={currentUser} onUpdateUser={setCurrentUser} />
         )}
         {currentPage === "customer-notifications" && (
           <NotificationsPage />
@@ -402,6 +419,8 @@ export default function App() {
         onNavigate={setCurrentPage}
         currentUser={currentUser}
         onLogout={handleLogout}
+        isDarkMode={isDarkMode}
+        toggleDarkMode={toggleDarkMode}
       >
         {currentPage === "vendor-dashboard" && <VendorDashboard currentUser={currentUser} />}
         {currentPage === "vendor-services" && <ServiceListingsPage onNavigate={setCurrentPage} />}
@@ -409,7 +428,7 @@ export default function App() {
         {currentPage === "vendor-requests" && <VendorRequestsPage />}
         {currentPage === "vendor-availability" && <VendorAvailabilityPage />}
         {currentPage === "vendor-settings" && <VendorSettingsPage />}
-        {currentPage === "vendor-profile" && <VendorProfilePage currentUser={currentUser} />}
+        {currentPage === "vendor-profile" && <VendorProfilePage currentUser={currentUser} onUpdateUser={setCurrentUser} />}
       </VendorLayout>
     );
   }
@@ -419,6 +438,8 @@ export default function App() {
       {/* Scrollable container & Header */}
       {!isAdminPage && (
         <Navbar 
+          isDarkMode={isDarkMode}
+          toggleDarkMode={toggleDarkMode}
           onMobileDrawerOpen={() => setMobileDrawerOpen(true)} 
           onNavigate={(page) => {
             if (page === "events" || page === "discover") {
@@ -645,7 +666,7 @@ export default function App() {
           <div className="drawer-overlay" onClick={() => setMobileDrawerOpen(false)}></div>
           <div className={`mobile-nav-drawer ${mobileDrawerOpen ? "open" : ""}`}>
             <button 
-              style={{ position: "absolute", top: "1.25rem", right: "1.25rem", background: "transparent", color: "white", cursor: "pointer" }}
+              style={{ position: "absolute", top: "1.25rem", right: "1.25rem", background: "transparent", color: "var(--color-white)", cursor: "pointer" }}
               onClick={() => setMobileDrawerOpen(false)}
               aria-label="Close menu"
             >
@@ -686,17 +707,17 @@ export default function App() {
                       width: "36px",
                       height: "36px",
                       borderRadius: "50%",
-                      backgroundColor: currentUser.role === "admin" ? "#ef4444" : currentUser.role === "vendor" ? "#16a34a" : "#2563eb",
-                      color: "white",
+                      backgroundColor: currentUser.role === "admin" ? "var(--color-red-500)" : currentUser.role === "vendor" ? "#16a34a" : "var(--color-blue-600)",
+                      color: "var(--color-white)",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
                       fontWeight: 700
                     }}>
-                      {currentUser.name ? currentUser.name.split(" ").map(n => n[0]).join("") : "U"}
+                      {currentUser.fullName ? currentUser.fullName.split(" ").map(n => n[0]).join("") : "U"}
                     </div>
                     <div style={{ display: "flex", flexDirection: "column" }}>
-                      <span style={{ color: "white", fontSize: "0.85rem", fontWeight: 700 }}>{currentUser.name}</span>
+                      <span style={{ color: "var(--color-white)", fontSize: "0.85rem", fontWeight: 700 }}>{currentUser.fullName}</span>
                       <span style={{ color: "rgba(255, 255, 255, 0.6)", fontSize: "0.7rem", textTransform: "uppercase" }}>{currentUser.role}</span>
                     </div>
                   </div>

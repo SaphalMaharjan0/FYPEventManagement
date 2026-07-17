@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
+import { useAuth } from "../../hooks/useAuth";
 
 export default function LoginForm({
   onNavigateToRegister,
@@ -12,7 +13,9 @@ export default function LoginForm({
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState("");
 
-  const handleSubmit = (e) => {
+  const { login } = useAuth();
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
 
@@ -26,25 +29,12 @@ export default function LoginForm({
       return;
     }
 
-    // Determine role based on email
-    let role = "customer";
-    let userName = email.split("@")[0];
-    
-    if (email.toLowerCase().includes("admin")) {
-      role = "admin";
-      userName = "Admin User";
-    } else if (email.toLowerCase().includes("vendor")) {
-      role = "vendor";
-      userName = "Vendor Organizer";
-    } else {
-      userName = userName.charAt(0).toUpperCase() + userName.slice(1);
+    try {
+      const user = await login(email, password);
+      onLoginSuccess(user);
+    } catch (err) {
+      setError(err.message || "Failed to login. Please check your credentials.");
     }
-
-    onLoginSuccess({
-      email,
-      role,
-      name: userName
-    });
   };
 
   const handleQuickAccess = (type) => {
@@ -77,7 +67,7 @@ export default function LoginForm({
       </div>
 
       {error && (
-        <div style={{ color: "#ef4444", fontSize: "0.8rem", fontWeight: 700, backgroundColor: "#fef2f2", border: "1px solid #fca5a5", padding: "0.75rem", borderRadius: "8px", marginBottom: "1rem" }}>
+        <div style={{ color: "var(--color-red-500)", fontSize: "0.8rem", fontWeight: 700, backgroundColor: "var(--color-red-50)", border: "1px solid #fca5a5", padding: "0.75rem", borderRadius: "8px", marginBottom: "1rem" }}>
           {error}
         </div>
       )}
@@ -118,7 +108,7 @@ export default function LoginForm({
                 background: "none",
                 border: "none",
                 cursor: "pointer",
-                color: "#64748b",
+                color: "var(--color-slate-500)",
                 display: "flex",
                 alignItems: "center"
               }}

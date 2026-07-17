@@ -45,15 +45,15 @@ export default function RequestsPage() {
     <div style={{ maxWidth: "1400px", margin: "0 auto" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2rem" }}>
         <div>
-          <h1 style={{ fontSize: "1.75rem", fontWeight: "bold", color: "#0f172a", marginBottom: "0.25rem" }}>Service Requests</h1>
-          <p style={{ color: "#64748b", fontSize: "0.95rem" }}>Manage and respond to client booking requests.</p>
+          <h1 style={{ fontSize: "1.75rem", fontWeight: "bold", color: "var(--color-slate-900)", marginBottom: "0.25rem" }}>Service Requests</h1>
+          <p style={{ color: "var(--color-slate-500)", fontSize: "0.95rem" }}>Manage and respond to client booking requests.</p>
         </div>
-        <button style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.6rem 1rem", backgroundColor: "white", border: "1px solid #e2e8f0", borderRadius: "0.5rem", color: "#0f172a", fontWeight: "500", cursor: "pointer" }}>
+        <button style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.6rem 1rem", backgroundColor: "var(--color-white)", border: "1px solid #e2e8f0", borderRadius: "0.5rem", color: "var(--color-slate-900)", fontWeight: "500", cursor: "pointer" }}>
           <Filter size={18} /> Filter
         </button>
       </div>
 
-      <div style={{ backgroundColor: "white", borderRadius: "0.75rem", border: "1px solid #e2e8f0", overflow: "hidden", boxShadow: "0 1px 3px rgba(0,0,0,0.05)" }}>
+      <div style={{ backgroundColor: "var(--color-white)", borderRadius: "0.75rem", border: "1px solid #e2e8f0", overflow: "hidden", boxShadow: "0 1px 3px rgba(0,0,0,0.05)" }}>
         {/* Tabs */}
         <div style={{ display: "flex", borderBottom: "1px solid #e2e8f0", padding: "0 1.5rem" }}>
           {["All", "Pending", "Active", "Completed", "Rejected"].map(tab => {
@@ -67,7 +67,7 @@ export default function RequestsPage() {
                   background: "none",
                   border: "none",
                   borderBottom: isActive ? "2px solid #3b82f6" : "2px solid transparent",
-                  color: isActive ? "#3b82f6" : "#64748b",
+                  color: isActive ? "var(--color-blue-500)" : "var(--color-slate-500)",
                   fontWeight: isActive ? "600" : "500",
                   cursor: "pointer",
                   fontSize: "0.95rem",
@@ -82,33 +82,33 @@ export default function RequestsPage() {
 
         {/* Table */}
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
-          <thead style={{ backgroundColor: "#f8fafc", borderBottom: "1px solid #e2e8f0" }}>
+          <thead style={{ backgroundColor: "var(--color-slate-50)", borderBottom: "1px solid #e2e8f0" }}>
             <tr>
-              <th style={{ padding: "1rem 1.5rem", textAlign: "left", fontSize: "0.85rem", fontWeight: "600", color: "#64748b" }}>Request ID</th>
-              <th style={{ padding: "1rem 1.5rem", textAlign: "left", fontSize: "0.85rem", fontWeight: "600", color: "#64748b" }}>Client</th>
-              <th style={{ padding: "1rem 1.5rem", textAlign: "left", fontSize: "0.85rem", fontWeight: "600", color: "#64748b" }}>Service</th>
-              <th style={{ padding: "1rem 1.5rem", textAlign: "left", fontSize: "0.85rem", fontWeight: "600", color: "#64748b" }}>Event Date</th>
-              <th style={{ padding: "1rem 1.5rem", textAlign: "left", fontSize: "0.85rem", fontWeight: "600", color: "#64748b" }}>Amount</th>
-              <th style={{ padding: "1rem 1.5rem", textAlign: "left", fontSize: "0.85rem", fontWeight: "600", color: "#64748b" }}>Status</th>
-              <th style={{ padding: "1rem 1.5rem", textAlign: "center", fontSize: "0.85rem", fontWeight: "600", color: "#64748b" }}>Actions</th>
+              <th style={{ padding: "1rem 1.5rem", textAlign: "left", fontSize: "0.85rem", fontWeight: "600", color: "var(--color-slate-500)" }}>Request ID</th>
+              <th style={{ padding: "1rem 1.5rem", textAlign: "left", fontSize: "0.85rem", fontWeight: "600", color: "var(--color-slate-500)" }}>Client</th>
+              <th style={{ padding: "1rem 1.5rem", textAlign: "left", fontSize: "0.85rem", fontWeight: "600", color: "var(--color-slate-500)" }}>Service</th>
+              <th style={{ padding: "1rem 1.5rem", textAlign: "left", fontSize: "0.85rem", fontWeight: "600", color: "var(--color-slate-500)" }}>Event Date</th>
+              <th style={{ padding: "1rem 1.5rem", textAlign: "left", fontSize: "0.85rem", fontWeight: "600", color: "var(--color-slate-500)" }}>Amount</th>
+              <th style={{ padding: "1rem 1.5rem", textAlign: "left", fontSize: "0.85rem", fontWeight: "600", color: "var(--color-slate-500)" }}>Status</th>
+              <th style={{ padding: "1rem 1.5rem", textAlign: "center", fontSize: "0.85rem", fontWeight: "600", color: "var(--color-slate-500)" }}>Actions</th>
             </tr>
           </thead>
           <tbody>
             {filteredRequests.map((req, idx) => (
               <tr key={req.id} style={{ borderBottom: idx !== filteredRequests.length - 1 ? "1px solid #e2e8f0" : "none" }}>
-                <td style={{ padding: "1rem 1.5rem", fontSize: "0.9rem", color: "#3b82f6", fontWeight: "500" }}>{req.id}</td>
-                <td style={{ padding: "1rem 1.5rem", fontSize: "0.9rem", color: "#0f172a", fontWeight: "500" }}>{req.client}</td>
-                <td style={{ padding: "1rem 1.5rem", fontSize: "0.9rem", color: "#64748b" }}>{req.service}</td>
-                <td style={{ padding: "1rem 1.5rem", fontSize: "0.9rem", color: "#64748b" }}>{req.date}</td>
-                <td style={{ padding: "1rem 1.5rem", fontSize: "0.9rem", color: "#0f172a", fontWeight: "600" }}>{req.amount}</td>
+                <td style={{ padding: "1rem 1.5rem", fontSize: "0.9rem", color: "var(--color-blue-500)", fontWeight: "500" }}>{req.id}</td>
+                <td style={{ padding: "1rem 1.5rem", fontSize: "0.9rem", color: "var(--color-slate-900)", fontWeight: "500" }}>{req.client}</td>
+                <td style={{ padding: "1rem 1.5rem", fontSize: "0.9rem", color: "var(--color-slate-500)" }}>{req.service}</td>
+                <td style={{ padding: "1rem 1.5rem", fontSize: "0.9rem", color: "var(--color-slate-500)" }}>{req.date}</td>
+                <td style={{ padding: "1rem 1.5rem", fontSize: "0.9rem", color: "var(--color-slate-900)", fontWeight: "600" }}>{req.amount}</td>
                 <td style={{ padding: "1rem 1.5rem" }}>
                   <span style={{ 
                     padding: "0.25rem 0.75rem", 
                     borderRadius: "1rem", 
                     fontSize: "0.75rem", 
                     fontWeight: "600",
-                    backgroundColor: req.status === "Pending" ? "#fef3c7" : req.status === "Active" ? "#dcfce7" : req.status === "Rejected" ? "#fee2e2" : "#f1f5f9",
-                    color: req.status === "Pending" ? "#d97706" : req.status === "Active" ? "#16a34a" : req.status === "Rejected" ? "#dc2626" : "#475569",
+                    backgroundColor: req.status === "Pending" ? "#fef3c7" : req.status === "Active" ? "#dcfce7" : req.status === "Rejected" ? "#fee2e2" : "var(--color-slate-100)",
+                    color: req.status === "Pending" ? "#d97706" : req.status === "Active" ? "#16a34a" : req.status === "Rejected" ? "#dc2626" : "var(--color-slate-600)",
                   }}>
                     {req.status}
                   </span>
@@ -125,7 +125,7 @@ export default function RequestsPage() {
                         </button>
                       </>
                     )}
-                    <button style={{ padding: "0.4rem", backgroundColor: "#f1f5f9", color: "#64748b", border: "none", borderRadius: "0.25rem", cursor: "pointer" }} title="View Details">
+                    <button style={{ padding: "0.4rem", backgroundColor: "var(--color-slate-100)", color: "var(--color-slate-500)", border: "none", borderRadius: "0.25rem", cursor: "pointer" }} title="View Details">
                       <Eye size={16} />
                     </button>
                   </div>
@@ -134,7 +134,7 @@ export default function RequestsPage() {
             ))}
             {filteredRequests.length === 0 && (
               <tr>
-                <td colSpan="7" style={{ padding: "3rem 1.5rem", textAlign: "center", color: "#64748b" }}>
+                <td colSpan="7" style={{ padding: "3rem 1.5rem", textAlign: "center", color: "var(--color-slate-500)" }}>
                   No requests found for this status.
                 </td>
               </tr>

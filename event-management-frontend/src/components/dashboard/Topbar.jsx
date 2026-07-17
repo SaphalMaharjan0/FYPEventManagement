@@ -1,12 +1,12 @@
 import React from "react";
-import { Search, Bell } from "lucide-react";
+import { Search, Bell, Moon, Sun } from "lucide-react";
 
-export default function Topbar({ currentUser, onNavigate }) {
+export default function Topbar({ currentUser, onNavigate, isDarkMode, toggleDarkMode }) {
   return (
     <header style={{
       height: "70px",
-      backgroundColor: "white",
-      borderBottom: "1px solid #e2e8f0",
+      backgroundColor: "var(--color-white)",
+      borderBottom: "1px solid var(--color-slate-200)",
       display: "flex",
       alignItems: "center",
       justifyContent: "space-between",
@@ -20,12 +20,12 @@ export default function Topbar({ currentUser, onNavigate }) {
         <div style={{
           display: "flex",
           alignItems: "center",
-          backgroundColor: "#f1f5f9",
+          backgroundColor: "var(--color-slate-100)",
           borderRadius: "0.5rem",
           padding: "0.5rem 1rem",
           gap: "0.5rem"
         }}>
-          <Search size={18} color="#94a3b8" />
+          <Search size={18} color="var(--color-slate-400)" />
           <input
             type="text"
             placeholder="Search..."
@@ -34,7 +34,8 @@ export default function Topbar({ currentUser, onNavigate }) {
               backgroundColor: "transparent",
               outline: "none",
               width: "100%",
-              fontSize: "0.9rem"
+              fontSize: "0.9rem",
+              color: "var(--color-slate-900)"
             }}
           />
         </div>
@@ -43,17 +44,25 @@ export default function Topbar({ currentUser, onNavigate }) {
       {/* Right Actions */}
       <div style={{ display: "flex", alignItems: "center", gap: "1.5rem" }}>
         <button 
+          onClick={toggleDarkMode}
+          style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", color: "var(--color-slate-500)" }}
+          title="Toggle Dark Mode"
+        >
+          {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
+        </button>
+
+        <button 
           onClick={() => onNavigate && onNavigate("customer-notifications")}
           style={{ background: "none", border: "none", cursor: "pointer", position: "relative" }}
         >
-          <Bell size={20} color="#64748b" />
+          <Bell size={20} color="var(--color-slate-500)" />
           <span style={{
             position: "absolute",
             top: "-2px",
             right: "-2px",
             width: "8px",
             height: "8px",
-            backgroundColor: "#ef4444",
+            backgroundColor: "var(--color-red-500)",
             borderRadius: "50%"
           }}></span>
         </button>
@@ -64,8 +73,8 @@ export default function Topbar({ currentUser, onNavigate }) {
           width: "32px",
           height: "32px",
           borderRadius: "50%",
-          backgroundColor: "#2563eb",
-          color: "white",
+          backgroundColor: "var(--color-blue-600)",
+          color: "var(--color-white)",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",

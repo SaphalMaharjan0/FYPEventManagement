@@ -43,7 +43,7 @@ export default function BookingModal({ event, onClose, onBookingSuccess, initial
               <strong>{event.title}</strong>
             </p>
             
-            <div style={{ width: "100%", textAlign: "left", backgroundColor: "#f8fafc", padding: "1rem", borderRadius: "12px", border: "1px solid rgba(0,0,0,0.05)", marginBottom: "1.5rem", fontSize: "0.85rem" }}>
+            <div style={{ width: "100%", textAlign: "left", backgroundColor: "var(--color-slate-50)", padding: "1rem", borderRadius: "12px", border: "1px solid rgba(0,0,0,0.05)", marginBottom: "1.5rem", fontSize: "0.85rem" }}>
               <div style={{ display: "flex", justifyContent: "between", marginBottom: "0.5rem" }}>
                 <span style={{ color: "var(--text-muted)" }}>Order Reference:</span>
                 <span style={{ fontWeight: 700, marginLeft: "auto" }}>EP-{Math.floor(100000 + Math.random() * 900000)}</span>
@@ -54,7 +54,7 @@ export default function BookingModal({ event, onClose, onBookingSuccess, initial
               </div>
               <div style={{ display: "flex", justifyContent: "between" }}>
                 <span style={{ color: "var(--text-muted)" }}>Total Paid:</span>
-                <span style={{ fontWeight: 700, color: "#10b981", marginLeft: "auto" }}>${totalPrice}</span>
+                <span style={{ fontWeight: 700, color: "var(--color-green-500)", marginLeft: "auto" }}>${totalPrice}</span>
               </div>
             </div>
 

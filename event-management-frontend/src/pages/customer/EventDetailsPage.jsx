@@ -234,7 +234,7 @@ export default function EventDetailsPage({
               </button>
               
               {!currentUser && (
-                <div style={{ display: "flex", gap: "0.5rem", alignItems: "center", backgroundColor: "#fffbeb", padding: "0.75rem", borderRadius: "8px", border: "1px solid #fef3c7", fontSize: "0.75rem", color: "#b45309" }}>
+                <div style={{ display: "flex", gap: "0.5rem", alignItems: "center", backgroundColor: "var(--color-amber-50)", padding: "0.75rem", borderRadius: "8px", border: "1px solid #fef3c7", fontSize: "0.75rem", color: "var(--color-amber-700)" }}>
                   <ShieldAlert size={16} style={{ flexShrink: 0 }} />
                   <span>You must be logged in to reserve tickets.</span>
                 </div>
