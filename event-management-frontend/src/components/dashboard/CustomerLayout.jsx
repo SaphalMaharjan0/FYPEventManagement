@@ -13,7 +13,7 @@ export default function CustomerLayout({ children, currentPage, onNavigate, curr
       />
       
       <div style={{ flex: 1, marginLeft: "260px", display: "flex", flexDirection: "column" }}>
-        <Topbar currentUser={currentUser} />
+        <Topbar currentUser={currentUser} onNavigate={onNavigate} />
         
         <main style={{ flex: 1, padding: "2rem" }}>
           {children}

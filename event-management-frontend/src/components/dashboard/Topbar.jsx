@@ -1,7 +1,7 @@
 import React from "react";
 import { Search, Bell } from "lucide-react";
 
-export default function Topbar({ currentUser }) {
+export default function Topbar({ currentUser, onNavigate }) {
   return (
     <header style={{
       height: "70px",
@@ -42,7 +42,10 @@ export default function Topbar({ currentUser }) {
 
       {/* Right Actions */}
       <div style={{ display: "flex", alignItems: "center", gap: "1.5rem" }}>
-        <button style={{ background: "none", border: "none", cursor: "pointer", position: "relative" }}>
+        <button 
+          onClick={() => onNavigate && onNavigate("customer-notifications")}
+          style={{ background: "none", border: "none", cursor: "pointer", position: "relative" }}
+        >
           <Bell size={20} color="#64748b" />
           <span style={{
             position: "absolute",
@@ -55,7 +58,9 @@ export default function Topbar({ currentUser }) {
           }}></span>
         </button>
 
-        <div style={{
+        <div 
+          onClick={() => onNavigate && onNavigate("customer-profile")}
+          style={{
           width: "32px",
           height: "32px",
           borderRadius: "50%",

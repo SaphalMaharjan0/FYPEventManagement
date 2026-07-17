@@ -76,7 +76,7 @@ export default function BookingPage({ event, initialQuantity, onBookingSuccess, 
   }
 
   return (
-    <div style={{ maxWidth: "800px", margin: "0 auto" }}>
+    <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
       <button 
         onClick={() => onNavigate("event-details")}
         style={{ display: "flex", alignItems: "center", gap: "0.5rem", background: "none", border: "none", color: "#64748b", fontWeight: "500", cursor: "pointer", marginBottom: "2rem" }}

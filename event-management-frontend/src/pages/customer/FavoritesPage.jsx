@@ -13,7 +13,7 @@ export default function FavoritesPage({ events, onBookClick }) {
       {favorites.length > 0 ? (
         <div className="cards-grid">
           {favorites.map((event) => (
-            <EventCard key={event.id} event={event} onBook={() => onBookClick(event)} />
+            <EventCard key={event.id} event={event} onBookClick={() => onBookClick(event)} />
           ))}
         </div>
       ) : (

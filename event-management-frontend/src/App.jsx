@@ -24,9 +24,33 @@ import FavoritesPage from "./pages/customer/FavoritesPage";
 import SettingsPage from "./pages/customer/SettingsPage";
 import ProfilePage from "./pages/customer/ProfilePage";
 import BookingPage from "./pages/customer/BookingPage";
+import NotificationsPage from "./pages/customer/NotificationsPage";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import VendorDashboard from "./pages/vendor/VendorDashboard";
+import VendorLayout from "./components/vendor/VendorLayout";
+import ServiceListingsPage from "./pages/vendor/ServiceListingsPage";
+import AddServicePage from "./pages/vendor/AddServicePage";
+import VendorRequestsPage from "./pages/vendor/RequestsPage";
+import VendorAvailabilityPage from "./pages/vendor/AvailabilityPage";
+import VendorSettingsPage from "./pages/vendor/SettingsPage";
+import VendorProfilePage from "./pages/vendor/ProfilePage";
 import { eventsData, categoriesData, testimonialsData } from "./data/events";
+
+const pageToUrl = (page) => {
+  if (!page || page === "landing") return "/";
+  if (page.startsWith("customer-")) return `/customer/${page.replace("customer-", "")}`;
+  if (page.startsWith("admin-")) return `/admin/${page.replace("admin-", "")}`;
+  if (page.startsWith("vendor-")) return `/vendor/${page.replace("vendor-", "")}`;
+  return `/${page}`;
+};
+
+const urlToPage = (path) => {
+  if (!path || path === "/" || path === "") return "landing";
+  if (path.startsWith("/customer/")) return `customer-${path.replace("/customer/", "")}`;
+  if (path.startsWith("/admin/")) return `admin-${path.replace("/admin/", "")}`;
+  if (path.startsWith("/vendor/")) return `vendor-${path.replace("/vendor/", "")}`;
+  return path.substring(1);
+};
 
 export default function App() {
   const [events, setEvents] = useState(() => {
@@ -46,9 +70,21 @@ export default function App() {
 
   // Auth Routing & Session state
   const [currentPage, setCurrentPage] = useState(() => {
-    const savedPage = localStorage.getItem("eventpulse_page");
-    if (savedPage) return savedPage;
+    // 1. Check URL first
+    const path = window.location.pathname;
+    if (path && path !== "/") {
+      return urlToPage(path);
+    }
     
+    // 2. Check local storage if no URL
+    const savedPage = localStorage.getItem("eventpulse_page");
+    if (savedPage) {
+      // If we are recovering from storage on root path, replace the URL silently
+      window.history.replaceState({}, "", pageToUrl(savedPage));
+      return savedPage;
+    }
+    
+    // 3. Fallback based on user role
     const savedUserStr = localStorage.getItem("eventpulse_user");
     if (savedUserStr) {
       try {
@@ -89,10 +125,23 @@ export default function App() {
     }
   }, [currentUser]);
 
-  // Sync current page with localStorage
+  // Sync current page with localStorage and URL
   useEffect(() => {
     localStorage.setItem("eventpulse_page", currentPage);
+    const url = pageToUrl(currentPage);
+    if (window.location.pathname !== url) {
+      window.history.pushState({}, "", url);
+    }
   }, [currentPage]);
+
+  // Listen for Browser Back/Forward navigation
+  useEffect(() => {
+    const handlePopState = () => {
+      setCurrentPage(urlToPage(window.location.pathname));
+    };
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
 
   // Filter events whenever criteria changes
   const applyFilters = () => {
@@ -171,7 +220,11 @@ export default function App() {
 
   const handleBookClick = (eventItem) => {
     setSelectedEvent(eventItem);
-    setCurrentPage("event-details");
+    if (currentUser && currentUser.role === "customer") {
+      setCurrentPage("customer-event-details");
+    } else {
+      setCurrentPage("event-details");
+    }
   };
 
   const handleInitiateBooking = (eventItem, qty) => {
@@ -259,7 +312,7 @@ export default function App() {
 
   const isCustomerPage = currentPage.startsWith("customer-");
   const isAdminPage = currentPage === "admin-dashboard";
-  const isVendorPage = currentPage === "vendor-dashboard";
+  const isVendorPage = currentPage.startsWith("vendor-");
 
   if (isCustomerPage) {
     return (
@@ -304,6 +357,9 @@ export default function App() {
         {currentPage === "customer-profile" && (
           <ProfilePage currentUser={currentUser} />
         )}
+        {currentPage === "customer-notifications" && (
+          <NotificationsPage />
+        )}
         {currentPage === "customer-booking" && (
           <BookingPage 
             event={selectedEvent} 
@@ -312,14 +368,56 @@ export default function App() {
             onNavigate={setCurrentPage} 
           />
         )}
+        {currentPage === "customer-event-details" && (
+          <EventDetailsPage
+            event={selectedEvent}
+            allEvents={events}
+            onNavigate={(page, evt) => {
+              if (evt) {
+                setSelectedEvent(evt);
+              }
+              if (page === "landing") {
+                setCurrentPage("customer-dashboard");
+              } else if (page === "events") {
+                setCurrentPage("customer-events");
+              } else if (page === "event-details") {
+                setCurrentPage("customer-event-details");
+              } else {
+                setCurrentPage(page);
+              }
+            }}
+            onInitiateBooking={handleInitiateBooking}
+            currentUser={currentUser}
+            isDashboardContext={true}
+          />
+        )}
       </CustomerLayout>
+    );
+  }
+
+  if (isVendorPage) {
+    return (
+      <VendorLayout 
+        currentPage={currentPage}
+        onNavigate={setCurrentPage}
+        currentUser={currentUser}
+        onLogout={handleLogout}
+      >
+        {currentPage === "vendor-dashboard" && <VendorDashboard currentUser={currentUser} />}
+        {currentPage === "vendor-services" && <ServiceListingsPage onNavigate={setCurrentPage} />}
+        {currentPage === "vendor-add-service" && <AddServicePage />}
+        {currentPage === "vendor-requests" && <VendorRequestsPage />}
+        {currentPage === "vendor-availability" && <VendorAvailabilityPage />}
+        {currentPage === "vendor-settings" && <VendorSettingsPage />}
+        {currentPage === "vendor-profile" && <VendorProfilePage currentUser={currentUser} />}
+      </VendorLayout>
     );
   }
 
   return (
     <>
       {/* Scrollable container & Header */}
-      {!isAdminPage && !isVendorPage && (
+      {!isAdminPage && (
         <Navbar 
           onMobileDrawerOpen={() => setMobileDrawerOpen(true)} 
           onNavigate={(page) => {
@@ -336,7 +434,7 @@ export default function App() {
         />
       )}
       
-      {(isAdminPage || isVendorPage) && (
+      {isAdminPage && (
         <Navbar 
           onMobileDrawerOpen={() => setMobileDrawerOpen(true)} 
           onNavigate={setCurrentPage} 
@@ -349,7 +447,6 @@ export default function App() {
       {currentPage !== "landing" ? (
         <>
           {currentPage === "admin-dashboard" && <AdminDashboard currentUser={currentUser} />}
-          {currentPage === "vendor-dashboard" && <VendorDashboard currentUser={currentUser} />}
           {currentPage === "events" && (
             <EventListingPage
               events={events}

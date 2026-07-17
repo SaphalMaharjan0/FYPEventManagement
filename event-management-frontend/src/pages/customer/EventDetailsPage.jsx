@@ -7,7 +7,8 @@ export default function EventDetailsPage({
   allEvents,
   onNavigate,
   onInitiateBooking,
-  currentUser
+  currentUser,
+  isDashboardContext = false
 }) {
   const [quantity, setQuantity] = useState(1);
 
@@ -69,7 +70,7 @@ export default function EventDetailsPage({
   ];
 
   return (
-    <div className="details-page">
+    <div className="details-page" style={isDashboardContext ? { paddingTop: '1rem', marginTop: 0 } : {}}>
       <div className="container">
         {/* Breadcrumb Navigation */}
         <div className="details-breadcrumbs">
