@@ -31,6 +31,13 @@ export function useFetch() {
         data = await response.text();
       }
 
+      if (response.status === 401) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('eventpulse_user');
+        window.location.href = '/login';
+        throw new Error('Session expired. Please log in again.');
+      }
+
       if (!response.ok) {
         throw new Error(data?.message || data || 'Something went wrong');
       }

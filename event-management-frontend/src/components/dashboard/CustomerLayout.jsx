@@ -2,6 +2,8 @@ import React from "react";
 import Sidebar from "./Sidebar";
 import Topbar from "./Topbar";
 
+import { Outlet } from "react-router-dom";
+
 export default function CustomerLayout({ children, currentPage, onNavigate, currentUser, onLogout }) {
   return (
     <div style={{ display: "flex", minHeight: "100vh", backgroundColor: "var(--color-slate-50)" }}>
@@ -16,7 +18,7 @@ export default function CustomerLayout({ children, currentPage, onNavigate, curr
         <Topbar currentUser={currentUser} onNavigate={onNavigate} />
         
         <main style={{ flex: 1, padding: "2rem" }}>
-          {children}
+          {children || <Outlet />}
         </main>
       </div>
     </div>

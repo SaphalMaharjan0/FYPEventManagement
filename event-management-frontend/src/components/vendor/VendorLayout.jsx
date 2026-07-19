@@ -2,6 +2,8 @@ import React from "react";
 import VendorSidebar from "./VendorSidebar";
 import VendorTopbar from "./VendorTopbar";
 
+import { Outlet } from "react-router-dom";
+
 export default function VendorLayout({ children, currentPage, onNavigate, currentUser, onLogout }) {
   return (
     <div style={{ display: "flex", minHeight: "100vh", backgroundColor: "var(--color-slate-50)" }}>
@@ -20,7 +22,7 @@ export default function VendorLayout({ children, currentPage, onNavigate, curren
         
         {/* Page Content */}
         <main style={{ flex: 1, padding: "2rem" }}>
-          {children}
+          {children || <Outlet />}
         </main>
       </div>
     </div>

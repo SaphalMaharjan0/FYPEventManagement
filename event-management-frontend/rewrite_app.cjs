@@ -1,45 +1,31 @@
-import React, { useState, useEffect } from "react";
+const fs = require('fs');
+
+const content = `import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import AppRoutes from "./routes/AppRoutes";
 import { eventsData } from "./data/events";
-import { useFetch } from "./hooks/useFetch";
 
 const pageToUrl = (page) => {
   if (!page || page === "landing") return "/";
-  if (page.startsWith("customer-")) return `/customer/${page.replace("customer-", "")}`;
-  if (page.startsWith("admin-")) return `/admin/${page.replace("admin-", "")}`;
-  if (page.startsWith("vendor-")) return `/vendor/${page.replace("vendor-", "")}`;
+  if (page.startsWith("customer-")) return \`/customer/\${page.replace("customer-", "")}\`;
+  if (page.startsWith("admin-")) return \`/admin/\${page.replace("admin-", "")}\`;
+  if (page.startsWith("vendor-")) return \`/vendor/\${page.replace("vendor-", "")}\`;
   if (page === "events") return "/events";
   if (page === "discover") return "/discover";
   if (page === "event-details") return "/event-details";
   if (page === "login") return "/login";
   if (page === "register") return "/register";
   if (page === "forgot") return "/forgot";
-  return `/${page}`;
+  return \`/\${page}\`;
 };
 
 export default function App() {
   const navigate = useNavigate();
-  const fetchWithAuth = useFetch();
 
   const [events, setEvents] = useState(() => {
     const saved = localStorage.getItem("eventpulse_events");
     return saved ? JSON.parse(saved) : eventsData;
   });
-
-  useEffect(() => {
-    const loadEvents = async () => {
-      try {
-        const data = await fetchWithAuth('/api/events');
-        if (data && data.length > 0) {
-          setEvents(data);
-        }
-      } catch (err) {
-        console.error("Failed to load events from backend, falling back to default data", err);
-      }
-    };
-    loadEvents();
-  }, [fetchWithAuth]);
 
   const [activeCategory, setActiveCategory] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
@@ -174,8 +160,8 @@ export default function App() {
   };
 
   const handleRegisterSuccess = (userData) => {
-    showToast(`Account created! Welcome, ${userData.firstName}.`);
-    setCurrentUser({ name: `${userData.firstName} ${userData.lastName}`, email: userData.email, role: userData.role });
+    showToast(\`Account created! Welcome, \${userData.firstName}.\`);
+    setCurrentUser({ name: \`\${userData.firstName} \${userData.lastName}\`, email: userData.email, role: userData.role });
     if (redirectAfterLogin) {
       setSelectedEvent(redirectAfterLogin.event);
       setBookingQuantity(redirectAfterLogin.quantity);
@@ -191,7 +177,7 @@ export default function App() {
   };
 
   const handleLoginSuccess = (userData) => {
-    showToast(`Welcome back, ${userData.fullName}!`);
+    showToast(\`Welcome back, \${userData.fullName}!\`);
     setCurrentUser(userData);
     if (redirectAfterLogin) {
       setSelectedEvent(redirectAfterLogin.event);
@@ -208,7 +194,7 @@ export default function App() {
   };
 
   const handleResetSuccess = (email) => {
-    showToast(`Password reset link sent to ${email}`);
+    showToast(\`Password reset link sent to \${email}\`);
     onNavigate("login");
   };
 
@@ -260,3 +246,7 @@ export default function App() {
     </>
   );
 }
+`;
+
+fs.writeFileSync('src/App.jsx', content);
+console.log('Rewrote App.jsx');
