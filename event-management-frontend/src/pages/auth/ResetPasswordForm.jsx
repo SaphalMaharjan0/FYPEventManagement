@@ -5,7 +5,7 @@ export default function ResetPasswordForm({ onNavigateToLogin, onResetSuccess })
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
 
@@ -19,7 +19,24 @@ export default function ResetPasswordForm({ onNavigateToLogin, onResetSuccess })
       return;
     }
 
-    onResetSuccess(email);
+    try {
+      const response = await fetch("http://localhost:8080/api/auth/forgot-password", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email: email }),
+      });
+
+      if (response.ok) {
+        onResetSuccess(email);
+      } else {
+        const errorData = await response.json().catch(() => null);
+        setError(errorData?.message || "Failed to send reset link. Please try again.");
+      }
+    } catch (err) {
+      setError("Failed to connect to the server.");
+    }
   };
 
   return (

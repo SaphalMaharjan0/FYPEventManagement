@@ -21,6 +21,8 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
+    private final com.example.eventbooking.service.EmailService emailService;
+    private final com.example.eventbooking.repository.PasswordResetTokenRepository tokenRepository;
 
     public AuthResponse register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
@@ -74,5 +76,47 @@ public class AuthService {
                         .role(user.getRole())
                         .build())
                 .build();
+    }
+    public void generatePasswordResetToken(String email) {
+        var user = userRepository.findByEmail(email).orElse(null);
+        if (user == null) {
+            System.out.println("⚠️ FORGOT PASSWORD: User not found for email: " + email);
+            return;
+        }
+
+        // Delete any existing token for this user
+        tokenRepository.findByUser(user).ifPresent(tokenRepository::delete);
+
+        String token = java.util.UUID.randomUUID().toString();
+        
+        com.example.eventbooking.entity.PasswordResetToken resetToken = new com.example.eventbooking.entity.PasswordResetToken();
+        resetToken.setToken(token);
+        resetToken.setUser(user);
+        resetToken.setExpiryDate(java.time.LocalDateTime.now().plusMinutes(30));
+        
+        tokenRepository.save(resetToken);
+        
+        System.out.println("\n=======================================================");
+        System.out.println("🔑 PASSWORD RESET TOKEN GENERATED FOR: " + email);
+        System.out.println("🔗 RESET LINK: http://localhost:5173/reset-password?token=" + token);
+        System.out.println("=======================================================\n");
+
+        emailService.sendPasswordResetEmail(user.getEmail(), token);
+    }
+
+    public void resetPassword(String token, String newPassword) {
+        var resetToken = tokenRepository.findByToken(token)
+                .orElseThrow(() -> new RuntimeException("Invalid token"));
+
+        if (resetToken.isExpired()) {
+            tokenRepository.delete(resetToken);
+            throw new RuntimeException("Token expired");
+        }
+
+        User user = resetToken.getUser();
+        user.setPasswordHash(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+
+        tokenRepository.delete(resetToken);
     }
 }

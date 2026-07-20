@@ -8,14 +8,47 @@ export default function ProfilePage({ currentUser, onUpdateUser }) {
   const fetchWithAuth = useFetch();
   
   const [formData, setFormData] = useState({
-    firstName: currentUser?.fullName?.split(" ")[0] || "Marcus",
-    lastName: currentUser?.fullName?.split(" ")[1] || "Chen",
-    phone: currentUser?.phone || "(555) 123-4567",
+    firstName: currentUser?.fullName?.split(" ")[0] || "",
+    lastName: currentUser?.fullName?.split(" ")[1] || "",
+    phone: currentUser?.phone || "",
+    businessName: "",
+    businessDesc: "",
+    contactEmail: "",
+    contactPhone: "",
+    businessAddress: "",
+    payoutMethod: "bank",
+    payoutAccount: ""
   });
+
+  React.useEffect(() => {
+    const loadProfile = async () => {
+      try {
+        const vendorData = await fetchWithAuth("/api/vendor/profile");
+        if (vendorData) {
+          setFormData(prev => ({
+            ...prev,
+            businessName: vendorData.businessName || "",
+            businessDesc: vendorData.businessDesc || "",
+            contactEmail: vendorData.contactEmail || "",
+            contactPhone: vendorData.contactPhone || "",
+            businessAddress: vendorData.businessAddress || "",
+            payoutMethod: vendorData.payoutMethod || "bank",
+            payoutAccount: vendorData.payoutAccount || ""
+          }));
+        }
+      } catch (err) {
+        console.error("Failed to load vendor profile", err);
+      }
+    };
+    if (currentUser?.role === "vendor") {
+      loadProfile();
+    }
+  }, [currentUser, fetchWithAuth]);
 
   const handleSaveProfile = async () => {
     setIsSaving(true);
     try {
+      // 1. Update User Profile (Name, Phone)
       const updatedUser = await fetchWithAuth("/api/users/profile", {
         method: "PUT",
         body: JSON.stringify({
@@ -24,8 +57,23 @@ export default function ProfilePage({ currentUser, onUpdateUser }) {
         })
       });
 
+      // 2. Update Vendor Profile
+      await fetchWithAuth("/api/vendor/profile", {
+        method: "PUT",
+        body: JSON.stringify({
+          businessName: formData.businessName,
+          businessDesc: formData.businessDesc,
+          contactEmail: formData.contactEmail,
+          contactPhone: formData.contactPhone,
+          businessAddress: formData.businessAddress,
+          payoutMethod: formData.payoutMethod,
+          payoutAccount: formData.payoutAccount
+        })
+      });
+
       if (onUpdateUser) onUpdateUser(updatedUser);
       setIsEditing(false);
+      alert("Profile updated successfully!");
     } catch (err) {
       console.error(err);
       alert("Failed to update profile.");

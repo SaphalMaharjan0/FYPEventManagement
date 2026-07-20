@@ -1,7 +1,10 @@
 import React, { useState } from "react";
 import { Download, Eye, X, MapPin, Calendar, Clock, DollarSign, Tag, CheckCircle } from "lucide-react";
+import { useSettings } from "../../contexts/SettingsContext";
+import { formatPrice, formatDate } from "../../utils/formatting";
 
 export default function BookingHistoryPage({ events }) {
+  const { currency, region } = useSettings();
   const [selectedHistory, setSelectedHistory] = useState(null);
 
   // Use past events for booking history mock data
@@ -56,7 +59,7 @@ export default function BookingHistoryPage({ events }) {
                     <img src={item.image} alt={item.title} style={{ width: "40px", height: "40px", borderRadius: "0.25rem", objectFit: "cover" }} />
                     <div>
                       <div style={{ fontWeight: "600", color: "var(--color-slate-900)", fontSize: "0.9rem" }}>{item.title}</div>
-                      <div style={{ fontSize: "0.75rem", color: "var(--color-slate-500)" }}>{item.date}</div>
+                      <div style={{ fontSize: "0.75rem", color: "var(--color-slate-500)" }}>{formatDate(item.date, region) || item.date}</div>
                     </div>
                   </div>
                 </td>
@@ -74,7 +77,7 @@ export default function BookingHistoryPage({ events }) {
                     {item.status}
                   </span>
                 </td>
-                <td style={{ padding: "1rem 1.5rem", fontSize: "0.9rem", fontWeight: "600", color: "var(--color-slate-900)" }}>${item.pricePaid}</td>
+                <td style={{ padding: "1rem 1.5rem", fontSize: "0.9rem", fontWeight: "600", color: "var(--color-slate-900)" }}>{formatPrice(item.pricePaid, currency)}</td>
                 <td style={{ padding: "1rem 1.5rem", textAlign: "center" }}>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem" }}>
                     <button 
@@ -136,7 +139,7 @@ export default function BookingHistoryPage({ events }) {
                     <MapPin size={14} /> {selectedHistory.venue}
                   </p>
                   <p style={{ color: "var(--color-slate-500)", fontSize: "0.85rem", display: "flex", alignItems: "center", gap: "0.25rem" }}>
-                    <Calendar size={14} /> {selectedHistory.date} <Clock size={14} style={{ marginLeft: "0.5rem" }} /> {selectedHistory.time}
+                    <Calendar size={14} /> {formatDate(selectedHistory.date, region) || selectedHistory.date} <Clock size={14} style={{ marginLeft: "0.5rem" }} /> {selectedHistory.time}
                   </p>
                 </div>
               </div>
@@ -164,15 +167,15 @@ export default function BookingHistoryPage({ events }) {
                 <h4 style={{ fontSize: "0.9rem", fontWeight: "600", color: "var(--color-slate-900)", marginBottom: "0.75rem" }}>Payment Summary</h4>
                 <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.5rem", fontSize: "0.9rem", color: "var(--color-slate-500)" }}>
                   <span>Ticket Price ({selectedHistory.tickets}x)</span>
-                  <span>${selectedHistory.price}</span>
+                  <span>{formatPrice(selectedHistory.price, currency)}</span>
                 </div>
                 <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.5rem", fontSize: "0.9rem", color: "var(--color-slate-500)" }}>
                   <span>Taxes & Fees</span>
-                  <span>$0.00</span>
+                  <span>{formatPrice(0, currency)}</span>
                 </div>
                 <div style={{ display: "flex", justifyContent: "space-between", paddingTop: "0.5rem", borderTop: "1px dashed #cbd5e1", fontSize: "1rem", fontWeight: "bold", color: "var(--color-slate-900)" }}>
                   <span>Total Paid</span>
-                  <span>${selectedHistory.pricePaid}</span>
+                  <span>{formatPrice(selectedHistory.pricePaid, currency)}</span>
                 </div>
               </div>
             </div>

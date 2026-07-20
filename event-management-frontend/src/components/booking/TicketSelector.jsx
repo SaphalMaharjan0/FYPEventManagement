@@ -1,7 +1,10 @@
 import React, { useState } from "react";
 import { X, Check, Ticket } from "lucide-react";
+import { useSettings } from "../../contexts/SettingsContext";
+import { formatPrice, formatDate } from "../../utils/formatting";
 
 export default function BookingModal({ event, onClose, onBookingSuccess, initialQuantity }) {
+  const { currency, region } = useSettings();
   const [quantity, setQuantity] = useState(initialQuantity || 1);
   const [isSuccess, setIsSuccess] = useState(false);
 
@@ -54,7 +57,7 @@ export default function BookingModal({ event, onClose, onBookingSuccess, initial
               </div>
               <div style={{ display: "flex", justifyContent: "between" }}>
                 <span style={{ color: "var(--text-muted)" }}>Total Paid:</span>
-                <span style={{ fontWeight: 700, color: "var(--color-green-500)", marginLeft: "auto" }}>${totalPrice}</span>
+                <span style={{ fontWeight: 700, color: "var(--color-green-500)", marginLeft: "auto" }}>{formatPrice(totalPrice, currency)}</span>
               </div>
             </div>
 
@@ -79,14 +82,14 @@ export default function BookingModal({ event, onClose, onBookingSuccess, initial
                   <img src={event.image} alt={event.title} className="modal-event-thumbnail" />
                   <div className="modal-event-details">
                     <h4 className="modal-event-title">{event.title}</h4>
-                    <span className="modal-event-meta">{event.date} • {event.time}</span>
+                    <span className="modal-event-meta">{formatDate(event.date, region) || event.date} • {event.time}</span>
                   </div>
                 </div>
 
                 {/* Price Row */}
                 <div className="modal-row">
                   <span className="modal-row-label">Price per ticket</span>
-                  <span className="modal-price-val">${event.price}</span>
+                  <span className="modal-price-val">{formatPrice(event.price, currency)}</span>
                 </div>
 
                 {/* Quantity Row */}
@@ -116,7 +119,7 @@ export default function BookingModal({ event, onClose, onBookingSuccess, initial
                 {/* Total Price Row */}
                 <div className="modal-row" style={{ borderBottom: "none", paddingTop: "0.5rem" }}>
                   <span className="modal-row-label" style={{ fontSize: "1.05rem", fontWeight: 700 }}>Total</span>
-                  <span className="modal-total-val">${totalPrice}</span>
+                  <span className="modal-total-val">{formatPrice(totalPrice, currency)}</span>
                 </div>
               </div>
 

@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { Menu, X, Calendar, Moon, Sun } from "lucide-react";
+import { Menu, X, Calendar, Moon, Sun, Globe, DollarSign } from "lucide-react";
+import { useSettings } from "../../contexts/SettingsContext";
 
-export default function Header({ onMobileDrawerOpen, onNavigate, currentUser, onLogout, isAuthPage, isDarkMode, toggleDarkMode }) {
+export default function Header({ onMobileDrawerOpen, onNavigate, currentUser, onLogout, isAuthPage, isDarkMode, toggleDarkMode, solidBg }) {
   const [scrolled, setScrolled] = useState(false);
+  const { currency, setCurrency, region, setRegion } = useSettings();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -18,7 +20,7 @@ export default function Header({ onMobileDrawerOpen, onNavigate, currentUser, on
   }, []);
 
   return (
-    <header className={`header-wrapper ${scrolled || isAuthPage ? "scrolled" : ""}`}>
+    <header className={`header-wrapper ${scrolled || isAuthPage || solidBg ? "scrolled" : ""}`}>
       <div className="container header-container">
 
 
@@ -40,6 +42,54 @@ export default function Header({ onMobileDrawerOpen, onNavigate, currentUser, on
 
           {/* Desktop Actions */}
           <div className="header-actions">
+            <div style={{ display: "flex", gap: "0.5rem", marginRight: "1rem" }}>
+              <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
+                <Globe size={14} color="var(--color-white)" style={{ position: "absolute", left: "8px" }} />
+                <select 
+                  value={region} 
+                  onChange={(e) => setRegion(e.target.value)}
+                  style={{
+                    appearance: "none",
+                    background: "rgba(255, 255, 255, 0.1)",
+                    border: "1px solid rgba(255, 255, 255, 0.2)",
+                    color: "var(--color-white)",
+                    borderRadius: "20px",
+                    padding: "4px 12px 4px 28px",
+                    fontSize: "0.8rem",
+                    cursor: "pointer",
+                    outline: "none"
+                  }}
+                >
+                  <option value="US" style={{ color: "var(--text-dark)" }}>US (MM/DD/YY)</option>
+                  <option value="EU" style={{ color: "var(--text-dark)" }}>EU (DD/MM/YY)</option>
+                  <option value="UK" style={{ color: "var(--text-dark)" }}>UK (DD/MM/YY)</option>
+                </select>
+              </div>
+
+              <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
+                <select 
+                  value={currency} 
+                  onChange={(e) => setCurrency(e.target.value)}
+                  style={{
+                    appearance: "none",
+                    background: "rgba(255, 255, 255, 0.1)",
+                    border: "1px solid rgba(255, 255, 255, 0.2)",
+                    color: "var(--color-white)",
+                    borderRadius: "20px",
+                    padding: "4px 12px",
+                    fontSize: "0.8rem",
+                    cursor: "pointer",
+                    outline: "none"
+                  }}
+                >
+                  <option value="USD" style={{ color: "var(--text-dark)" }}>USD ($)</option>
+                  <option value="EUR" style={{ color: "var(--text-dark)" }}>EUR (€)</option>
+                  <option value="GBP" style={{ color: "var(--text-dark)" }}>GBP (£)</option>
+                  <option value="NPR" style={{ color: "var(--text-dark)" }}>NPR (Rs)</option>
+                </select>
+              </div>
+            </div>
+
             <button 
               onClick={toggleDarkMode}
               style={{

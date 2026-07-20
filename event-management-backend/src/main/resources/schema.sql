@@ -56,6 +56,11 @@ CREATE TABLE VENDORS (
     user_id         INTEGER         NOT NULL UNIQUE REFERENCES USERS(user_id) ON DELETE CASCADE,
     business_name   VARCHAR(150)    NOT NULL,
     business_desc   TEXT,
+    contact_email   VARCHAR(150),
+    contact_phone   VARCHAR(20),
+    business_address TEXT,
+    payout_method   VARCHAR(50),
+    payout_account  VARCHAR(150),
     is_verified     BOOLEAN         NOT NULL DEFAULT FALSE,
     created_at      TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP
 );

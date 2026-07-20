@@ -34,6 +34,7 @@ import DiscoverPage from '../pages/guest/DiscoverPage';
 import LoginPage from '../pages/auth/LoginPage';
 import RegisterPage from '../pages/auth/RegisterPage';
 import ResetPasswordForm from '../pages/auth/ResetPasswordForm';
+import NewPasswordPage from '../pages/auth/NewPasswordPage';
 
 // Home components
 import Hero from '../components/common/Hero';
@@ -70,8 +71,9 @@ export default function AppRoutes({
   handleSearchSubmit
 }) {
   const location = useLocation();
-  const isAuthPage = ['/login', '/register', '/forgot'].includes(location.pathname);
+  const isAuthPage = ['/login', '/register', '/forgot', '/reset-password'].includes(location.pathname);
   const isDashboard = location.pathname.startsWith('/customer') || location.pathname.startsWith('/vendor') || location.pathname.startsWith('/admin');
+  const isLandingPage = location.pathname === '/';
 
   return (
     <>
@@ -91,6 +93,7 @@ export default function AppRoutes({
           currentUser={currentUser} 
           onLogout={handleLogout} 
           isAuthPage={isAuthPage}
+          solidBg={!isLandingPage}
         />
       )}
 
@@ -269,6 +272,13 @@ export default function AppRoutes({
             <ResetPasswordForm
               onNavigateToLogin={() => onNavigate("login")}
               onResetSuccess={handleResetSuccess}
+            />
+          </AuthLayout>
+        } />
+        <Route path="/reset-password" element={
+          <AuthLayout onLogoClick={() => onNavigate("landing")}>
+            <NewPasswordPage
+              onNavigateToLogin={() => onNavigate("login")}
             />
           </AuthLayout>
         } />

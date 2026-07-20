@@ -1,7 +1,10 @@
 import React from "react";
 import { Calendar, Clock, MapPin, Star } from "lucide-react";
+import { useSettings } from "../../contexts/SettingsContext";
+import { formatPrice, formatDate } from "../../utils/formatting";
 
 export default function EventCard({ event, onBookClick }) {
+  const { currency, region } = useSettings();
   const {
     title,
     category,
@@ -25,7 +28,7 @@ export default function EventCard({ event, onBookClick }) {
       <div className="card-img-wrapper">
         <img src={image} alt={title} className="card-img" loading="lazy" />
         <span className="card-category-badge">{category}</span>
-        <span className="card-price-badge">${price}</span>
+        <span className="card-price-badge">{formatPrice(price, currency)}</span>
       </div>
 
       {/* Card Content Details */}
@@ -35,7 +38,7 @@ export default function EventCard({ event, onBookClick }) {
         <div className="card-meta-list">
           <div className="card-meta-item">
             <Calendar size={14} />
-            <span>{date}</span>
+            <span>{formatDate(date, region) || date}</span>
           </div>
           <div className="card-meta-item">
             <Clock size={14} />

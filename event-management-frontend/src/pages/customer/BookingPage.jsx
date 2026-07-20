@@ -1,7 +1,10 @@
 import React, { useState } from "react";
 import { Check, ArrowLeft, Ticket } from "lucide-react";
+import { useSettings } from "../../contexts/SettingsContext";
+import { formatPrice, formatDate } from "../../utils/formatting";
 
 export default function BookingPage({ event, initialQuantity, onBookingSuccess, onNavigate }) {
+  const { currency, region } = useSettings();
   const [quantity, setQuantity] = useState(initialQuantity || 1);
   const [isSuccess, setIsSuccess] = useState(false);
 
@@ -61,7 +64,7 @@ export default function BookingPage({ event, initialQuantity, onBookingSuccess, 
           </div>
           <div style={{ display: "flex", justifyContent: "space-between", borderTop: "1px solid #e2e8f0", paddingTop: "1rem", fontSize: "1.1rem" }}>
             <span style={{ color: "var(--color-slate-500)", fontWeight: "500" }}>Total Paid:</span>
-            <span style={{ fontWeight: "bold", color: "var(--color-green-500)" }}>${totalPrice}</span>
+            <span style={{ fontWeight: "bold", color: "var(--color-green-500)" }}>{formatPrice(totalPrice, currency)}</span>
           </div>
         </div>
 
@@ -94,11 +97,11 @@ export default function BookingPage({ event, initialQuantity, onBookingSuccess, 
             <img src={event.image} alt={event.title} style={{ width: "100%", height: "200px", objectFit: "cover" }} />
             <div style={{ padding: "1.5rem" }}>
               <h2 style={{ fontSize: "1.25rem", fontWeight: "bold", color: "var(--color-slate-900)", marginBottom: "0.5rem" }}>{event.title}</h2>
-              <p style={{ color: "var(--color-slate-500)", fontSize: "0.9rem", marginBottom: "1.5rem" }}>{event.date} · {event.venue}</p>
+              <p style={{ color: "var(--color-slate-500)", fontSize: "0.9rem", marginBottom: "1.5rem" }}>{formatDate(event.date, region) || event.date} · {event.venue}</p>
               
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderTop: "1px solid #e2e8f0", paddingTop: "1.5rem" }}>
                 <span style={{ fontWeight: "600", color: "var(--color-slate-900)" }}>General Admission</span>
-                <span style={{ fontWeight: "600", color: "var(--color-slate-900)" }}>${event.price} / ticket</span>
+                <span style={{ fontWeight: "600", color: "var(--color-slate-900)" }}>{formatPrice(event.price, currency)} / ticket</span>
               </div>
             </div>
           </div>
@@ -132,15 +135,15 @@ export default function BookingPage({ event, initialQuantity, onBookingSuccess, 
             <div style={{ backgroundColor: "var(--color-slate-50)", padding: "1.5rem", borderRadius: "1rem", border: "1px solid #e2e8f0" }}>
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.75rem", color: "var(--color-slate-500)" }}>
                 <span>Subtotal ({quantity} tickets)</span>
-                <span>${totalPrice}</span>
+                <span>{formatPrice(totalPrice, currency)}</span>
               </div>
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "1rem", color: "var(--color-slate-500)" }}>
                 <span>Taxes & Fees</span>
-                <span>$0.00</span>
+                <span>{formatPrice(0, currency)}</span>
               </div>
               <div style={{ display: "flex", justifyContent: "space-between", borderTop: "1px solid #e2e8f0", paddingTop: "1rem", fontSize: "1.25rem", fontWeight: "bold", color: "var(--color-slate-900)" }}>
                 <span>Total</span>
-                <span>${totalPrice}</span>
+                <span>{formatPrice(totalPrice, currency)}</span>
               </div>
             </div>
 
@@ -150,7 +153,7 @@ export default function BookingPage({ event, initialQuantity, onBookingSuccess, 
               onMouseEnter={(e) => e.target.style.backgroundColor = "var(--color-blue-600)"}
               onMouseLeave={(e) => e.target.style.backgroundColor = "var(--color-blue-500)"}
             >
-              Confirm Booking • ${totalPrice}
+              Confirm Booking • {formatPrice(totalPrice, currency)}
             </button>
           </form>
         </div>

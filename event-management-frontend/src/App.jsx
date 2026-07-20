@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import AppRoutes from "./routes/AppRoutes";
-import { eventsData } from "./data/events";
 import { useFetch } from "./hooks/useFetch";
 
 const pageToUrl = (page) => {
@@ -22,10 +21,7 @@ export default function App() {
   const navigate = useNavigate();
   const fetchWithAuth = useFetch();
 
-  const [events, setEvents] = useState(() => {
-    const saved = localStorage.getItem("eventpulse_events");
-    return saved ? JSON.parse(saved) : eventsData;
-  });
+  const [events, setEvents] = useState([]);
 
   useEffect(() => {
     const loadEvents = async () => {
@@ -35,7 +31,7 @@ export default function App() {
           setEvents(data);
         }
       } catch (err) {
-        console.error("Failed to load events from backend, falling back to default data", err);
+        console.error("Failed to load events from backend", err);
       }
     };
     loadEvents();
@@ -58,10 +54,7 @@ export default function App() {
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
   const [redirectAfterLogin, setRedirectAfterLogin] = useState(null);
 
-  const [currentUser, setCurrentUser] = useState(() => {
-    const saved = localStorage.getItem("eventpulse_user");
-    return saved ? JSON.parse(saved) : null;
-  });
+  const [currentUser, setCurrentUser] = useState(null);
 
   const [isDarkMode, setIsDarkMode] = useState(() => {
     const saved = localStorage.getItem("eventpulse_theme");
@@ -80,17 +73,9 @@ export default function App() {
     }
   }, [isDarkMode]);
 
-  useEffect(() => {
-    localStorage.setItem("eventpulse_events", JSON.stringify(events));
-  }, [events]);
 
-  useEffect(() => {
-    if (currentUser) {
-      localStorage.setItem("eventpulse_user", JSON.stringify(currentUser));
-    } else {
-      localStorage.removeItem("eventpulse_user");
-    }
-  }, [currentUser]);
+
+
 
   const onNavigate = (page) => {
     navigate(pageToUrl(page));

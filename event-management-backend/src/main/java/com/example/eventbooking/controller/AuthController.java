@@ -29,4 +29,20 @@ public class AuthController {
     ) {
         return ResponseEntity.ok(authService.login(request));
     }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<Void> forgotPassword(
+            @RequestBody com.example.eventbooking.dto.ForgotPasswordRequest request
+    ) {
+        authService.generatePasswordResetToken(request.getEmail());
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<Void> resetPassword(
+            @RequestBody com.example.eventbooking.dto.ResetPasswordRequest request
+    ) {
+        authService.resetPassword(request.getToken(), request.getNewPassword());
+        return ResponseEntity.ok().build();
+    }
 }
