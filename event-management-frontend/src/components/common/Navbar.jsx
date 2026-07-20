@@ -1,95 +1,235 @@
-import React, { useState, useEffect } from "react";
-import { Menu, X, Calendar, Moon, Sun } from "lucide-react";
+import React, { useState, useEffect, useRef } from "react";
+import { Menu, Calendar, Moon, Sun } from "lucide-react";
 
-export default function Header({ onMobileDrawerOpen, onNavigate, currentUser, onLogout, isAuthPage, isDarkMode, toggleDarkMode }) {
+export default function Header({
+  onMobileDrawerOpen,
+  onNavigate,
+  currentUser,
+  onLogout,
+  isAuthPage,
+  isDarkMode,
+  toggleDarkMode,
+  activePage = "landing",
+}) {
   const [scrolled, setScrolled] = useState(false);
+  const [visible, setVisible] = useState(true);
+  const lastScrollY = useRef(0);
 
   useEffect(() => {
     const handleScroll = () => {
-      if (window.scrollY > 20) {
+      const currentScrollY = window.scrollY;
+
+      // 1. Core background styling flag
+      if (currentScrollY > 20) {
         setScrolled(true);
       } else {
         setScrolled(false);
       }
+
+      // 2. Smart sticky logic (Show on scroll up, hide on scroll down)
+      if (currentScrollY <= 80) {
+        // Keep header visible at the very top of the page
+        setVisible(true);
+      } else if (currentScrollY > lastScrollY.current) {
+        // Scrolling down -> Hide header
+        setVisible(false);
+      } else {
+        // Scrolling up -> Show header
+        setVisible(true);
+      }
+
+      lastScrollY.current = currentScrollY;
     };
 
-    window.addEventListener("scroll", handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  const displayName = currentUser?.name || currentUser?.fullName || "User";
+  const displayRole = currentUser?.role || "member";
+
+  const isTransparent = !scrolled && !isAuthPage;
+
+  const headerBg = isTransparent
+    ? "transparent"
+    : isDarkMode
+      ? "rgba(21, 28, 46, 0.9)"
+      : "rgba(255, 255, 255, 0.9)";
+
+  const textColor = isTransparent ? "#ffffff" : "var(--text-main)";
+
+  const textSubtleColor = isTransparent
+    ? "rgba(255, 255, 255, 0.75)"
+    : "var(--text-subtle)";
+
+  const borderColor = isTransparent
+    ? "rgba(255, 255, 255, 0.15)"
+    : "var(--border-main)";
+
   return (
-    <header className={`header-wrapper ${scrolled || isAuthPage ? "scrolled" : ""}`}>
+    <header
+      style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        right: 0,
+        zIndex: 9999,
+        // Slide animation handles visibility cleanly
+        transform: visible ? "translateY(0)" : "translateY(-100%)",
+        backdropFilter: isTransparent ? "none" : "blur(12px)",
+        WebkitBackdropFilter: isTransparent ? "none" : "blur(12px)",
+        backgroundColor: headerBg,
+        borderBottom: `1px solid ${borderColor}`,
+        boxShadow: isTransparent ? "none" : "var(--shadow-sm)",
+        transition:
+          "transform 0.3s ease-in-out, background-color 0.3s, border-color 0.3s, box-shadow 0.3s",
+      }}
+    >
       <div className="container header-container">
-
-
-        {/* Main Header Bar */}
         <div className="header-main">
           {/* Logo */}
-          <div className="logo" onClick={() => onNavigate("landing")}>
+          <div
+            className="logo"
+            onClick={() => onNavigate("landing")}
+            style={{ cursor: "pointer" }}
+          >
             <div className="logo-icon">
               <Calendar size={18} />
             </div>
-            <span>EventPulse</span>
+            <span style={{ color: textColor, fontWeight: 700 }}>
+              EventPulse
+            </span>
           </div>
 
           {/* Desktop Nav Links */}
           <nav className="nav-links">
-            <span className="nav-link" style={{ cursor: "pointer" }} onClick={() => onNavigate("events")}>Events</span>
-            <span className="nav-link" style={{ cursor: "pointer" }} onClick={() => onNavigate("discover")}>Discover</span>
+            <span
+              className={`nav-link ${activePage === "events" ? "active" : ""}`}
+              onClick={() => onNavigate("events")}
+              style={{
+                cursor: "pointer",
+                color:
+                  activePage === "events"
+                    ? isTransparent
+                      ? "#ffffff"
+                      : "var(--primary)"
+                    : textSubtleColor,
+              }}
+            >
+              Events
+            </span>
+            <span
+              className={`nav-link ${activePage === "discover" ? "active" : ""}`}
+              onClick={() => onNavigate("discover")}
+              style={{
+                cursor: "pointer",
+                color:
+                  activePage === "discover"
+                    ? isTransparent
+                      ? "#ffffff"
+                      : "var(--primary)"
+                    : textSubtleColor,
+              }}
+            >
+              Discover
+            </span>
           </nav>
 
           {/* Desktop Actions */}
           <div className="header-actions">
-            <button 
+            <button
+              className="theme-toggle"
               onClick={toggleDarkMode}
+              title="Toggle Dark Mode"
               style={{
-                background: "rgba(255, 255, 255, 0.1)",
-                border: "1px solid rgba(255, 255, 255, 0.2)",
-                color: "var(--color-white)",
-                borderRadius: "50%",
-                width: "36px",
-                height: "36px",
+                background: isTransparent
+                  ? "rgba(255, 255, 255, 0.12)"
+                  : "var(--bg-counter-btn)",
+                border: `1px solid ${borderColor}`,
+                cursor: "pointer",
+                color: textColor,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                cursor: "pointer",
-                marginRight: "0.5rem"
+                width: "36px",
+                height: "36px",
+                borderRadius: "50%",
+                transition: "var(--transition-fast)",
               }}
-              title="Toggle Dark Mode"
             >
               {isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
             </button>
+
             {currentUser ? (
-              <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-                <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", justifyContent: "center" }}>
-                  <span style={{ color: "var(--color-white)", fontSize: "0.85rem", fontWeight: 700 }}>{currentUser.name}</span>
-                  <span style={{ color: "rgba(255, 255, 255, 0.6)", fontSize: "0.7rem", fontWeight: 600, textTransform: "uppercase" }}>{currentUser.role}</span>
+              <div
+                style={{ display: "flex", alignItems: "center", gap: "1rem" }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "flex-end",
+                  }}
+                >
+                  <span
+                    style={{
+                      color: textColor,
+                      fontSize: "0.85rem",
+                      fontWeight: 700,
+                    }}
+                  >
+                    {displayName}
+                  </span>
+                  <span
+                    style={{
+                      color: textSubtleColor,
+                      fontSize: "0.7rem",
+                      fontWeight: 600,
+                      textTransform: "uppercase",
+                    }}
+                  >
+                    {displayRole}
+                  </span>
                 </div>
-                <div style={{
-                  width: "36px",
-                  height: "36px",
-                  borderRadius: "50%",
-                  backgroundColor: currentUser.role === "admin" ? "var(--color-red-500)" : currentUser.role === "vendor" ? "#16a34a" : "var(--color-blue-600)",
-                  color: "var(--color-white)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontWeight: 700,
-                  fontSize: "0.85rem",
-                  boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
-                  border: "2px solid rgba(255, 255, 255, 0.2)"
-                }}>
-                  {currentUser.name ? currentUser.name.split(" ").map(n => n[0]).join("") : "U"}
+                <div
+                  style={{
+                    width: "36px",
+                    height: "36px",
+                    borderRadius: "50%",
+                    backgroundColor:
+                      currentUser.role === "admin"
+                        ? "var(--color-red-500)"
+                        : currentUser.role === "vendor"
+                          ? "#16a34a"
+                          : "var(--primary)",
+                    color: "white",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontWeight: 700,
+                    fontSize: "0.85rem",
+                    border: isTransparent
+                      ? "2px solid rgba(255,255,255,0.2)"
+                      : "2px solid var(--border-main)",
+                  }}
+                >
+                  {displayName
+                    ? displayName
+                        .split(" ")
+                        .map((n) => n[0])
+                        .join("")
+                    : "U"}
                 </div>
-                <button 
+                <button
+                  className="btn-logout"
                   onClick={onLogout}
                   style={{
-                    backgroundColor: "transparent",
-                    color: "var(--color-red-500)",
+                    color: textColor,
+                    background: "transparent",
+                    border: "none",
                     fontSize: "0.85rem",
-                    fontWeight: 600,
+                    fontWeight: "600",
                     cursor: "pointer",
-                    transition: "var(--transition-fast)"
                   }}
                 >
                   Log Out
@@ -97,14 +237,53 @@ export default function Header({ onMobileDrawerOpen, onNavigate, currentUser, on
               </div>
             ) : (
               <>
-                <button className="btn-login" onClick={() => onNavigate("login")}>Log In</button>
-                <button className="btn-getstarted" onClick={() => onNavigate("register")}>Get Started</button>
+                <button
+                  className="btn-login"
+                  onClick={() => onNavigate("login")}
+                  style={{
+                    color: textColor,
+                    background: "none",
+                    border: "none",
+                    fontSize: "0.85rem",
+                    fontWeight: "600",
+                    cursor: "pointer",
+                  }}
+                >
+                  Log In
+                </button>
+                <button
+                  className="btn-getstarted"
+                  onClick={() => onNavigate("register")}
+                  style={{
+                    backgroundColor: "var(--primary)",
+                    color: "white",
+                    border: "none",
+                    padding: "0.6rem 1.25rem",
+                    borderRadius: "var(--radius-md)",
+                    fontSize: "0.95rem",
+                    fontWeight: "600",
+                    cursor: "pointer",
+                    boxShadow: "0 4px 12px rgba(37, 99, 235, 0.2)",
+                  }}
+                >
+                  Get Started
+                </button>
               </>
             )}
           </div>
 
-          {/* Mobile Hamburguer Menu */}
-          <button className="menu-toggle" onClick={onMobileDrawerOpen} aria-label="Toggle Navigation">
+          {/* Mobile Hamburger Menu */}
+          <button
+            className="menu-toggle"
+            onClick={onMobileDrawerOpen}
+            aria-label="Toggle Navigation"
+            style={{
+              background: "none",
+              border: "none",
+              color: textColor,
+              cursor: "pointer",
+            }}
+          >
             <Menu size={24} />
           </button>
         </div>
