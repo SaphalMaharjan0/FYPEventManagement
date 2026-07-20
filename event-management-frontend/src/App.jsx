@@ -168,7 +168,7 @@ export default function App() {
       onNavigate(redirectAfterLogin.page);
       setRedirectAfterLogin(null);
     } else {
-      if (userData.role === "admin") onNavigate("admin-dashboard");
+      if (userData.role === "admin" || userData.role === "administrator") onNavigate("admin-dashboard");
       else if (userData.role === "vendor") onNavigate("vendor-dashboard");
       else if (userData.role === "customer") onNavigate("customer-dashboard");
       else onNavigate("landing");
@@ -185,7 +185,7 @@ export default function App() {
       onNavigate(redirectAfterLogin.page);
       setRedirectAfterLogin(null);
     } else {
-      if (userData.role === "admin") onNavigate("admin-dashboard");
+      if (userData.role === "admin" || userData.role === "administrator") onNavigate("admin-dashboard");
       else if (userData.role === "vendor") onNavigate("vendor-dashboard");
       else if (userData.role === "customer") onNavigate("customer-dashboard");
       else onNavigate("landing");

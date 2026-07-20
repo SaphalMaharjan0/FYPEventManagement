@@ -29,7 +29,15 @@ import VendorAvailabilityPage from '../pages/vendor/AvailabilityPage';
 import VendorSettingsPage from '../pages/vendor/SettingsPage';
 import VendorProfilePage from '../pages/vendor/ProfilePage';
 
+import AdminLayout from '../components/admin/AdminLayout';
 import AdminDashboard from '../pages/admin/AdminDashboard';
+import ManageUsersPage from '../pages/admin/ManageUsersPage';
+import ManageEventsPage from '../pages/admin/ManageEventsPage';
+import ReportsPage from '../pages/admin/ReportsPage';
+import ManageVendorsPage from '../pages/admin/ManageVendorsPage';
+import ManageBookingsPage from '../pages/admin/ManageBookingsPage';
+import AdminSettingsPage from '../pages/admin/AdminSettingsPage';
+
 import DiscoverPage from '../pages/guest/DiscoverPage';
 import LoginPage from '../pages/auth/LoginPage';
 import RegisterPage from '../pages/auth/RegisterPage';
@@ -354,17 +362,22 @@ export default function AppRoutes({
 
         {/* Admin Routes */}
         <Route path="/admin" element={
-          <ProtectedRoute currentUser={currentUser} allowedRoles={['admin']}>
-            <Navbar 
-              onMobileDrawerOpen={() => setMobileDrawerOpen(true)} 
-              onNavigate={onNavigate} 
-              currentUser={currentUser} 
-              onLogout={handleLogout} 
-              isAuthPage={true}
+          <ProtectedRoute currentUser={currentUser} allowedRoles={['admin', 'administrator']}>
+            <AdminLayout 
+              currentPage={location.pathname.replace('/admin/', 'admin-')}
+              onNavigate={onNavigate}
+              currentUser={currentUser}
+              onLogout={handleLogout}
             />
           </ProtectedRoute>
         }>
           <Route path="dashboard" element={<AdminDashboard currentUser={currentUser} />} />
+          <Route path="users" element={<ManageUsersPage />} />
+          <Route path="events" element={<ManageEventsPage />} />
+          <Route path="vendors" element={<ManageVendorsPage />} />
+          <Route path="bookings" element={<ManageBookingsPage />} />
+          <Route path="reports" element={<ReportsPage />} />
+          <Route path="settings" element={<AdminSettingsPage />} />
         </Route>
         
         {/* Fallback */}

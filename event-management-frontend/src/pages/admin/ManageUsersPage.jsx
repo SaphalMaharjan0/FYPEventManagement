@@ -1,0 +1,316 @@
+import React, { useState, useEffect } from "react";
+import { Plus, Search, Eye, EyeOff, Edit2, Trash2, Filter, X } from "lucide-react";
+import { useFetch } from "../../hooks/useFetch";
+
+export default function ManageUsersPage() {
+  const fetchWithAuth = useFetch();
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingUser, setEditingUser] = useState(null);
+  const [showPassword, setShowPassword] = useState(false);
+
+  useEffect(() => {
+    const loadUsers = async () => {
+      try {
+        const data = await fetchWithAuth("/api/admin/users");
+        setUsers(data || []);
+      } catch (err) {
+        console.error("Failed to load admin users", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadUsers();
+  }, [fetchWithAuth]);
+
+  const getRoleStyle = (role) => {
+    switch (role) {
+      case "Vendor": return { bg: "#fef3c7", text: "#b45309" }; // amber
+      case "Admin": return { bg: "#eff6ff", text: "#1d4ed8" }; // blue
+      default: return { bg: "#f1f5f9", text: "#475569" }; // slate (Customer)
+    }
+  };
+
+  const getStatusStyle = (status) => {
+    switch (status) {
+      case "Active": return { bg: "#ecfdf5", text: "#047857" }; // green
+      case "Inactive": return { bg: "#fef2f2", text: "#b91c1c" }; // red
+      case "Pending": return { bg: "#fffbeb", text: "#d97706" }; // yellow
+      default: return { bg: "#f1f5f9", text: "#475569" };
+    }
+  };
+
+  const handleEditClick = (user) => {
+    setEditingUser(user);
+    setIsEditModalOpen(true);
+  };
+
+  const handleUpdateUser = async (e) => {
+    e.preventDefault();
+    try {
+      const updated = await fetchWithAuth(`/api/admin/users/${editingUser.dbId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(editingUser),
+      });
+      if (updated) {
+        setUsers(users.map(u => u.dbId === updated.dbId ? updated : u));
+        setIsEditModalOpen(false);
+      }
+    } catch (err) {
+      console.error("Failed to update user", err);
+      alert("Failed to update user.");
+    }
+  };
+
+  return (
+    <div style={{ maxWidth: "1400px", margin: "0 auto" }}>
+      {/* Header */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2rem" }}>
+        <h1 style={{ fontSize: "1.75rem", fontWeight: "bold", color: "var(--color-slate-900)" }}>User Management</h1>
+        <button style={{ 
+          display: "flex", alignItems: "center", gap: "0.5rem", 
+          padding: "0.6rem 1.25rem", backgroundColor: "#3b82f6", color: "white", 
+          border: "none", borderRadius: "8px", fontWeight: "600", fontSize: "0.9rem",
+          cursor: "pointer", transition: "background-color 0.2s"
+        }}>
+          <Plus size={16} />
+          Add User
+        </button>
+      </div>
+
+      {/* Main Content Area */}
+      <div style={{ backgroundColor: "var(--color-white)", borderRadius: "12px", border: "1px solid #e2e8f0", overflow: "hidden" }}>
+        
+        {/* Search and Filter Bar */}
+        <div style={{ padding: "1.5rem", borderBottom: "1px solid #e2e8f0", display: "flex", gap: "1rem" }}>
+          <div style={{
+            flex: 1,
+            display: "flex",
+            alignItems: "center",
+            backgroundColor: "var(--color-slate-50)",
+            borderRadius: "8px",
+            padding: "0.6rem 1rem",
+            border: "1px solid #e2e8f0"
+          }}>
+            <Search size={18} color="var(--color-slate-400)" />
+            <input 
+              type="text" 
+              placeholder="Search users by name or email..." 
+              style={{
+                border: "none",
+                backgroundColor: "transparent",
+                outline: "none",
+                marginLeft: "0.75rem",
+                width: "100%",
+                fontSize: "0.9rem",
+                color: "var(--color-slate-900)"
+              }}
+            />
+          </div>
+          
+          <button style={{
+            display: "flex", alignItems: "center", justifyContent: "center",
+            padding: "0 1rem", backgroundColor: "var(--color-slate-50)",
+            border: "1px solid #e2e8f0", borderRadius: "8px", color: "var(--color-slate-600)",
+            cursor: "pointer"
+          }}>
+            <Filter size={18} />
+          </button>
+        </div>
+
+        {/* Users Table */}
+        <div style={{ overflowX: "auto" }}>
+          <table style={{ width: "100%", borderCollapse: "collapse", minWidth: "900px" }}>
+            <thead style={{ backgroundColor: "var(--color-slate-50)", borderBottom: "1px solid #e2e8f0" }}>
+              <tr>
+                <th style={{ padding: "1rem 1.5rem", textAlign: "left", fontSize: "0.85rem", fontWeight: "600", color: "var(--color-slate-500)" }}>User ID</th>
+                <th style={{ padding: "1rem 1.5rem", textAlign: "left", fontSize: "0.85rem", fontWeight: "600", color: "var(--color-slate-500)" }}>Name</th>
+                <th style={{ padding: "1rem 1.5rem", textAlign: "left", fontSize: "0.85rem", fontWeight: "600", color: "var(--color-slate-500)" }}>Email</th>
+                <th style={{ padding: "1rem 1.5rem", textAlign: "left", fontSize: "0.85rem", fontWeight: "600", color: "var(--color-slate-500)" }}>Role</th>
+                <th style={{ padding: "1rem 1.5rem", textAlign: "left", fontSize: "0.85rem", fontWeight: "600", color: "var(--color-slate-500)" }}>Status</th>
+                <th style={{ padding: "1rem 1.5rem", textAlign: "left", fontSize: "0.85rem", fontWeight: "600", color: "var(--color-slate-500)" }}>Registered</th>
+                <th style={{ padding: "1rem 1.5rem", textAlign: "right", fontSize: "0.85rem", fontWeight: "600", color: "var(--color-slate-500)" }}>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {loading ? (
+                <tr>
+                  <td colSpan="7" style={{ padding: "1.5rem", textAlign: "center", color: "var(--color-slate-500)" }}>Loading users...</td>
+                </tr>
+              ) : users.length === 0 ? (
+                <tr>
+                  <td colSpan="7" style={{ padding: "1.5rem", textAlign: "center", color: "var(--color-slate-500)" }}>No users found.</td>
+                </tr>
+              ) : (
+                users.map((user, idx) => (
+                  <tr key={user.id} style={{ borderBottom: idx !== users.length - 1 ? "1px solid #e2e8f0" : "none" }}>
+                    <td style={{ padding: "1rem 1.5rem", fontSize: "0.85rem", color: "var(--color-slate-500)", fontFamily: "monospace" }}>{user.id}</td>
+                    <td style={{ padding: "1rem 1.5rem" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+                        <div style={{ width: "32px", height: "32px", borderRadius: "50%", backgroundColor: "#e0e7ff", color: "#4f46e5", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: "bold", fontSize: "0.8rem" }}>
+                          {user.name ? user.name.substring(0,2).toUpperCase() : "U"}
+                        </div>
+                        <span style={{ fontWeight: "500", color: "var(--color-slate-900)", fontSize: "0.95rem" }}>{user.name}</span>
+                      </div>
+                    </td>
+                    <td style={{ padding: "1rem 1.5rem", fontSize: "0.9rem", color: "var(--color-slate-600)" }}>{user.email}</td>
+                    <td style={{ padding: "1rem 1.5rem" }}>
+                      <span style={{ 
+                        backgroundColor: getRoleStyle(user.role).bg, 
+                        color: getRoleStyle(user.role).text, 
+                        padding: "0.25rem 0.6rem", 
+                        borderRadius: "1rem", 
+                        fontSize: "0.75rem", 
+                        fontWeight: "600",
+                        textTransform: "capitalize"
+                      }}>
+                        {user.role}
+                      </span>
+                    </td>
+                    <td style={{ padding: "1rem 1.5rem" }}>
+                      <span style={{ 
+                        backgroundColor: getStatusStyle(user.status).bg, 
+                        color: getStatusStyle(user.status).text, 
+                        padding: "0.25rem 0.6rem", 
+                        borderRadius: "1rem", 
+                        fontSize: "0.75rem", 
+                        fontWeight: "600" 
+                      }}>
+                        {user.status}
+                      </span>
+                    </td>
+                    <td style={{ padding: "1rem 1.5rem", fontSize: "0.9rem", color: "var(--color-slate-600)" }}>{user.joinedDate || user.registered}</td>
+                    <td style={{ padding: "1rem 1.5rem", textAlign: "right" }}>
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: "0.75rem" }}>
+                        <button style={{ background: "none", border: "none", color: "var(--color-slate-400)", cursor: "pointer" }}><Eye size={16} /></button>
+                        <button onClick={() => handleEditClick(user)} style={{ background: "none", border: "none", color: "var(--color-blue-500)", cursor: "pointer" }}><Edit2 size={16} /></button>
+                        <button style={{ background: "none", border: "none", color: "var(--color-slate-400)", cursor: "pointer" }}><Trash2 size={16} /></button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Pagination */}
+        <div style={{ padding: "1rem 1.5rem", borderTop: "1px solid #e2e8f0", display: "flex", justifyContent: "space-between", alignItems: "center", color: "var(--color-slate-500)", fontSize: "0.9rem" }}>
+          <span>Showing {users.length} users</span>
+          <div style={{ display: "flex", gap: "0.25rem" }}>
+            <button style={{ padding: "0.4rem 0.75rem", border: "1px solid #e2e8f0", backgroundColor: "white", borderRadius: "6px", cursor: "pointer" }}>&larr;</button>
+            <button style={{ padding: "0.4rem 0.75rem", border: "none", backgroundColor: "#3b82f6", color: "white", borderRadius: "6px", fontWeight: "500", cursor: "pointer" }}>1</button>
+            <button style={{ padding: "0.4rem 0.75rem", border: "1px solid transparent", backgroundColor: "transparent", borderRadius: "6px", cursor: "pointer" }}>2</button>
+            <button style={{ padding: "0.4rem 0.75rem", border: "1px solid transparent", backgroundColor: "transparent", borderRadius: "6px", cursor: "pointer" }}>3</button>
+            <button style={{ padding: "0.4rem 0.75rem", border: "1px solid #e2e8f0", backgroundColor: "white", borderRadius: "6px", cursor: "pointer" }}>&rarr;</button>
+          </div>
+        </div>
+
+      </div>
+
+      {/* Edit User Modal */}
+      {isEditModalOpen && editingUser && (
+        <div style={{
+          position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: "rgba(0,0,0,0.5)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 1000
+        }}>
+          <div style={{
+            backgroundColor: "white", padding: "2rem", borderRadius: "12px", width: "100%", maxWidth: "500px"
+          }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
+              <h2 style={{ fontSize: "1.25rem", fontWeight: "bold" }}>Edit User</h2>
+              <button onClick={() => setIsEditModalOpen(false)} style={{ background: "none", border: "none", cursor: "pointer" }}>
+                <X size={20} />
+              </button>
+            </div>
+            
+            <form onSubmit={handleUpdateUser} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+              <div>
+                <label style={{ display: "block", marginBottom: "0.5rem", fontSize: "0.9rem", fontWeight: "500" }}>Name</label>
+                <input 
+                  type="text" 
+                  value={editingUser.name} 
+                  onChange={(e) => setEditingUser({...editingUser, name: e.target.value})}
+                  required
+                  style={{ width: "100%", padding: "0.75rem", borderRadius: "6px", border: "1px solid #e2e8f0" }}
+                />
+              </div>
+              
+              <div>
+                <label style={{ display: "block", marginBottom: "0.5rem", fontSize: "0.9rem", fontWeight: "500" }}>Email</label>
+                <input 
+                  type="email" 
+                  value={editingUser.email} 
+                  onChange={(e) => setEditingUser({...editingUser, email: e.target.value})}
+                  required
+                  style={{ width: "100%", padding: "0.75rem", borderRadius: "6px", border: "1px solid #e2e8f0" }}
+                />
+              </div>
+              
+              <div>
+                <label style={{ display: "block", marginBottom: "0.5rem", fontSize: "0.9rem", fontWeight: "500" }}>Role</label>
+                <select 
+                  value={editingUser.role} 
+                  onChange={(e) => setEditingUser({...editingUser, role: e.target.value})}
+                  style={{ width: "100%", padding: "0.75rem", borderRadius: "6px", border: "1px solid #e2e8f0" }}
+                >
+                  <option value="customer">Customer</option>
+                  <option value="vendor">Vendor</option>
+                  <option value="administrator">Administrator</option>
+                </select>
+              </div>
+
+              <div>
+                <label style={{ display: "block", marginBottom: "0.5rem", fontSize: "0.9rem", fontWeight: "500" }}>Status</label>
+                <select 
+                  value={editingUser.status} 
+                  onChange={(e) => setEditingUser({...editingUser, status: e.target.value})}
+                  style={{ width: "100%", padding: "0.75rem", borderRadius: "6px", border: "1px solid #e2e8f0" }}
+                >
+                  <option value="Active">Active</option>
+                  <option value="Inactive">Inactive</option>
+                </select>
+              </div>
+
+              <div>
+                <label style={{ display: "block", marginBottom: "0.5rem", fontSize: "0.9rem", fontWeight: "500" }}>New Password (Leave blank to keep current)</label>
+                <div style={{ position: "relative" }}>
+                  <input 
+                    type={showPassword ? "text" : "password"} 
+                    value={editingUser.password || ""} 
+                    onChange={(e) => setEditingUser({...editingUser, password: e.target.value})}
+                    style={{ width: "100%", padding: "0.75rem", paddingRight: "3rem", borderRadius: "6px", border: "1px solid #e2e8f0" }}
+                    placeholder="Enter new password"
+                  />
+                  <button 
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    style={{ 
+                      position: "absolute", right: "0.75rem", top: "50%", transform: "translateY(-50%)", 
+                      background: "none", border: "none", color: "var(--color-slate-400)", cursor: "pointer", display: "flex" 
+                    }}
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+              </div>
+
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: "1rem", marginTop: "1rem" }}>
+                <button type="button" onClick={() => setIsEditModalOpen(false)} style={{ padding: "0.75rem 1.5rem", border: "1px solid #e2e8f0", borderRadius: "6px", backgroundColor: "white", cursor: "pointer" }}>
+                  Cancel
+                </button>
+                <button type="submit" style={{ padding: "0.75rem 1.5rem", border: "none", borderRadius: "6px", backgroundColor: "#3b82f6", color: "white", fontWeight: "600", cursor: "pointer" }}>
+                  Save Changes
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+    </div>
+  );
+}
