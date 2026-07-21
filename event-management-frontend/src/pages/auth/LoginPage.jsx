@@ -62,29 +62,29 @@ export default function LoginPage({
     });
   };
 
-  // Adaptive Inline Theme Styles
+  // Adaptive Compact Inline Styles
   const pageContainerStyle = {
-    minHeight: "100vh",
     width: "100%",
+    maxWidth: "100%",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: "var(--bg-body-alt)",
     fontFamily: "var(--font-body)",
     color: "var(--text-main)",
-    padding: "2rem 1rem",
+    padding: "1rem",
     boxSizing: "border-box",
-    position: "relative",
     transition: "var(--transition-fast)",
   };
 
   const cardStyle = {
+    position: "relative",
     width: "100%",
-    maxWidth: "440px",
+    maxWidth: "520px",
     backgroundColor: "var(--bg-card)",
     border: "1px solid var(--border-main)",
     borderRadius: "var(--radius-md)",
-    padding: "2.5rem 2rem",
+    padding: "2.25rem 2rem 1.75rem 2rem", // Reduced top/bottom padding
     boxShadow: "var(--shadow-md)",
     boxSizing: "border-box",
     transition: "var(--transition-fast)",
@@ -92,11 +92,11 @@ export default function LoginPage({
 
   const inputStyle = {
     width: "100%",
-    padding: "0.65rem 0.75rem",
+    padding: "0.7rem 0.85rem", // Slightly shorter input height
     backgroundColor: "var(--bg-body-alt)",
     border: "1px solid var(--border-input)",
     borderRadius: "var(--radius-sm)",
-    fontSize: "0.9rem",
+    fontSize: "0.95rem",
     color: "var(--text-main)",
     outline: "none",
     boxSizing: "border-box",
@@ -105,15 +105,15 @@ export default function LoginPage({
 
   const labelStyle = {
     display: "block",
-    fontSize: "0.85rem",
+    fontSize: "0.875rem",
     fontWeight: "600",
     color: "var(--text-main)",
-    marginBottom: "0.4rem",
+    marginBottom: "0.35rem",
   };
 
   const linkStyle = {
     color: "var(--primary)",
-    fontSize: "0.85rem",
+    fontSize: "0.875rem",
     fontWeight: "600",
     cursor: "pointer",
     textDecoration: "none",
@@ -121,30 +121,32 @@ export default function LoginPage({
 
   return (
     <div style={pageContainerStyle}>
-      {/* Back to Home Navigation Button */}
-      <button
-        onClick={onNavigateHome}
-        style={{
-          position: "absolute",
-          top: "1.5rem",
-          left: "1.5rem",
-          display: "flex",
-          alignItems: "center",
-          gap: "0.5rem",
-          background: "none",
-          border: "none",
-          color: "var(--text-subtle)",
-          fontSize: "0.9rem",
-          fontWeight: "600",
-          cursor: "pointer",
-          padding: "0.5rem",
-        }}
-      >
-        <ArrowLeft size={16} />
-        Back to Home
-      </button>
-
       <div style={cardStyle}>
+        {/* Back to Home Navigation Button */}
+        <button
+          onClick={onNavigateHome}
+          style={{
+            position: "absolute",
+            top: "1rem",
+            left: "1rem",
+            display: "flex",
+            alignItems: "center",
+            gap: "0.35rem",
+            background: "none",
+            border: "none",
+            color: "var(--text-subtle)",
+            fontSize: "0.8rem",
+            fontWeight: "600",
+            cursor: "pointer",
+            padding: "0.25rem 0.4rem",
+            borderRadius: "var(--radius-sm)",
+            transition: "var(--transition-fast)",
+          }}
+        >
+          <ArrowLeft size={16} />
+          Back to Home
+        </button>
+
         {/* Branding Logo */}
         <div
           style={{
@@ -152,16 +154,16 @@ export default function LoginPage({
             alignItems: "center",
             justifyContent: "center",
             gap: "0.5rem",
-            marginBottom: "1.5rem",
+            marginBottom: "1rem",
           }}
         >
           <div style={{ color: "var(--primary)" }}>
-            <Calendar size={24} />
+            <Calendar size={26} />
           </div>
           <span
             style={{
               fontFamily: "var(--font-heading)",
-              fontSize: "1.4rem",
+              fontSize: "1.5rem",
               fontWeight: "700",
               color: "var(--text-main)",
             }}
@@ -171,13 +173,13 @@ export default function LoginPage({
         </div>
 
         {/* Header Titles */}
-        <div style={{ textAlign: "center", marginBottom: "2rem" }}>
+        <div style={{ textAlign: "center", marginBottom: "1.25rem" }}>
           <h3
             style={{
               fontFamily: "var(--font-heading)",
               fontSize: "1.5rem",
               fontWeight: "700",
-              margin: "0 0 0.35rem 0",
+              margin: "0 0 0.25rem 0",
               color: "var(--text-main)",
             }}
           >
@@ -205,22 +207,22 @@ export default function LoginPage({
                 ? "rgba(239, 68, 68, 0.15)"
                 : "#fef2f2",
               border: `1px solid ${isDarkMode ? "rgba(239, 68, 68, 0.3)" : "#fee2e2"}`,
-              padding: "0.75rem",
+              padding: "0.65rem 0.85rem",
               borderRadius: "var(--radius-sm)",
-              marginBottom: "1.25rem",
-              lineHeight: "1.4",
+              marginBottom: "1rem",
+              lineHeight: "1.35",
             }}
           >
             {error}
           </div>
         )}
 
-        {/* Main Login Form Elements */}
+        {/* Main Login Form */}
         <form
           onSubmit={handleSubmit}
-          style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}
+          style={{ display: "flex", flexDirection: "column", gap: "1rem" }}
         >
-          {/* Email Box Input */}
+          {/* Email */}
           <div>
             <label htmlFor="email" style={labelStyle}>
               Email address
@@ -235,7 +237,7 @@ export default function LoginPage({
             />
           </div>
 
-          {/* Password Box Input */}
+          {/* Password */}
           <div>
             <label htmlFor="password" style={labelStyle}>
               Password
@@ -271,7 +273,7 @@ export default function LoginPage({
             </div>
           </div>
 
-          {/* Options: Remember Me & Forgot Password Link */}
+          {/* Options */}
           <div
             style={{
               display: "flex",
@@ -293,7 +295,7 @@ export default function LoginPage({
                 type="checkbox"
                 checked={rememberMe}
                 onChange={(e) => setRememberMe(e.target.checked)}
-                style={{ cursor: "pointer" }}
+                style={{ cursor: "pointer", width: "14px", height: "14px" }}
               />
               <span>Remember me</span>
             </label>
@@ -302,12 +304,12 @@ export default function LoginPage({
             </span>
           </div>
 
-          {/* Form Action Submit Button */}
+          {/* Submit Button */}
           <button
             type="submit"
             style={{
               width: "100%",
-              padding: "0.7rem",
+              padding: "0.75rem",
               backgroundColor: "var(--primary)",
               color: "white",
               border: "none",
@@ -315,14 +317,14 @@ export default function LoginPage({
               fontSize: "0.95rem",
               fontWeight: "600",
               cursor: "pointer",
-              marginTop: "0.5rem",
+              marginTop: "0.25rem",
               transition: "var(--transition-fast)",
             }}
           >
             Sign In
           </button>
 
-          {/* Horizontal Section Dividers */}
+          {/* Divider */}
           <div
             style={{
               display: "flex",
@@ -330,7 +332,7 @@ export default function LoginPage({
               textAlign: "center",
               color: "var(--text-subtle)",
               fontSize: "0.8rem",
-              margin: "0.5rem 0",
+              margin: "0.25rem 0",
             }}
           >
             <div
@@ -340,7 +342,7 @@ export default function LoginPage({
                 backgroundColor: "var(--border-main)",
               }}
             />
-            <span style={{ padding: "0 0.75rem" }}>or continue with</span>
+            <span style={{ padding: "0 0.65rem" }}>or continue with</span>
             <div
               style={{
                 flex: 1,
@@ -350,13 +352,13 @@ export default function LoginPage({
             />
           </div>
 
-          {/* Google OAuth Access Row */}
+          {/* Google Button */}
           <button
             type="button"
             onClick={handleGoogleSignIn}
             style={{
               width: "100%",
-              padding: "0.65rem",
+              padding: "0.7rem",
               backgroundColor: "var(--bg-card)",
               border: "1px solid var(--border-input)",
               borderRadius: "var(--radius-sm)",
@@ -399,11 +401,11 @@ export default function LoginPage({
           </button>
         </form>
 
-        {/* Developer Sandbox Bypass Mode */}
+        {/* Quick Access */}
         <div
           style={{
-            marginTop: "2rem",
-            padding: "0.75rem",
+            marginTop: "1.25rem",
+            padding: "0.65rem",
             backgroundColor: "var(--bg-body-alt)",
             border: "1px solid var(--border-main)",
             borderRadius: "var(--radius-sm)",
@@ -426,13 +428,13 @@ export default function LoginPage({
           </span>
         </div>
 
-        {/* Footer Redirect Link */}
+        {/* Redirect */}
         <p
           style={{
-            marginTop: "1.5rem",
+            marginTop: "1rem",
             marginBottom: 0,
             textAlign: "center",
-            fontSize: "0.85rem",
+            fontSize: "0.875rem",
             color: "var(--text-subtle)",
           }}
         >
