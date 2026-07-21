@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Bell, Shield, CreditCard, Mail } from "lucide-react";
+import { Bell, Shield } from "lucide-react";
 
 export default function SettingsPage() {
   const [emailNotifications, setEmailNotifications] = useState(true);
@@ -7,69 +7,291 @@ export default function SettingsPage() {
   const [marketingEmails, setMarketingEmails] = useState(false);
 
   return (
-    <div>
-      <h1 style={{ fontSize: "1.5rem", fontWeight: "bold", color: "var(--color-slate-900)", marginBottom: "0.5rem" }}>Settings</h1>
-      <p style={{ color: "var(--color-slate-500)", marginBottom: "2rem" }}>Manage your account settings and preferences.</p>
+    <div style={{ color: "var(--text-main)", fontFamily: "var(--font-body)" }}>
+      <h1
+        style={{
+          fontSize: "1.5rem",
+          fontWeight: "bold",
+          color: "var(--text-main)",
+          marginBottom: "0.5rem",
+          fontFamily: "var(--font-heading)",
+        }}
+      >
+        Settings
+      </h1>
+      <p style={{ color: "var(--text-subtle)", marginBottom: "2rem" }}>
+        Manage your account settings and preferences.
+      </p>
 
       <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
-        
         {/* Notifications Settings */}
-        <div style={{ backgroundColor: "var(--color-white)", borderRadius: "0.75rem", border: "1px solid #e2e8f0", overflow: "hidden", boxShadow: "0 1px 3px rgba(0,0,0,0.05)" }}>
-          <div style={{ padding: "1.5rem", borderBottom: "1px solid #e2e8f0", display: "flex", alignItems: "center", gap: "0.75rem" }}>
-            <div style={{ backgroundColor: "var(--color-blue-50)", color: "var(--color-blue-500)", padding: "0.5rem", borderRadius: "0.5rem" }}>
+        <div
+          style={{
+            backgroundColor: "var(--bg-card)",
+            borderRadius: "var(--radius-md, 0.75rem)",
+            border: "1px solid var(--border-main)",
+            overflow: "hidden",
+            boxShadow: "var(--shadow-md, 0 1px 3px rgba(0,0,0,0.05))",
+          }}
+        >
+          <div
+            style={{
+              padding: "1.5rem",
+              borderBottom: "1px solid var(--border-main)",
+              display: "flex",
+              alignItems: "center",
+              gap: "0.75rem",
+            }}
+          >
+            <div
+              style={{
+                backgroundColor: "rgba(59, 130, 246, 0.15)",
+                color: "var(--primary, #3b82f6)",
+                padding: "0.5rem",
+                borderRadius: "var(--radius-sm, 0.5rem)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
               <Bell size={20} />
             </div>
-            <h2 style={{ fontSize: "1.1rem", fontWeight: "bold", color: "var(--color-slate-900)" }}>Notifications</h2>
+            <h2
+              style={{
+                fontSize: "1.1rem",
+                fontWeight: "bold",
+                color: "var(--text-main)",
+                margin: 0,
+              }}
+            >
+              Notifications
+            </h2>
           </div>
-          <div style={{ padding: "1.5rem", display: "flex", flexDirection: "column", gap: "1.25rem" }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+
+          <div
+            style={{
+              padding: "1.5rem",
+              display: "flex",
+              flexDirection: "column",
+              gap: "1.25rem",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
               <div>
-                <div style={{ fontWeight: "500", color: "var(--color-slate-900)" }}>Email Notifications</div>
-                <div style={{ fontSize: "0.85rem", color: "var(--color-slate-500)" }}>Receive updates about your bookings and events.</div>
+                <div style={{ fontWeight: "500", color: "var(--text-main)" }}>
+                  Email Notifications
+                </div>
+                <div
+                  style={{ fontSize: "0.85rem", color: "var(--text-subtle)" }}
+                >
+                  Receive updates about your bookings and events.
+                </div>
               </div>
-              <label style={{ display: "flex", alignItems: "center", cursor: "pointer" }}>
-                <input type="checkbox" checked={emailNotifications} onChange={(e) => setEmailNotifications(e.target.checked)} style={{ width: "18px", height: "18px", cursor: "pointer" }} />
+              <label
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  cursor: "pointer",
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={emailNotifications}
+                  onChange={(e) => setEmailNotifications(e.target.checked)}
+                  style={{
+                    width: "18px",
+                    height: "18px",
+                    cursor: "pointer",
+                    accentColor: "var(--primary, #3b82f6)",
+                  }}
+                />
               </label>
             </div>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
               <div>
-                <div style={{ fontWeight: "500", color: "var(--color-slate-900)" }}>SMS Notifications</div>
-                <div style={{ fontSize: "0.85rem", color: "var(--color-slate-500)" }}>Receive text messages for important updates.</div>
+                <div style={{ fontWeight: "500", color: "var(--text-main)" }}>
+                  SMS Notifications
+                </div>
+                <div
+                  style={{ fontSize: "0.85rem", color: "var(--text-subtle)" }}
+                >
+                  Receive text messages for important updates.
+                </div>
               </div>
-              <label style={{ display: "flex", alignItems: "center", cursor: "pointer" }}>
-                <input type="checkbox" checked={smsNotifications} onChange={(e) => setSmsNotifications(e.target.checked)} style={{ width: "18px", height: "18px", cursor: "pointer" }} />
+              <label
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  cursor: "pointer",
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={smsNotifications}
+                  onChange={(e) => setSmsNotifications(e.target.checked)}
+                  style={{
+                    width: "18px",
+                    height: "18px",
+                    cursor: "pointer",
+                    accentColor: "var(--primary, #3b82f6)",
+                  }}
+                />
               </label>
             </div>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
               <div>
-                <div style={{ fontWeight: "500", color: "var(--color-slate-900)" }}>Marketing Emails</div>
-                <div style={{ fontSize: "0.85rem", color: "var(--color-slate-500)" }}>Receive emails about new features and recommendations.</div>
+                <div style={{ fontWeight: "500", color: "var(--text-main)" }}>
+                  Marketing Emails
+                </div>
+                <div
+                  style={{ fontSize: "0.85rem", color: "var(--text-subtle)" }}
+                >
+                  Receive emails about new features and recommendations.
+                </div>
               </div>
-              <label style={{ display: "flex", alignItems: "center", cursor: "pointer" }}>
-                <input type="checkbox" checked={marketingEmails} onChange={(e) => setMarketingEmails(e.target.checked)} style={{ width: "18px", height: "18px", cursor: "pointer" }} />
+              <label
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  cursor: "pointer",
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={marketingEmails}
+                  onChange={(e) => setMarketingEmails(e.target.checked)}
+                  style={{
+                    width: "18px",
+                    height: "18px",
+                    cursor: "pointer",
+                    accentColor: "var(--primary, #3b82f6)",
+                  }}
+                />
               </label>
             </div>
           </div>
         </div>
 
         {/* Security Settings */}
-        <div style={{ backgroundColor: "var(--color-white)", borderRadius: "0.75rem", border: "1px solid #e2e8f0", overflow: "hidden", boxShadow: "0 1px 3px rgba(0,0,0,0.05)" }}>
-          <div style={{ padding: "1.5rem", borderBottom: "1px solid #e2e8f0", display: "flex", alignItems: "center", gap: "0.75rem" }}>
-            <div style={{ backgroundColor: "var(--color-green-50)", color: "#22c55e", padding: "0.5rem", borderRadius: "0.5rem" }}>
+        <div
+          style={{
+            backgroundColor: "var(--bg-card)",
+            borderRadius: "var(--radius-md, 0.75rem)",
+            border: "1px solid var(--border-main)",
+            overflow: "hidden",
+            boxShadow: "var(--shadow-md, 0 1px 3px rgba(0,0,0,0.05))",
+          }}
+        >
+          <div
+            style={{
+              padding: "1.5rem",
+              borderBottom: "1px solid var(--border-main)",
+              display: "flex",
+              alignItems: "center",
+              gap: "0.75rem",
+            }}
+          >
+            <div
+              style={{
+                backgroundColor: "rgba(34, 197, 94, 0.15)",
+                color: "#22c55e",
+                padding: "0.5rem",
+                borderRadius: "var(--radius-sm, 0.5rem)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
               <Shield size={20} />
             </div>
-            <h2 style={{ fontSize: "1.1rem", fontWeight: "bold", color: "var(--color-slate-900)" }}>Security</h2>
+            <h2
+              style={{
+                fontSize: "1.1rem",
+                fontWeight: "bold",
+                color: "var(--text-main)",
+                margin: 0,
+              }}
+            >
+              Security
+            </h2>
           </div>
-          <div style={{ padding: "1.5rem", display: "flex", flexDirection: "column", gap: "1rem" }}>
-            <button style={{ alignSelf: "flex-start", padding: "0.5rem 1rem", backgroundColor: "var(--color-white)", border: "1px solid #e2e8f0", borderRadius: "0.5rem", color: "var(--color-slate-900)", fontWeight: "500", fontSize: "0.9rem", cursor: "pointer" }}>
+
+          <div
+            style={{
+              padding: "1.5rem",
+              display: "flex",
+              flexDirection: "column",
+              gap: "1rem",
+            }}
+          >
+            <button
+              type="button"
+              style={{
+                alignSelf: "flex-start",
+                padding: "0.5rem 1rem",
+                backgroundColor: "transparent",
+                border: "1px solid var(--border-main)",
+                borderRadius: "var(--radius-sm, 0.5rem)",
+                color: "var(--text-main)",
+                fontWeight: "500",
+                fontSize: "0.9rem",
+                cursor: "pointer",
+                transition: "var(--transition-fast)",
+              }}
+              onMouseEnter={(e) =>
+                (e.currentTarget.style.backgroundColor = "var(--bg-body-alt)")
+              }
+              onMouseLeave={(e) =>
+                (e.currentTarget.style.backgroundColor = "transparent")
+              }
+            >
               Change Password
             </button>
-            <button style={{ alignSelf: "flex-start", padding: "0.5rem 1rem", backgroundColor: "var(--color-white)", border: "1px solid #e2e8f0", borderRadius: "0.5rem", color: "var(--color-slate-900)", fontWeight: "500", fontSize: "0.9rem", cursor: "pointer" }}>
+            <button
+              type="button"
+              style={{
+                alignSelf: "flex-start",
+                padding: "0.5rem 1rem",
+                backgroundColor: "transparent",
+                border: "1px solid var(--border-main)",
+                borderRadius: "var(--radius-sm, 0.5rem)",
+                color: "var(--text-main)",
+                fontWeight: "500",
+                fontSize: "0.9rem",
+                cursor: "pointer",
+                transition: "var(--transition-fast)",
+              }}
+              onMouseEnter={(e) =>
+                (e.currentTarget.style.backgroundColor = "var(--bg-body-alt)")
+              }
+              onMouseLeave={(e) =>
+                (e.currentTarget.style.backgroundColor = "transparent")
+              }
+            >
               Enable Two-Factor Authentication
             </button>
           </div>
         </div>
-
       </div>
     </div>
   );
