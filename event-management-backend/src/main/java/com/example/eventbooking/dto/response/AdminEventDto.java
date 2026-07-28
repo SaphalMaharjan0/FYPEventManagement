@@ -1,9 +1,10 @@
-package com.example.eventbooking.dto;
+package com.example.eventbooking.dto.response;
 
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+import java.time.LocalDate;
 
 @Data
 @Builder
@@ -16,6 +17,7 @@ public class AdminEventDto {
     private String category;
     private String date;
     private String venue;
+    private String imageUrl;
     private String price;
     private String seats; // e.g. "124/500"
     private Double rating;

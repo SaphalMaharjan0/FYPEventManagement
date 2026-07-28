@@ -1,4 +1,4 @@
-package com.example.eventbooking.dto;
+package com.example.eventbooking.dto.response;
 
 import lombok.Builder;
 import lombok.Data;

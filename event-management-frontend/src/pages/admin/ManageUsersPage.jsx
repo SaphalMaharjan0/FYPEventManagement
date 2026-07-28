@@ -8,7 +8,9 @@ export default function ManageUsersPage() {
   const [loading, setLoading] = useState(true);
   
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
+  const [newUser, setNewUser] = useState({ name: "", email: "", password: "", role: "customer", status: "Active" });
   const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
@@ -65,12 +67,31 @@ export default function ManageUsersPage() {
     }
   };
 
+  const handleCreateUser = async (e) => {
+    e.preventDefault();
+    try {
+      const created = await fetchWithAuth(`/api/admin/users`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newUser),
+      });
+      if (created) {
+        setUsers([...users, created]);
+        setIsAddModalOpen(false);
+        setNewUser({ name: "", email: "", password: "", role: "customer", status: "Active" });
+      }
+    } catch (err) {
+      console.error("Failed to create user", err);
+      alert("Failed to create user.");
+    }
+  };
+
   return (
     <div style={{ maxWidth: "1400px", margin: "0 auto" }}>
       {/* Header */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2rem" }}>
         <h1 style={{ fontSize: "1.75rem", fontWeight: "bold", color: "var(--color-slate-900)" }}>User Management</h1>
-        <button style={{ 
+        <button onClick={() => setIsAddModalOpen(true)} style={{ 
           display: "flex", alignItems: "center", gap: "0.5rem", 
           padding: "0.6rem 1.25rem", backgroundColor: "#3b82f6", color: "white", 
           border: "none", borderRadius: "8px", fontWeight: "600", fontSize: "0.9rem",
@@ -304,6 +325,95 @@ export default function ManageUsersPage() {
                 </button>
                 <button type="submit" style={{ padding: "0.75rem 1.5rem", border: "none", borderRadius: "6px", backgroundColor: "#3b82f6", color: "white", fontWeight: "600", cursor: "pointer" }}>
                   Save Changes
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Add User Modal */}
+      {isAddModalOpen && (
+        <div style={{
+          position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: "rgba(0,0,0,0.5)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 1000
+        }}>
+          <div style={{
+            backgroundColor: "white", padding: "2rem", borderRadius: "12px", width: "100%", maxWidth: "500px"
+          }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
+              <h2 style={{ fontSize: "1.25rem", fontWeight: "bold" }}>Add New User</h2>
+              <button onClick={() => setIsAddModalOpen(false)} style={{ background: "none", border: "none", cursor: "pointer" }}>
+                <X size={20} />
+              </button>
+            </div>
+            
+            <form onSubmit={handleCreateUser} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+              <div>
+                <label style={{ display: "block", marginBottom: "0.5rem", fontSize: "0.9rem", fontWeight: "500" }}>Name</label>
+                <input 
+                  type="text" 
+                  value={newUser.name} 
+                  onChange={(e) => setNewUser({...newUser, name: e.target.value})}
+                  required
+                  style={{ width: "100%", padding: "0.75rem", borderRadius: "6px", border: "1px solid #e2e8f0" }}
+                />
+              </div>
+              
+              <div>
+                <label style={{ display: "block", marginBottom: "0.5rem", fontSize: "0.9rem", fontWeight: "500" }}>Email</label>
+                <input 
+                  type="email" 
+                  value={newUser.email} 
+                  onChange={(e) => setNewUser({...newUser, email: e.target.value})}
+                  required
+                  style={{ width: "100%", padding: "0.75rem", borderRadius: "6px", border: "1px solid #e2e8f0" }}
+                />
+              </div>
+              
+              <div>
+                <label style={{ display: "block", marginBottom: "0.5rem", fontSize: "0.9rem", fontWeight: "500" }}>Role</label>
+                <select 
+                  value={newUser.role} 
+                  onChange={(e) => setNewUser({...newUser, role: e.target.value})}
+                  style={{ width: "100%", padding: "0.75rem", borderRadius: "6px", border: "1px solid #e2e8f0" }}
+                >
+                  <option value="customer">Customer</option>
+                  <option value="vendor">Vendor</option>
+                  <option value="administrator">Administrator</option>
+                </select>
+              </div>
+
+              <div>
+                <label style={{ display: "block", marginBottom: "0.5rem", fontSize: "0.9rem", fontWeight: "500" }}>Password</label>
+                <div style={{ position: "relative" }}>
+                  <input 
+                    type={showPassword ? "text" : "password"} 
+                    value={newUser.password} 
+                    onChange={(e) => setNewUser({...newUser, password: e.target.value})}
+                    required
+                    style={{ width: "100%", padding: "0.75rem", paddingRight: "3rem", borderRadius: "6px", border: "1px solid #e2e8f0" }}
+                    placeholder="Enter password"
+                  />
+                  <button 
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    style={{ 
+                      position: "absolute", right: "0.75rem", top: "50%", transform: "translateY(-50%)", 
+                      background: "none", border: "none", color: "var(--color-slate-400)", cursor: "pointer", display: "flex" 
+                    }}
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+              </div>
+
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: "1rem", marginTop: "1rem" }}>
+                <button type="button" onClick={() => setIsAddModalOpen(false)} style={{ padding: "0.75rem 1.5rem", border: "1px solid #e2e8f0", borderRadius: "6px", backgroundColor: "white", cursor: "pointer" }}>
+                  Cancel
+                </button>
+                <button type="submit" style={{ padding: "0.75rem 1.5rem", border: "none", borderRadius: "6px", backgroundColor: "#3b82f6", color: "white", fontWeight: "600", cursor: "pointer" }}>
+                  Create User
                 </button>
               </div>
             </form>

@@ -40,6 +40,9 @@ public class Event {
     @Column(length = 200)
     private String venue;
 
+    @Column(name = "image_url")
+    private String imageUrl;
+
     @Column(name = "event_date", nullable = false)
     private LocalDate eventDate;
 

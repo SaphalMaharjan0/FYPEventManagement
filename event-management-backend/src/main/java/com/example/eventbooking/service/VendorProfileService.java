@@ -1,6 +1,6 @@
 package com.example.eventbooking.service;
 
-import com.example.eventbooking.dto.VendorDto;
+import com.example.eventbooking.dto.response.VendorDto;
 import com.example.eventbooking.entity.User;
 import com.example.eventbooking.entity.Vendor;
 import com.example.eventbooking.repository.UserRepository;

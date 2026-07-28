@@ -1,7 +1,10 @@
 import React from "react";
-import { Save, Bell, Shield } from "lucide-react";
+import { Save, Bell, Shield, Globe } from "lucide-react";
+import { useSettings } from "../../contexts/SettingsContext";
 
 export default function SettingsPage() {
+  const { currency, setCurrency, region, setRegion } = useSettings();
+
   return (
     <div style={{ maxWidth: "800px", margin: "0 auto" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2rem" }}>
@@ -15,6 +18,41 @@ export default function SettingsPage() {
       </div>
 
       <div style={{ backgroundColor: "var(--color-white)", borderRadius: "0.75rem", border: "1px solid #e2e8f0", padding: "2rem", boxShadow: "0 1px 3px rgba(0,0,0,0.05)" }}>
+        
+        <h2 style={{ fontSize: "1.25rem", fontWeight: "bold", color: "var(--color-slate-900)", marginBottom: "1.5rem", borderBottom: "1px solid #e2e8f0", paddingBottom: "0.5rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+          <Globe size={20} color="var(--color-purple-500)" /> Preferences
+        </h2>
+        
+        <form style={{ display: "flex", flexDirection: "column", gap: "1.5rem", marginBottom: "3rem" }}>
+          <div>
+            <label style={{ display: "block", fontSize: "0.9rem", fontWeight: "600", color: "var(--color-slate-900)", marginBottom: "0.5rem" }}>Currency</label>
+            <select 
+              value={currency} 
+              onChange={(e) => setCurrency(e.target.value)}
+              style={{ width: "100%", maxWidth: "300px", padding: "0.75rem", borderRadius: "8px", border: "1px solid #e2e8f0", fontSize: "0.95rem", outline: "none", backgroundColor: "white", color: "var(--color-slate-900)" }}
+            >
+              <option value="USD">USD ($)</option>
+              <option value="EUR">EUR (€)</option>
+              <option value="GBP">GBP (£)</option>
+              <option value="NPR">NPR (रु)</option>
+            </select>
+          </div>
+          
+          <div>
+            <label style={{ display: "block", fontSize: "0.9rem", fontWeight: "600", color: "var(--color-slate-900)", marginBottom: "0.5rem" }}>Region</label>
+            <select 
+              value={region} 
+              onChange={(e) => setRegion(e.target.value)}
+              style={{ width: "100%", maxWidth: "300px", padding: "0.75rem", borderRadius: "8px", border: "1px solid #e2e8f0", fontSize: "0.95rem", outline: "none", backgroundColor: "white", color: "var(--color-slate-900)" }}
+            >
+              <option value="US">United States</option>
+              <option value="EU">Europe</option>
+              <option value="UK">United Kingdom</option>
+              <option value="NP">Nepal</option>
+            </select>
+          </div>
+        </form>
+
         <h2 style={{ fontSize: "1.25rem", fontWeight: "bold", color: "var(--color-slate-900)", marginBottom: "1.5rem", borderBottom: "1px solid #e2e8f0", paddingBottom: "0.5rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
           <Bell size={20} color="var(--color-blue-500)" /> Notifications
         </h2>

@@ -1,8 +1,8 @@
 package com.example.eventbooking.service;
 
-import com.example.eventbooking.dto.AuthResponse;
-import com.example.eventbooking.dto.LoginRequest;
-import com.example.eventbooking.dto.RegisterRequest;
+import com.example.eventbooking.dto.response.AuthResponse;
+import com.example.eventbooking.dto.request.LoginRequest;
+import com.example.eventbooking.dto.request.RegisterRequest;
 import com.example.eventbooking.entity.Role;
 import com.example.eventbooking.entity.User;
 import com.example.eventbooking.repository.UserRepository;

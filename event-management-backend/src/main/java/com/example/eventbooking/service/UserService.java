@@ -1,7 +1,7 @@
 package com.example.eventbooking.service;
 
-import com.example.eventbooking.dto.AuthResponse.UserDto;
-import com.example.eventbooking.dto.UpdateProfileRequest;
+import com.example.eventbooking.dto.response.AuthResponse.UserDto;
+import com.example.eventbooking.dto.request.UpdateProfileRequest;
 import com.example.eventbooking.entity.User;
 import com.example.eventbooking.repository.UserRepository;
 import lombok.RequiredArgsConstructor;

@@ -194,6 +194,7 @@ select {
 }
 
 .header-main {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -228,6 +229,9 @@ select {
   display: flex;
   align-items: center;
   gap: 2rem;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
 }
 
 .nav-link {

@@ -1,6 +1,7 @@
-package com.example.eventbooking.dto;
+package com.example.eventbooking.dto.response;
 
 import lombok.*;
+import java.time.LocalDate;
 
 @Data
 @Builder
@@ -13,6 +14,7 @@ public class EventDto {
     private String date;
     private String time;
     private String venue;
+    private String imageUrl;
     private Double price;
     private String image;
     private String organizer;

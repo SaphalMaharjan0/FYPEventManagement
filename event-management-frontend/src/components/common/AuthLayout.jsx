@@ -30,26 +30,27 @@ export default function AuthLayout({ children, onLogoClick }) {
             height: 100vh;
             height: 100dvh;
             overflow: hidden;
-            padding-top: 4rem; /* Clears top navbar */
+            padding-top: 0;
           }
 
           .auth-left-panel {
-            flex: 0 0 42%;
-            width: 42%;
-            max-width: 42%;
+            flex: 0 0 50%;
+            width: 50%;
+            max-width: 50%;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            background-color: var(--bg-card);
-            border-right: 1px solid var(--border-main);
+            background: linear-gradient(135deg, #090d16 0%, #151e33 60%, #1d2b4a 100%);
+            color: #ffffff;
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
             padding: 2.25rem 3rem;
             height: 100%;
           }
 
           .auth-right-panel {
-            flex: 0 0 58%; /* Increased right panel ratio */
-            width: 58%;
-            max-width: 58%;
+            flex: 0 0 50%;
+            width: 50%;
+            max-width: 50%;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -68,7 +69,7 @@ export default function AuthLayout({ children, onLogoClick }) {
             height: auto;
             overflow-y: auto;
             overflow-x: hidden;
-            padding-top: 3.5rem;
+            padding-top: 0;
           }
 
           .auth-left-panel {
@@ -103,8 +104,8 @@ export default function AuthLayout({ children, onLogoClick }) {
           <div
             style={{
               padding: "0.5rem",
-              borderRadius: "var(--radius-sm)",
-              backgroundColor: "var(--primary)",
+              borderRadius: "0.5rem",
+              backgroundColor: "#2563eb",
               color: "#ffffff",
               display: "flex",
               alignItems: "center",
@@ -118,7 +119,7 @@ export default function AuthLayout({ children, onLogoClick }) {
               fontFamily: "var(--font-heading)",
               fontSize: "1.35rem",
               fontWeight: "700",
-              color: "var(--text-main)",
+              color: "#ffffff",
             }}
           >
             EventPulse
@@ -126,27 +127,7 @@ export default function AuthLayout({ children, onLogoClick }) {
         </div>
 
         {/* Hero Copy */}
-        <div style={{ maxWidth: "420px", margin: "auto 0", padding: "1rem 0" }}>
-          <div
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "0.5rem",
-              padding: "0.35rem 0.75rem",
-              borderRadius: "9999px",
-              backgroundColor: "var(--bg-body-alt)",
-              border: "1px solid var(--border-main)",
-              fontSize: "0.75rem",
-              fontWeight: "600",
-              textTransform: "uppercase",
-              letterSpacing: "0.05em",
-              marginBottom: "1.25rem",
-              color: "var(--primary)",
-            }}
-          >
-            <Sparkles size={14} />
-            Event Management
-          </div>
+        <div style={{ maxWidth: "480px", margin: "auto 0", padding: "1rem 0" }}>
 
           <h2
             style={{
@@ -155,7 +136,7 @@ export default function AuthLayout({ children, onLogoClick }) {
               fontWeight: "800",
               lineHeight: "1.15",
               marginBottom: "0.85rem",
-              color: "var(--text-main)",
+              color: "#ffffff",
             }}
           >
             Your events,
@@ -165,7 +146,7 @@ export default function AuthLayout({ children, onLogoClick }) {
 
           <p
             style={{
-              color: "var(--text-subtle)",
+              color: "rgba(255, 255, 255, 0.8)",
               fontSize: "0.95rem",
               lineHeight: "1.5",
               marginBottom: "1.5rem",
@@ -187,12 +168,12 @@ export default function AuthLayout({ children, onLogoClick }) {
                   gap: "0.75rem",
                   fontSize: "0.9rem",
                   fontWeight: "500",
-                  color: "var(--text-main)",
+                  color: "rgba(255, 255, 255, 0.9)",
                 }}
               >
                 <CheckCircle2
                   size={18}
-                  color="var(--primary)"
+                  color="#10b981"
                   style={{ flexShrink: 0 }}
                 />
                 <span>{feat}</span>
@@ -205,8 +186,8 @@ export default function AuthLayout({ children, onLogoClick }) {
         <div
           style={{
             fontSize: "0.8rem",
-            color: "var(--text-subtle)",
-            borderTop: "1px solid var(--border-main)",
+            color: "rgba(255, 255, 255, 0.6)",
+            borderTop: "1px solid rgba(255, 255, 255, 0.1)",
             paddingTop: "1.25rem",
           }}
         >
@@ -215,8 +196,8 @@ export default function AuthLayout({ children, onLogoClick }) {
       </div>
 
       {/* Right Form Panel (Wider container) */}
-      <div className="auth-right-panel">
-        <div style={{ width: "100%", maxWidth: "620px" }}>{children}</div>
+      <div className="auth-right-panel" style={{ backgroundColor: "#ffffff" }}>
+        <div style={{ width: "100%", maxWidth: "400px" }}>{children}</div>
       </div>
     </div>
   );

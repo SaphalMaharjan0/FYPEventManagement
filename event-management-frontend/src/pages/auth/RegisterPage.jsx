@@ -91,10 +91,10 @@ export default function RegisterForm({
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "var(--bg-body-alt)",
+    backgroundColor: "transparent",
     fontFamily: "var(--font-body)",
     color: "var(--text-main)",
-    padding: "1rem",
+    padding: "0",
     boxSizing: "border-box",
     transition: "var(--transition-fast)",
   };
@@ -102,22 +102,21 @@ export default function RegisterForm({
   const cardStyle = {
     position: "relative",
     width: "100%",
-    maxWidth: "520px",
-    backgroundColor: "var(--bg-card)",
-    border: "1px solid var(--border-main)",
-    borderRadius: "var(--radius-md)",
-    padding: "2.25rem 2rem 1.75rem 2rem", // Reduced top/bottom padding
-    boxShadow: "var(--shadow-md)",
+    maxWidth: "400px",
+    backgroundColor: "transparent",
+    border: "none",
+    borderRadius: "0",
+    padding: "0",
+    boxShadow: "none",
     boxSizing: "border-box",
-    transition: "var(--transition-fast)",
   };
 
   const inputStyle = {
     width: "100%",
-    padding: "0.7rem 0.85rem", // Slightly shorter input height
-    backgroundColor: "var(--bg-body-alt)",
-    border: "1px solid var(--border-input)",
-    borderRadius: "var(--radius-sm)",
+    padding: "0.75rem 1rem",
+    backgroundColor: "#f8fafc",
+    border: "1px solid #e2e8f0",
+    borderRadius: "0.5rem",
     fontSize: "0.95rem",
     color: "var(--text-main)",
     outline: "none",
@@ -173,10 +172,8 @@ export default function RegisterForm({
           type="button"
           onClick={onNavigateHome || onNavigateToLogin}
           style={{
-            position: "absolute",
-            top: "1rem",
-            left: "1rem",
-            display: "flex",
+            alignSelf: "flex-start",
+            display: "inline-flex",
             alignItems: "center",
             gap: "0.35rem",
             background: "none",
@@ -185,7 +182,8 @@ export default function RegisterForm({
             fontSize: "0.8rem",
             fontWeight: "600",
             cursor: "pointer",
-            padding: "0.25rem 0.4rem",
+            padding: "0",
+            marginBottom: "2rem",
             borderRadius: "var(--radius-sm)",
             transition: "var(--transition-fast)",
           }}
@@ -194,40 +192,15 @@ export default function RegisterForm({
           {onNavigateHome ? "Back to Home" : "Back to Login"}
         </button>
 
-        {/* Branding Logo */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: "0.5rem",
-            marginBottom: "1rem",
-          }}
-        >
-          <div style={{ color: "var(--primary)" }}>
-            <Calendar size={26} />
-          </div>
-          <span
-            style={{
-              fontFamily: "var(--font-heading)",
-              fontSize: "1.5rem",
-              fontWeight: "700",
-              color: "var(--text-main)",
-            }}
-          >
-            EventPulse
-          </span>
-        </div>
-
         {/* Header Title */}
-        <div style={{ textAlign: "center", marginBottom: "1.25rem" }}>
+        <div style={{ textAlign: "left", marginBottom: "2rem" }}>
           <h3
             style={{
               fontFamily: "var(--font-heading)",
-              fontSize: "1.5rem",
-              fontWeight: "700",
-              margin: "0 0 0.25rem 0",
-              color: "var(--text-main)",
+              fontSize: "1.75rem",
+              fontWeight: "800",
+              margin: "0 0 0.5rem 0",
+              color: "#0f172a",
             }}
           >
             Create your account
@@ -235,8 +208,8 @@ export default function RegisterForm({
           <p
             style={{
               margin: 0,
-              fontSize: "0.9rem",
-              color: "var(--text-subtle)",
+              fontSize: "0.95rem",
+              color: "#64748b",
             }}
           >
             Join 500,000+ event lovers on EventPulse
@@ -467,15 +440,15 @@ export default function RegisterForm({
             style={{
               width: "100%",
               padding: "0.75rem",
-              backgroundColor: "var(--primary)",
+              backgroundColor: "#2563eb",
               color: "#ffffff",
               border: "none",
-              borderRadius: "var(--radius-sm)",
-              fontSize: "0.95rem",
+              borderRadius: "0.5rem",
+              fontSize: "1rem",
               fontWeight: "600",
               cursor: loading ? "not-allowed" : "pointer",
               opacity: loading ? 0.7 : 1,
-              marginTop: "0.25rem",
+              marginTop: "1rem",
               transition: "var(--transition-fast)",
             }}
           >

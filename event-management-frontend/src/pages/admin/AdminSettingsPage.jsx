@@ -1,7 +1,9 @@
 import React from "react";
 import { Save, Shield, Bell, Globe, Database } from "lucide-react";
+import { useSettings } from "../../contexts/SettingsContext";
 
 export default function AdminSettingsPage() {
+  const { currency, setCurrency, region, setRegion } = useSettings();
   return (
     <div style={{ maxWidth: "1000px", margin: "0 auto" }}>
       {/* Header */}
@@ -65,10 +67,29 @@ export default function AdminSettingsPage() {
               
               <div>
                 <label style={{ display: "block", fontSize: "0.9rem", fontWeight: "500", color: "var(--color-slate-700)", marginBottom: "0.5rem" }}>Default Currency</label>
-                <select style={{ width: "100%", padding: "0.75rem", borderRadius: "8px", border: "1px solid #e2e8f0", fontSize: "0.95rem", outline: "none", backgroundColor: "white" }}>
+                <select 
+                  value={currency} 
+                  onChange={(e) => setCurrency(e.target.value)}
+                  style={{ width: "100%", padding: "0.75rem", borderRadius: "8px", border: "1px solid #e2e8f0", fontSize: "0.95rem", outline: "none", backgroundColor: "white" }}
+                >
                   <option value="USD">USD ($)</option>
                   <option value="EUR">EUR (€)</option>
                   <option value="GBP">GBP (£)</option>
+                  <option value="NPR">NPR (रु)</option>
+                </select>
+              </div>
+
+              <div>
+                <label style={{ display: "block", fontSize: "0.9rem", fontWeight: "500", color: "var(--color-slate-700)", marginBottom: "0.5rem" }}>Default Region</label>
+                <select 
+                  value={region} 
+                  onChange={(e) => setRegion(e.target.value)}
+                  style={{ width: "100%", padding: "0.75rem", borderRadius: "8px", border: "1px solid #e2e8f0", fontSize: "0.95rem", outline: "none", backgroundColor: "white" }}
+                >
+                  <option value="US">United States</option>
+                  <option value="EU">Europe</option>
+                  <option value="UK">United Kingdom</option>
+                  <option value="NP">Nepal</option>
                 </select>
               </div>
             </div>

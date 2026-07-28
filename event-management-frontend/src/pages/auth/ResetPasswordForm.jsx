@@ -39,11 +39,36 @@ export default function ResetPasswordForm({ onNavigateToLogin, onResetSuccess })
     }
   };
 
+  const inputStyle = {
+    width: "100%",
+    padding: "0.75rem 1rem",
+    backgroundColor: "#f8fafc",
+    border: "1px solid #e2e8f0",
+    borderRadius: "0.5rem",
+    fontSize: "0.95rem",
+    color: "var(--text-main)",
+    outline: "none",
+    boxSizing: "border-box",
+    transition: "var(--transition-fast)",
+  };
+
+  const labelStyle = {
+    display: "block",
+    fontSize: "0.875rem",
+    fontWeight: "600",
+    color: "var(--text-main)",
+    marginBottom: "0.35rem",
+  };
+
   return (
     <>
-      <div className="auth-form-header">
-        <h3 className="auth-form-title">Reset password</h3>
-        <p className="auth-form-subtitle">We'll send a reset link to your email</p>
+      <div style={{ textAlign: "left", marginBottom: "2rem" }}>
+        <h3 style={{ fontFamily: "var(--font-heading)", fontSize: "1.75rem", fontWeight: "800", margin: "0 0 0.5rem 0", color: "#0f172a" }}>
+          Reset password
+        </h3>
+        <p style={{ margin: 0, fontSize: "0.95rem", color: "#64748b" }}>
+          We'll send a reset link to your email
+        </p>
       </div>
 
       {error && (
@@ -52,42 +77,70 @@ export default function ResetPasswordForm({ onNavigateToLogin, onResetSuccess })
         </div>
       )}
 
-      <form className="auth-form" onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
         {/* Email Field */}
-        <div className="form-group">
-          <label htmlFor="email">Email address</label>
+        <div>
+          <label htmlFor="email" style={labelStyle}>Email address</label>
           <input
             type="email"
             id="email"
             placeholder="you@example.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            style={inputStyle}
           />
         </div>
 
         {/* Action Button */}
-        <button type="submit" className="btn-auth-submit">
+        <button 
+          type="submit" 
+          style={{
+            width: "100%",
+            padding: "0.75rem",
+            backgroundColor: "#2563eb",
+            color: "white",
+            border: "none",
+            borderRadius: "0.5rem",
+            fontSize: "1rem",
+            fontWeight: "600",
+            cursor: "pointer",
+            marginTop: "1rem",
+            transition: "var(--transition-fast)",
+          }}
+        >
           Send Reset Link
         </button>
       </form>
 
       {/* What Happens Next Info Box */}
-      <div className="info-banner">
-        <span className="info-banner-title">What happens next?</span>
+      <div style={{ marginTop: "1.5rem", padding: "1rem", backgroundColor: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: "0.5rem", fontSize: "0.875rem", color: "#64748b" }}>
+        <div style={{ fontWeight: "600", color: "#0f172a", marginBottom: "0.25rem" }}>What happens next?</div>
         Check your email for a secure reset link. The link expires in 30 minutes.
       </div>
 
       {/* Back to Login Anchor */}
-      <div className="auth-footer-text" style={{ marginTop: "2rem" }}>
-        <span 
-          className="form-link" 
-          onClick={onNavigateToLogin}
-          style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem" }}
-        >
-          <ArrowLeft size={16} />
-          <span>Back to login</span>
-        </span>
-      </div>
+      <button
+        type="button"
+        onClick={onNavigateToLogin}
+        style={{
+          alignSelf: "flex-start",
+          display: "inline-flex",
+          alignItems: "center",
+          gap: "0.35rem",
+          background: "none",
+          border: "none",
+          color: "var(--text-subtle)",
+          fontSize: "0.875rem",
+          fontWeight: "600",
+          cursor: "pointer",
+          padding: "0",
+          marginTop: "2rem",
+          borderRadius: "var(--radius-sm)",
+        }}
+      >
+        <ArrowLeft size={16} />
+        <span>Back to login</span>
+      </button>
     </>
   );
 }

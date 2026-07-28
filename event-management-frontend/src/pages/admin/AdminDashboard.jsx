@@ -25,36 +25,9 @@ export default function AdminDashboard({ currentUser }) {
     loadStats();
   }, [fetchWithAuth]);
 
-  // Chart Data (fallback to dummy if stats not ready or missing)
-  const revenueData = stats?.monthlyRevenue || [
-    { name: 'Jan', value: 45000 },
-    { name: 'Feb', value: 55000 },
-    { name: 'Mar', value: 48000 },
-    { name: 'Apr', value: 72000 },
-    { name: 'May', value: 88000 },
-    { name: 'Jun', value: 92000 },
-    { name: 'Jul', value: 115000 },
-    { name: 'Aug', value: 105000 }
-  ];
-
-  const categoryData = stats?.eventsByCategory || [
-    { name: 'Technology', value: 32, color: '#3b82f6' },
-    { name: 'Music', value: 28, color: '#10b981' },
-    { name: 'Business', value: 18, color: '#f59e0b' },
-    { name: 'Arts', value: 12, color: '#8b5cf6' },
-    { name: 'Sports', value: 10, color: '#ef4444' }
-  ];
-
-  const userGrowthData = [
-    { name: 'Jan', value: 1200 },
-    { name: 'Feb', value: 1800 },
-    { name: 'Mar', value: 2400 },
-    { name: 'Apr', value: 3200 },
-    { name: 'May', value: 4100 },
-    { name: 'Jun', value: 5500 },
-    { name: 'Jul', value: 6200 },
-    { name: 'Aug', value: 7284 }
-  ];
+  const revenueData = stats?.monthlyRevenue || [];
+  const categoryData = stats?.eventsByCategory || [];
+  const userGrowthData = stats?.userGrowthData || [];
 
   const StatCard = ({ icon: Icon, title, value, subtitle, iconColor, iconBg }) => (
     <div style={{ backgroundColor: "var(--color-white)", padding: "1.5rem", borderRadius: "12px", border: "1px solid #e2e8f0", display: "flex", alignItems: "flex-start", gap: "1.25rem", boxShadow: "0 1px 2px rgba(0,0,0,0.05)" }}>
@@ -115,7 +88,12 @@ export default function AdminDashboard({ currentUser }) {
                 <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 12 }} dy={10} />
                 <YAxis 
                   axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 12 }}
-                  tickFormatter={(value) => `$${value/1000}k`}
+                  ticks={
+                    Math.max(...(revenueData.length ? revenueData.map(d => d.value) : [0]), 200) <= 500 
+                      ? Array.from({ length: Math.ceil(Math.max(...(revenueData.length ? revenueData.map(d => d.value) : [0]), 200) / 50) + 1 }, (_, i) => i * 50)
+                      : undefined
+                  }
+                  tickFormatter={(value) => value >= 1000 ? `$${(value/1000).toFixed(1)}k` : `$${value}`}
                 />
                 <Tooltip 
                   formatter={(value) => [`$${value.toLocaleString()}`, 'Revenue']}
@@ -181,8 +159,9 @@ export default function AdminDashboard({ currentUser }) {
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                 <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 12 }} dy={10} />
                 <YAxis 
+                  allowDecimals={false}
                   axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 12 }}
-                  tickFormatter={(value) => `${value/1000}k`}
+                  tickFormatter={(value) => value >= 1000 ? `${(value/1000).toFixed(1)}k` : value}
                 />
                 <Tooltip 
                   formatter={(value) => [value.toLocaleString(), 'Users']}
@@ -199,45 +178,25 @@ export default function AdminDashboard({ currentUser }) {
           <h2 style={{ fontSize: "1.1rem", fontWeight: "bold", color: "var(--color-slate-900)", marginBottom: "1.5rem" }}>Recent Activity</h2>
           
           <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
-            <div style={{ display: "flex", gap: "1rem", alignItems: "flex-start" }}>
-              <div style={{ backgroundColor: "#ecfdf5", color: "#10b981", padding: "0.5rem", borderRadius: "50%", marginTop: "0.25rem" }}>
-                <CheckCircle size={16} />
-              </div>
-              <div>
-                <p style={{ color: "var(--color-slate-900)", fontSize: "0.95rem", fontWeight: "500", marginBottom: "0.2rem" }}>New vendor Marcus Chen verified</p>
-                <p style={{ color: "var(--color-slate-500)", fontSize: "0.8rem" }}>5 min ago</p>
-              </div>
-            </div>
-
-            <div style={{ display: "flex", gap: "1rem", alignItems: "flex-start" }}>
-              <div style={{ backgroundColor: "#eff6ff", color: "#3b82f6", padding: "0.5rem", borderRadius: "50%", marginTop: "0.25rem" }}>
-                <Calendar size={16} />
-              </div>
-              <div>
-                <p style={{ color: "var(--color-slate-900)", fontSize: "0.95rem", fontWeight: "500", marginBottom: "0.2rem" }}>Event TechConf 2025 published</p>
-                <p style={{ color: "var(--color-slate-500)", fontSize: "0.8rem" }}>22 min ago</p>
-              </div>
-            </div>
-
-            <div style={{ display: "flex", gap: "1rem", alignItems: "flex-start" }}>
-              <div style={{ backgroundColor: "#fffbeb", color: "#f59e0b", padding: "0.5rem", borderRadius: "50%", marginTop: "0.25rem" }}>
-                <ShieldAlert size={16} />
-              </div>
-              <div>
-                <p style={{ color: "var(--color-slate-900)", fontSize: "0.95rem", fontWeight: "500", marginBottom: "0.2rem" }}>Booking dispute resolved for BK-0092</p>
-                <p style={{ color: "var(--color-slate-500)", fontSize: "0.8rem" }}>1 hour ago</p>
-              </div>
-            </div>
-            
-            <div style={{ display: "flex", gap: "1rem", alignItems: "flex-start" }}>
-              <div style={{ backgroundColor: "#eff6ff", color: "#3b82f6", padding: "0.5rem", borderRadius: "50%", marginTop: "0.25rem" }}>
-                <Ticket size={16} />
-              </div>
-              <div>
-                <p style={{ color: "var(--color-slate-900)", fontSize: "0.95rem", fontWeight: "500", marginBottom: "0.2rem" }}>150+ tickets sold in last hour</p>
-                <p style={{ color: "var(--color-slate-500)", fontSize: "0.8rem" }}>2 hours ago</p>
-              </div>
-            </div>
+            {stats?.recentActivity && stats.recentActivity.length > 0 ? (
+              stats.recentActivity.map((activity) => (
+                <div key={activity.id} style={{ display: "flex", gap: "1rem", alignItems: "flex-start" }}>
+                  <div style={{ 
+                    backgroundColor: activity.type === 'booking' ? '#fffbeb' : activity.type === 'user' ? '#ecfdf5' : '#eff6ff', 
+                    color: activity.type === 'booking' ? '#f59e0b' : activity.type === 'user' ? '#10b981' : '#3b82f6', 
+                    padding: "0.5rem", borderRadius: "50%", marginTop: "0.25rem" 
+                  }}>
+                    {activity.type === 'booking' ? <Ticket size={16} /> : activity.type === 'user' ? <Users size={16} /> : <Calendar size={16} />}
+                  </div>
+                  <div>
+                    <p style={{ color: "var(--color-slate-900)", fontSize: "0.95rem", fontWeight: "500", marginBottom: "0.2rem" }}>{activity.description}</p>
+                    <p style={{ color: "var(--color-slate-500)", fontSize: "0.8rem" }}>{activity.timeAgo}</p>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <p style={{ color: "var(--color-slate-500)", fontSize: "0.9rem" }}>No recent activity.</p>
+            )}
           </div>
         </div>
       </div>

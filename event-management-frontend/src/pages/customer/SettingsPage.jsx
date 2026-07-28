@@ -1,10 +1,12 @@
 import React, { useState } from "react";
-import { Bell, Shield } from "lucide-react";
+import { Bell, Shield, Globe } from "lucide-react";
+import { useSettings } from "../../contexts/SettingsContext";
 
 export default function SettingsPage() {
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [smsNotifications, setSmsNotifications] = useState(false);
   const [marketingEmails, setMarketingEmails] = useState(false);
+  const { currency, setCurrency, region, setRegion } = useSettings();
 
   return (
     <div style={{ color: "var(--text-main)", fontFamily: "var(--font-body)" }}>
@@ -24,6 +26,88 @@ export default function SettingsPage() {
       </p>
 
       <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+        {/* Preferences Settings */}
+        <div
+          style={{
+            backgroundColor: "var(--bg-card)",
+            borderRadius: "var(--radius-md, 0.75rem)",
+            border: "1px solid var(--border-main)",
+            overflow: "hidden",
+            boxShadow: "var(--shadow-md, 0 1px 3px rgba(0,0,0,0.05))",
+          }}
+        >
+          <div
+            style={{
+              padding: "1.5rem",
+              borderBottom: "1px solid var(--border-main)",
+              display: "flex",
+              alignItems: "center",
+              gap: "0.75rem",
+            }}
+          >
+            <div
+              style={{
+                backgroundColor: "rgba(139, 92, 246, 0.15)",
+                color: "#8b5cf6",
+                padding: "0.5rem",
+                borderRadius: "var(--radius-sm, 0.5rem)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Globe size={20} />
+            </div>
+            <h2
+              style={{
+                fontSize: "1.1rem",
+                fontWeight: "bold",
+                color: "var(--text-main)",
+                margin: 0,
+              }}
+            >
+              Preferences
+            </h2>
+          </div>
+
+          <div
+            style={{
+              padding: "1.5rem",
+              display: "flex",
+              flexDirection: "column",
+              gap: "1.25rem",
+            }}
+          >
+            <div>
+              <label style={{ display: "block", fontSize: "0.9rem", fontWeight: "600", color: "var(--text-main)", marginBottom: "0.5rem" }}>Currency</label>
+              <select 
+                value={currency} 
+                onChange={(e) => setCurrency(e.target.value)}
+                style={{ width: "100%", maxWidth: "300px", padding: "0.75rem", borderRadius: "8px", border: "1px solid var(--border-main)", fontSize: "0.95rem", outline: "none", backgroundColor: "var(--bg-card)", color: "var(--text-main)" }}
+              >
+                <option value="USD">USD ($)</option>
+                <option value="EUR">EUR (€)</option>
+                <option value="GBP">GBP (£)</option>
+                <option value="NPR">NPR (रु)</option>
+              </select>
+            </div>
+            
+            <div>
+              <label style={{ display: "block", fontSize: "0.9rem", fontWeight: "600", color: "var(--text-main)", marginBottom: "0.5rem" }}>Region</label>
+              <select 
+                value={region} 
+                onChange={(e) => setRegion(e.target.value)}
+                style={{ width: "100%", maxWidth: "300px", padding: "0.75rem", borderRadius: "8px", border: "1px solid var(--border-main)", fontSize: "0.95rem", outline: "none", backgroundColor: "var(--bg-card)", color: "var(--text-main)" }}
+              >
+                <option value="US">United States</option>
+                <option value="EU">Europe</option>
+                <option value="UK">United Kingdom</option>
+                <option value="NP">Nepal</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
         {/* Notifications Settings */}
         <div
           style={{

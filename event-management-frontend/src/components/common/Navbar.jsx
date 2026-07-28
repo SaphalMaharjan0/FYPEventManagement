@@ -5,6 +5,7 @@ import { useSettings } from "../../contexts/SettingsContext";
 export default function Header({ onMobileDrawerOpen, onNavigate, currentUser, onLogout, isAuthPage, isDarkMode, toggleDarkMode, solidBg }) {
   const [scrolled, setScrolled] = useState(false);
   const { currency, setCurrency, region, setRegion } = useSettings();
+  const [isPreferencesOpen, setIsPreferencesOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -42,52 +43,90 @@ export default function Header({ onMobileDrawerOpen, onNavigate, currentUser, on
 
           {/* Desktop Actions */}
           <div className="header-actions">
-            <div style={{ display: "flex", gap: "0.5rem", marginRight: "1rem" }}>
-              <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
-                <Globe size={14} color="var(--color-white)" style={{ position: "absolute", left: "8px" }} />
-                <select 
-                  value={region} 
-                  onChange={(e) => setRegion(e.target.value)}
-                  style={{
-                    appearance: "none",
-                    background: "rgba(255, 255, 255, 0.1)",
-                    border: "1px solid rgba(255, 255, 255, 0.2)",
-                    color: "var(--color-white)",
-                    borderRadius: "20px",
-                    padding: "4px 12px 4px 28px",
-                    fontSize: "0.8rem",
-                    cursor: "pointer",
-                    outline: "none"
-                  }}
-                >
-                  <option value="US" style={{ color: "var(--text-dark)" }}>US (MM/DD/YY)</option>
-                  <option value="EU" style={{ color: "var(--text-dark)" }}>EU (DD/MM/YY)</option>
-                  <option value="UK" style={{ color: "var(--text-dark)" }}>UK (DD/MM/YY)</option>
-                </select>
-              </div>
+            <div style={{ position: "relative", marginRight: "1rem" }}>
+              <button 
+                onClick={() => setIsPreferencesOpen(!isPreferencesOpen)}
+                style={{
+                  display: "flex", alignItems: "center", gap: "0.5rem",
+                  background: "rgba(255, 255, 255, 0.1)",
+                  border: "1px solid rgba(255, 255, 255, 0.2)",
+                  color: "var(--color-white)",
+                  borderRadius: "20px",
+                  padding: "6px 12px",
+                  fontSize: "0.85rem",
+                  cursor: "pointer",
+                  outline: "none",
+                  fontWeight: 500
+                }}
+              >
+                <Globe size={16} />
+                <span>{region} / {currency}</span>
+              </button>
 
-              <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
-                <select 
-                  value={currency} 
-                  onChange={(e) => setCurrency(e.target.value)}
-                  style={{
-                    appearance: "none",
-                    background: "rgba(255, 255, 255, 0.1)",
-                    border: "1px solid rgba(255, 255, 255, 0.2)",
-                    color: "var(--color-white)",
-                    borderRadius: "20px",
-                    padding: "4px 12px",
-                    fontSize: "0.8rem",
-                    cursor: "pointer",
-                    outline: "none"
-                  }}
-                >
-                  <option value="USD" style={{ color: "var(--text-dark)" }}>USD ($)</option>
-                  <option value="EUR" style={{ color: "var(--text-dark)" }}>EUR (€)</option>
-                  <option value="GBP" style={{ color: "var(--text-dark)" }}>GBP (£)</option>
-                  <option value="NPR" style={{ color: "var(--text-dark)" }}>NPR (Rs)</option>
-                </select>
-              </div>
+              {isPreferencesOpen && (
+                <div style={{
+                  position: "absolute",
+                  top: "100%",
+                  right: 0,
+                  marginTop: "0.5rem",
+                  backgroundColor: "var(--color-white)",
+                  borderRadius: "8px",
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+                  padding: "1rem",
+                  zIndex: 50,
+                  minWidth: "200px",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "1rem"
+                }}>
+                  <div>
+                    <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 600, color: "var(--color-slate-500)", marginBottom: "0.25rem", textTransform: "uppercase" }}>Region</label>
+                    <select 
+                      value={region} 
+                      onChange={(e) => setRegion(e.target.value)}
+                      style={{
+                        width: "100%",
+                        padding: "0.5rem",
+                        borderRadius: "6px",
+                        border: "1px solid var(--color-slate-200)",
+                        backgroundColor: "var(--color-slate-50)",
+                        color: "var(--color-slate-900)",
+                        fontSize: "0.85rem",
+                        outline: "none",
+                        cursor: "pointer"
+                      }}
+                    >
+                      <option value="US">US (MM/DD/YY)</option>
+                      <option value="EU">EU (DD/MM/YY)</option>
+                      <option value="UK">UK (DD/MM/YY)</option>
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 600, color: "var(--color-slate-500)", marginBottom: "0.25rem", textTransform: "uppercase" }}>Currency</label>
+                    <select 
+                      value={currency} 
+                      onChange={(e) => setCurrency(e.target.value)}
+                      style={{
+                        width: "100%",
+                        padding: "0.5rem",
+                        borderRadius: "6px",
+                        border: "1px solid var(--color-slate-200)",
+                        backgroundColor: "var(--color-slate-50)",
+                        color: "var(--color-slate-900)",
+                        fontSize: "0.85rem",
+                        outline: "none",
+                        cursor: "pointer"
+                      }}
+                    >
+                      <option value="USD">USD ($)</option>
+                      <option value="EUR">EUR (€)</option>
+                      <option value="GBP">GBP (£)</option>
+                      <option value="NPR">NPR (Rs)</option>
+                    </select>
+                  </div>
+                </div>
+              )}
             </div>
 
             <button 

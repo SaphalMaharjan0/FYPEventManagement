@@ -1,4 +1,4 @@
-package com.example.eventbooking.dto;
+package com.example.eventbooking.dto.response;
 
 import lombok.Data;
 import java.math.BigDecimal;
@@ -12,4 +12,5 @@ public class ServiceDto {
     private String category;
     private BigDecimal price;
     private Boolean isActive;
+    private String imageUrl;
 }

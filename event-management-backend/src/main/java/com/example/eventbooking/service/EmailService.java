@@ -64,4 +64,21 @@ public class EmailService {
             log.warn("Mocking email send. Token for {}: {}", toEmail, token);
         }
     }
+
+    public void sendEmail(String toEmail, String subject, String htmlContent) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            
+            helper.setFrom(fromEmail);
+            helper.setTo(toEmail);
+            helper.setSubject(subject);
+            helper.setText(htmlContent, true);
+            
+            mailSender.send(message);
+            log.info("Email sent successfully to {}", toEmail);
+        } catch (Exception e) {
+            log.error("Failed to send email to {}", toEmail, e);
+        }
+    }
 }

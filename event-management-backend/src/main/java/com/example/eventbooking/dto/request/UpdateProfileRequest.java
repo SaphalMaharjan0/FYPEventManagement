@@ -1,4 +1,4 @@
-package com.example.eventbooking.dto;
+package com.example.eventbooking.dto.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class LoginRequest {
-    private String email;
-    private String password;
+public class UpdateProfileRequest {
+    private String fullName;
+    private String phone;
 }

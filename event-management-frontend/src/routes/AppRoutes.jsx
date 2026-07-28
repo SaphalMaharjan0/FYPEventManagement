@@ -85,7 +85,7 @@ export default function AppRoutes({
 
   return (
     <>
-      {!isDashboard && (
+      {!isDashboard && !isAuthPage && (
         <Navbar 
           isDarkMode={isDarkMode}
           toggleDarkMode={toggleDarkMode}

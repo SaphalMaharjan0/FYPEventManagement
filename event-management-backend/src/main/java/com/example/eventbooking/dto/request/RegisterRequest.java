@@ -1,4 +1,4 @@
-package com.example.eventbooking.dto;
+package com.example.eventbooking.dto.request;
 
 import com.example.eventbooking.entity.Role;
 import lombok.AllArgsConstructor;

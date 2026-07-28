@@ -1,12 +1,14 @@
 package com.example.eventbooking.controller;
 
-import com.example.eventbooking.dto.*;
+import com.example.eventbooking.dto.request.*;
+import com.example.eventbooking.dto.response.*;
 import com.example.eventbooking.service.AdminService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -54,5 +56,20 @@ public class AdminController {
     @PutMapping("/events/{id}")
     public ResponseEntity<AdminEventDto> updateEvent(@PathVariable Integer id, @RequestBody AdminEventDto dto) {
         return ResponseEntity.ok(adminService.updateEvent(id, dto));
+    }
+
+    @PostMapping("/events")
+    public ResponseEntity<AdminEventDto> createEvent(@RequestBody AdminEventDto dto) {
+        return ResponseEntity.ok(adminService.createEvent(dto));
+    }
+
+    @PostMapping("/users")
+    public ResponseEntity<AdminUserDto> createUser(@RequestBody AdminUserDto dto) {
+        return ResponseEntity.ok(adminService.createUser(dto));
+    }
+
+    @PostMapping("/vendors/invite")
+    public ResponseEntity<AdminVendorDto> inviteVendor(@RequestBody AdminVendorInviteDto dto) {
+        return ResponseEntity.ok(adminService.inviteVendor(dto));
     }
 }

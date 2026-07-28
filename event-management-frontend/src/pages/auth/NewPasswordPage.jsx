@@ -59,30 +59,79 @@ export default function NewPasswordPage({ onNavigateToLogin }) {
     }
   };
 
+  const inputStyle = {
+    width: "100%",
+    padding: "0.75rem 1rem",
+    backgroundColor: "#f8fafc",
+    border: "1px solid #e2e8f0",
+    borderRadius: "0.5rem",
+    fontSize: "0.95rem",
+    color: "var(--text-main)",
+    outline: "none",
+    boxSizing: "border-box",
+    transition: "var(--transition-fast)",
+  };
+
+  const labelStyle = {
+    display: "block",
+    fontSize: "0.875rem",
+    fontWeight: "600",
+    color: "var(--text-main)",
+    marginBottom: "0.35rem",
+  };
+
+  const buttonStyle = {
+    width: "100%",
+    padding: "0.75rem",
+    backgroundColor: "#2563eb",
+    color: "white",
+    border: "none",
+    borderRadius: "0.5rem",
+    fontSize: "1rem",
+    fontWeight: "600",
+    cursor: "pointer",
+    marginTop: "1rem",
+    transition: "var(--transition-fast)",
+  };
+
+  const backButtonStyle = {
+    alignSelf: "flex-start",
+    display: "inline-flex",
+    alignItems: "center",
+    gap: "0.35rem",
+    background: "none",
+    border: "none",
+    color: "var(--text-subtle)",
+    fontSize: "0.875rem",
+    fontWeight: "600",
+    cursor: "pointer",
+    padding: "0",
+    marginTop: "2rem",
+    borderRadius: "var(--radius-sm)",
+  };
+
   if (!token) {
     return (
-      <div className="auth-form-header">
-        <h3 className="auth-form-title">Invalid Link</h3>
-        <p className="auth-form-subtitle">The password reset link is invalid or missing the token.</p>
-        <div className="auth-footer-text" style={{ marginTop: "2rem" }}>
-          <span className="form-link" onClick={onNavigateToLogin} style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem" }}>
-            <ArrowLeft size={16} />
-            <span>Back to login</span>
-          </span>
-        </div>
+      <div style={{ textAlign: "left", marginBottom: "2rem" }}>
+        <h3 style={{ fontFamily: "var(--font-heading)", fontSize: "1.75rem", fontWeight: "800", margin: "0 0 0.5rem 0", color: "#0f172a" }}>Invalid Link</h3>
+        <p style={{ margin: 0, fontSize: "0.95rem", color: "#64748b" }}>The password reset link is invalid or missing the token.</p>
+        <button type="button" onClick={onNavigateToLogin} style={backButtonStyle}>
+          <ArrowLeft size={16} />
+          <span>Back to login</span>
+        </button>
       </div>
     );
   }
 
   if (success) {
     return (
-      <div className="auth-form-header">
+      <div style={{ textAlign: "center", marginBottom: "2rem" }}>
         <div style={{ display: "flex", justifyContent: "center", marginBottom: "1rem", color: "var(--color-primary-600)" }}>
           <CheckCircle size={48} />
         </div>
-        <h3 className="auth-form-title">Password Reset</h3>
-        <p className="auth-form-subtitle">Your password has been successfully reset.</p>
-        <button className="btn-auth-submit" onClick={onNavigateToLogin} style={{ marginTop: "2rem" }}>
+        <h3 style={{ fontFamily: "var(--font-heading)", fontSize: "1.75rem", fontWeight: "800", margin: "0 0 0.5rem 0", color: "#0f172a" }}>Password Reset</h3>
+        <p style={{ margin: 0, fontSize: "0.95rem", color: "#64748b" }}>Your password has been successfully reset.</p>
+        <button onClick={onNavigateToLogin} style={buttonStyle}>
           Continue to Login
         </button>
       </div>
@@ -91,9 +140,9 @@ export default function NewPasswordPage({ onNavigateToLogin }) {
 
   return (
     <>
-      <div className="auth-form-header">
-        <h3 className="auth-form-title">Set New Password</h3>
-        <p className="auth-form-subtitle">Please enter your new password below.</p>
+      <div style={{ textAlign: "left", marginBottom: "2rem" }}>
+        <h3 style={{ fontFamily: "var(--font-heading)", fontSize: "1.75rem", fontWeight: "800", margin: "0 0 0.5rem 0", color: "#0f172a" }}>Set New Password</h3>
+        <p style={{ margin: 0, fontSize: "0.95rem", color: "#64748b" }}>Please enter your new password below.</p>
       </div>
 
       {error && (
@@ -102,9 +151,9 @@ export default function NewPasswordPage({ onNavigateToLogin }) {
         </div>
       )}
 
-      <form className="auth-form" onSubmit={handleSubmit}>
-        <div className="form-group" style={{ position: "relative" }}>
-          <label htmlFor="password">New Password</label>
+      <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+        <div style={{ position: "relative" }}>
+          <label htmlFor="password" style={labelStyle}>New Password</label>
           <input
             type={showPassword ? "text" : "password"}
             id="password"
@@ -112,28 +161,29 @@ export default function NewPasswordPage({ onNavigateToLogin }) {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             disabled={isLoading}
-            style={{ paddingRight: "2.5rem" }}
+            style={{ ...inputStyle, paddingRight: "40px" }}
           />
           <button
             type="button"
-            className="password-toggle"
             onClick={() => setShowPassword(!showPassword)}
             style={{
               position: "absolute",
-              right: "0.75rem",
-              top: "2.1rem",
+              right: "10px",
+              top: "35px",
               background: "none",
               border: "none",
               cursor: "pointer",
-              color: "var(--text-muted)"
+              color: "var(--text-subtle)",
+              display: "flex",
+              alignItems: "center"
             }}
           >
             {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
           </button>
         </div>
 
-        <div className="form-group" style={{ position: "relative" }}>
-          <label htmlFor="confirmPassword">Confirm New Password</label>
+        <div style={{ position: "relative" }}>
+          <label htmlFor="confirmPassword" style={labelStyle}>Confirm New Password</label>
           <input
             type={showPassword ? "text" : "password"}
             id="confirmPassword"
@@ -141,41 +191,36 @@ export default function NewPasswordPage({ onNavigateToLogin }) {
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             disabled={isLoading}
-            style={{ paddingRight: "2.5rem" }}
+            style={{ ...inputStyle, paddingRight: "40px" }}
           />
           <button
             type="button"
-            className="password-toggle"
             onClick={() => setShowPassword(!showPassword)}
             style={{
               position: "absolute",
-              right: "0.75rem",
-              top: "2.1rem",
+              right: "10px",
+              top: "35px",
               background: "none",
               border: "none",
               cursor: "pointer",
-              color: "var(--text-muted)"
+              color: "var(--text-subtle)",
+              display: "flex",
+              alignItems: "center"
             }}
           >
             {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
           </button>
         </div>
 
-        <button type="submit" className="btn-auth-submit" disabled={isLoading}>
+        <button type="submit" style={{ ...buttonStyle, opacity: isLoading ? 0.7 : 1 }} disabled={isLoading}>
           {isLoading ? "Resetting..." : "Reset Password"}
         </button>
       </form>
 
-      <div className="auth-footer-text" style={{ marginTop: "2rem" }}>
-        <span 
-          className="form-link" 
-          onClick={onNavigateToLogin}
-          style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem" }}
-        >
-          <ArrowLeft size={16} />
-          <span>Back to login</span>
-        </span>
-      </div>
+      <button type="button" onClick={onNavigateToLogin} style={backButtonStyle}>
+        <ArrowLeft size={16} />
+        <span>Back to login</span>
+      </button>
     </>
   );
 }

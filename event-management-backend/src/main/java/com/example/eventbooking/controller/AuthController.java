@@ -1,8 +1,8 @@
 package com.example.eventbooking.controller;
 
-import com.example.eventbooking.dto.AuthResponse;
-import com.example.eventbooking.dto.LoginRequest;
-import com.example.eventbooking.dto.RegisterRequest;
+import com.example.eventbooking.dto.response.AuthResponse;
+import com.example.eventbooking.dto.request.LoginRequest;
+import com.example.eventbooking.dto.request.RegisterRequest;
 import com.example.eventbooking.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -32,7 +32,7 @@ public class AuthController {
 
     @PostMapping("/forgot-password")
     public ResponseEntity<Void> forgotPassword(
-            @RequestBody com.example.eventbooking.dto.ForgotPasswordRequest request
+            @RequestBody com.example.eventbooking.dto.request.ForgotPasswordRequest request
     ) {
         authService.generatePasswordResetToken(request.getEmail());
         return ResponseEntity.ok().build();
@@ -40,7 +40,7 @@ public class AuthController {
 
     @PostMapping("/reset-password")
     public ResponseEntity<Void> resetPassword(
-            @RequestBody com.example.eventbooking.dto.ResetPasswordRequest request
+            @RequestBody com.example.eventbooking.dto.request.ResetPasswordRequest request
     ) {
         authService.resetPassword(request.getToken(), request.getNewPassword());
         return ResponseEntity.ok().build();

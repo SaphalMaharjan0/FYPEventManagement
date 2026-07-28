@@ -1,6 +1,6 @@
 package com.example.eventbooking.controller;
 
-import com.example.eventbooking.dto.ServiceDto;
+import com.example.eventbooking.dto.response.ServiceDto;
 import com.example.eventbooking.entity.User;
 import com.example.eventbooking.service.VendorServiceListingService;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +28,14 @@ public class VendorServiceController {
             @AuthenticationPrincipal User currentUser,
             @RequestBody ServiceDto dto) {
         return ResponseEntity.ok(serviceListingService.createService(currentUser.getUserId(), dto));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<ServiceDto> updateService(
+            @AuthenticationPrincipal User currentUser,
+            @PathVariable Integer id,
+            @RequestBody ServiceDto dto) {
+        return ResponseEntity.ok(serviceListingService.updateService(currentUser.getUserId(), id, dto));
     }
 
     @DeleteMapping("/{id}")

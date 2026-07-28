@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Plus, Search, Eye, Edit2, Trash2, Filter, ShieldCheck, Clock } from "lucide-react";
+import { Plus, Search, Eye, Edit2, Trash2, Filter, ShieldCheck, Clock, X } from "lucide-react";
 import { useFetch } from "../../hooks/useFetch";
 
 export default function ManageVendorsPage() {
@@ -7,19 +7,47 @@ export default function ManageVendorsPage() {
   const [vendors, setVendors] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // Invite Modal State
+  const [showInviteModal, setShowInviteModal] = useState(false);
+  const [inviteData, setInviteData] = useState({ fullName: "", businessName: "", email: "" });
+  const [inviteLoading, setInviteLoading] = useState(false);
+  const [inviteError, setInviteError] = useState(null);
+
   useEffect(() => {
-    const loadVendors = async () => {
-      try {
-        const data = await fetchWithAuth("/api/admin/vendors");
-        setVendors(data || []);
-      } catch (err) {
-        console.error("Failed to load admin vendors", err);
-      } finally {
-        setLoading(false);
-      }
-    };
     loadVendors();
-  }, [fetchWithAuth]);
+  }, []);
+
+  const loadVendors = async () => {
+    try {
+      setLoading(true);
+      const data = await fetchWithAuth("/api/admin/vendors");
+      setVendors(data || []);
+    } catch (err) {
+      console.error("Failed to load admin vendors", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleInvite = async (e) => {
+    e.preventDefault();
+    setInviteError(null);
+    setInviteLoading(true);
+    try {
+      const newVendor = await fetchWithAuth("/api/admin/vendors/invite", {
+        method: "POST",
+        body: JSON.stringify(inviteData),
+      });
+      setVendors([newVendor, ...vendors]);
+      setShowInviteModal(false);
+      setInviteData({ fullName: "", businessName: "", email: "" });
+      alert("Vendor invited successfully! An email with credentials has been sent.");
+    } catch (err) {
+      setInviteError(err.message || "Failed to invite vendor");
+    } finally {
+      setInviteLoading(false);
+    }
+  };
 
   const getStatusStyle = (status) => {
     switch (status) {
@@ -31,11 +59,13 @@ export default function ManageVendorsPage() {
   };
 
   return (
-    <div style={{ maxWidth: "1400px", margin: "0 auto" }}>
+    <div style={{ maxWidth: "1400px", margin: "0 auto", position: "relative" }}>
       {/* Header */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2rem" }}>
         <h1 style={{ fontSize: "1.75rem", fontWeight: "bold", color: "var(--color-slate-900)" }}>Vendor Management</h1>
-        <button style={{ 
+        <button 
+          onClick={() => setShowInviteModal(true)}
+          style={{ 
           display: "flex", alignItems: "center", gap: "0.5rem", 
           padding: "0.6rem 1.25rem", backgroundColor: "#3b82f6", color: "white", 
           border: "none", borderRadius: "8px", fontWeight: "600", fontSize: "0.9rem",
@@ -154,6 +184,81 @@ export default function ManageVendorsPage() {
           </table>
         </div>
       </div>
+
+      {/* Invite Modal */}
+      {showInviteModal && (
+        <div style={{ position: "fixed", top: 0, left: 0, width: "100%", height: "100%", backgroundColor: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000 }}>
+          <div style={{ backgroundColor: "white", padding: "2rem", borderRadius: "12px", width: "100%", maxWidth: "450px", boxShadow: "0 20px 25px -5px rgba(0,0,0,0.1)" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
+              <h2 style={{ fontSize: "1.25rem", fontWeight: "bold", color: "var(--color-slate-900)", margin: 0 }}>Invite Vendor</h2>
+              <button 
+                onClick={() => setShowInviteModal(false)}
+                style={{ background: "none", border: "none", color: "var(--color-slate-400)", cursor: "pointer" }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+            
+            {inviteError && (
+              <div style={{ padding: "0.75rem", backgroundColor: "#fef2f2", color: "#b91c1c", borderRadius: "8px", marginBottom: "1.5rem", fontSize: "0.9rem" }}>
+                {inviteError}
+              </div>
+            )}
+            
+            <form onSubmit={handleInvite}>
+              <div style={{ marginBottom: "1rem" }}>
+                <label style={{ display: "block", marginBottom: "0.5rem", fontSize: "0.9rem", fontWeight: "500", color: "var(--color-slate-700)" }}>Vendor Name (Owner)</label>
+                <input 
+                  type="text"
+                  required
+                  value={inviteData.fullName}
+                  onChange={e => setInviteData({...inviteData, fullName: e.target.value})}
+                  style={{ width: "100%", padding: "0.75rem", borderRadius: "8px", border: "1px solid #e2e8f0", outline: "none", fontSize: "0.95rem" }}
+                  placeholder="e.g. John Doe"
+                />
+              </div>
+              <div style={{ marginBottom: "1rem" }}>
+                <label style={{ display: "block", marginBottom: "0.5rem", fontSize: "0.9rem", fontWeight: "500", color: "var(--color-slate-700)" }}>Business / Company Name</label>
+                <input 
+                  type="text"
+                  required
+                  value={inviteData.businessName}
+                  onChange={e => setInviteData({...inviteData, businessName: e.target.value})}
+                  style={{ width: "100%", padding: "0.75rem", borderRadius: "8px", border: "1px solid #e2e8f0", outline: "none", fontSize: "0.95rem" }}
+                  placeholder="e.g. Doe Catering Services"
+                />
+              </div>
+              <div style={{ marginBottom: "1.5rem" }}>
+                <label style={{ display: "block", marginBottom: "0.5rem", fontSize: "0.9rem", fontWeight: "500", color: "var(--color-slate-700)" }}>Email Address</label>
+                <input 
+                  type="email"
+                  required
+                  value={inviteData.email}
+                  onChange={e => setInviteData({...inviteData, email: e.target.value})}
+                  style={{ width: "100%", padding: "0.75rem", borderRadius: "8px", border: "1px solid #e2e8f0", outline: "none", fontSize: "0.95rem" }}
+                  placeholder="e.g. john@doecatering.com"
+                />
+              </div>
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: "1rem" }}>
+                <button 
+                  type="button" 
+                  onClick={() => setShowInviteModal(false)}
+                  style={{ padding: "0.6rem 1.25rem", backgroundColor: "var(--color-slate-100)", color: "var(--color-slate-600)", border: "none", borderRadius: "8px", fontWeight: "600", cursor: "pointer" }}
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit" 
+                  disabled={inviteLoading}
+                  style={{ padding: "0.6rem 1.25rem", backgroundColor: "#3b82f6", color: "white", border: "none", borderRadius: "8px", fontWeight: "600", cursor: inviteLoading ? "not-allowed" : "pointer", opacity: inviteLoading ? 0.7 : 1 }}
+                >
+                  {inviteLoading ? "Sending Invite..." : "Send Invitation"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

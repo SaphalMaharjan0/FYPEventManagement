@@ -1,6 +1,6 @@
 package com.example.eventbooking.controller;
 
-import com.example.eventbooking.dto.VendorDto;
+import com.example.eventbooking.dto.response.VendorDto;
 import com.example.eventbooking.entity.User;
 import com.example.eventbooking.service.VendorProfileService;
 import lombok.RequiredArgsConstructor;

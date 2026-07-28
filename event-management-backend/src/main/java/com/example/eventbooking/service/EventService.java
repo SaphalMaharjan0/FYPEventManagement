@@ -1,6 +1,6 @@
 package com.example.eventbooking.service;
 
-import com.example.eventbooking.dto.EventDto;
+import com.example.eventbooking.dto.response.EventDto;
 import com.example.eventbooking.entity.Event;
 import com.example.eventbooking.entity.enums.EventStatus;
 import com.example.eventbooking.repository.EventRepository;

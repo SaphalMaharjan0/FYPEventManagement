@@ -24,47 +24,11 @@ export default function ReportsPage() {
     loadStats();
   }, [fetchWithAuth]);
 
-  // Chart Data (fallback to dummy if stats not ready or missing)
-  const monthlyRevenue = stats?.monthlyRevenue || [
-    { name: 'Jan', value: 45000 },
-    { name: 'Feb', value: 58000 },
-    { name: 'Mar', value: 51000 },
-    { name: 'Apr', value: 72000 },
-    { name: 'May', value: 89000 },
-    { name: 'Jun', value: 95000 },
-    { name: 'Jul', value: 118000 },
-    { name: 'Aug', value: 105000 }
-  ];
-
-  const userGrowth = [
-    { name: 'Jan', value: 1200 },
-    { name: 'Feb', value: 1900 },
-    { name: 'Mar', value: 2500 },
-    { name: 'Apr', value: 3400 },
-    { name: 'May', value: 4200 },
-    { name: 'Jun', value: 5600 },
-    { name: 'Jul', value: 6400 },
-    { name: 'Aug', value: 7500 }
-  ];
-
-  const bookingsByMonth = [
-    { name: 'Jan', value: 120 },
-    { name: 'Feb', value: 170 },
-    { name: 'Mar', value: 140 },
-    { name: 'Apr', value: 210 },
-    { name: 'May', value: 270 },
-    { name: 'Jun', value: 310 },
-    { name: 'Jul', value: 380 },
-    { name: 'Aug', value: 290 }
-  ];
-
-  const topEvents = [
-    { id: 1, name: "TechConf 2025 — AI & Machine Learning Summit", revenue: 112424, percentage: 100 },
-    { id: 2, name: "Global Music Festival — Summer Edition", revenue: 236740, percentage: 80 },
-    { id: 3, name: "International Food & Wine Expo", revenue: 22750, percentage: 40 },
-    { id: 4, name: "Startup Founders Summit 2025", revenue: 88578, percentage: 65 },
-    { id: 5, name: "Contemporary Art Biennale 2025", revenue: 8100, percentage: 20 }
-  ];
+  // Chart Data (fallback to empty arrays if stats not ready or missing)
+  const monthlyRevenue = stats?.monthlyRevenue || [];
+  const userGrowth = stats?.userGrowthData || [];
+  const bookingsByMonth = stats?.bookingsByDate || [];
+  const topEvents = stats?.topEvents || [];
 
   const StatCard = ({ icon: Icon, title, value, subtitle, iconColor, iconBg }) => (
     <div style={{ backgroundColor: "var(--color-white)", padding: "1.5rem", borderRadius: "12px", border: "1px solid #e2e8f0", display: "flex", alignItems: "flex-start", gap: "1.25rem" }}>
