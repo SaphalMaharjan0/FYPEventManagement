@@ -94,14 +94,3 @@ Start the local development server:
 npm run dev
 ```
 The application will open on **`http://localhost:5173`**.
-
----
-
-## 📝 Seed Data & Credentials
-Upon startup, the database is automatically seeded with test accounts:
-
-| Role | Username / Email | Password |
-| :--- | :--- | :--- |
-| **Administrator** | `admin@eventpulse.com` | `admin123` |
-| **Customer** | `customer@eventpulse.com` | `customer123` |
-| **Vendor** | `vendor@eventpulse.com` | `vendor123` |
