@@ -20,6 +20,14 @@ public class DataInitializer {
     @Bean
     public CommandLineRunner initData(UserRepository userRepository, EventRepository eventRepository) {
         return args -> {
+            // Auto-publish existing draft events so they show up on the events page
+            eventRepository.findAll().forEach(e -> {
+                if (e.getStatus() == EventStatus.draft) {
+                    e.setStatus(EventStatus.published);
+                    eventRepository.save(e);
+                }
+            });
+
             if (eventRepository.count() == 0) {
                 // Ensure there is an organizer
                 User admin = userRepository.findByEmail("admin@example.com").orElseGet(() -> {

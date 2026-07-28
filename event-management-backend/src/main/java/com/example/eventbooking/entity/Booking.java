@@ -22,7 +22,7 @@ public class Booking {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "customer_id", nullable = false)
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -40,4 +40,10 @@ public class Booking {
 
     @Column(nullable = false)
     private LocalDateTime bookingDate;
+
+    @Column(unique = true)
+    private String transactionUuid;
+
+    @Column
+    private String paymentMethod;
 }

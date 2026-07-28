@@ -97,7 +97,7 @@ export default function ReportsPage() {
                 <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 12 }} dy={10} />
                 <YAxis 
                   axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 12 }}
-                  tickFormatter={(value) => `$${value/1000}k`}
+                  tickFormatter={(value) => `$${value}`}
                 />
                 <Tooltip 
                   formatter={(value) => [`$${value.toLocaleString()}`, 'Revenue']}
@@ -120,7 +120,7 @@ export default function ReportsPage() {
                 <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 12 }} dy={10} />
                 <YAxis 
                   axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 12 }}
-                  tickFormatter={(value) => `${value/1000}k`}
+                  allowDecimals={false}
                 />
                 <Tooltip 
                   formatter={(value) => [value.toLocaleString(), 'Users']}

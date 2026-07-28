@@ -67,6 +67,23 @@ export default function ManageUsersPage() {
     }
   };
 
+  const handleDeleteUser = async (userId, dbId) => {
+    if (!window.confirm(`Are you sure you want to delete user ${userId}?`)) return;
+    try {
+      const response = await fetchWithAuth(`/api/admin/users/${dbId}`, {
+        method: "DELETE"
+      });
+      if (response !== null) { // fetchWithAuth returns null on error
+        setUsers(users.filter(u => u.dbId !== dbId));
+      } else {
+        alert("Failed to delete user.");
+      }
+    } catch (err) {
+      console.error("Failed to delete user", err);
+      alert("Failed to delete user.");
+    }
+  };
+
   const handleCreateUser = async (e) => {
     e.preventDefault();
     try {
@@ -208,7 +225,7 @@ export default function ManageUsersPage() {
                       <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: "0.75rem" }}>
                         <button style={{ background: "none", border: "none", color: "var(--color-slate-400)", cursor: "pointer" }}><Eye size={16} /></button>
                         <button onClick={() => handleEditClick(user)} style={{ background: "none", border: "none", color: "var(--color-blue-500)", cursor: "pointer" }}><Edit2 size={16} /></button>
-                        <button style={{ background: "none", border: "none", color: "var(--color-slate-400)", cursor: "pointer" }}><Trash2 size={16} /></button>
+                        <button onClick={() => handleDeleteUser(user.id, user.dbId)} style={{ background: "none", border: "none", color: "var(--color-slate-400)", cursor: "pointer" }}><Trash2 size={16} /></button>
                       </div>
                     </td>
                   </tr>

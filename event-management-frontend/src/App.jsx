@@ -16,6 +16,7 @@ const pageToUrl = (page) => {
   if (page === "forgot") return "/forgot";
   return `/${page}`;
 };
+import { FavoritesProvider } from "./contexts/FavoritesContext";
 
 export default function App() {
   const navigate = useNavigate();
@@ -54,7 +55,18 @@ export default function App() {
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
   const [redirectAfterLogin, setRedirectAfterLogin] = useState(null);
 
-  const [currentUser, setCurrentUser] = useState(null);
+  const [currentUser, setCurrentUser] = useState(() => {
+    try {
+      const savedUser = localStorage.getItem('user');
+      if (savedUser && savedUser !== 'undefined') {
+        return JSON.parse(savedUser);
+      }
+    } catch (e) {
+      console.error("Failed to parse user from localStorage", e);
+      localStorage.removeItem('user');
+    }
+    return null;
+  });
 
   const [isDarkMode, setIsDarkMode] = useState(() => {
     const saved = localStorage.getItem("eventpulse_theme");
@@ -72,10 +84,6 @@ export default function App() {
       localStorage.setItem("eventpulse_theme", "light");
     }
   }, [isDarkMode]);
-
-
-
-
 
   const onNavigate = (page) => {
     navigate(pageToUrl(page));
@@ -152,6 +160,8 @@ export default function App() {
 
   const handleLogout = () => {
     if (window.confirm("Are you sure you want to log out?")) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
       setCurrentUser(null);
       onNavigate("landing");
       showToast("Logged out successfully.");
@@ -159,8 +169,13 @@ export default function App() {
   };
 
   const handleRegisterSuccess = (userData) => {
-    showToast(`Account created! Welcome, ${userData.firstName}.`);
-    setCurrentUser({ name: `${userData.firstName} ${userData.lastName}`, email: userData.email, role: userData.role });
+    if (!userData) {
+      showToast("Account created successfully!");
+      return;
+    }
+    const name = userData.fullName || userData.name || "User";
+    showToast(`Account created! Welcome, ${name}.`);
+    setCurrentUser({ name: name, email: userData.email, role: userData.role });
     if (redirectAfterLogin) {
       setSelectedEvent(redirectAfterLogin.event);
       setBookingQuantity(redirectAfterLogin.quantity);
@@ -197,12 +212,18 @@ export default function App() {
     onNavigate("login");
   };
 
+  const handleUpdateUser = (updatedUser) => {
+    setCurrentUser(updatedUser);
+    localStorage.setItem('user', JSON.stringify(updatedUser));
+  };
+
   const featuredEvents = filteredEvents.filter(e => e.featured);
   const upcomingEvents = filteredEvents.filter(e => !e.featured);
 
   return (
-    <>
+    <FavoritesProvider currentUser={currentUser}>
       <AppRoutes
+        onUpdateUser={handleUpdateUser}
         currentUser={currentUser}
         events={events}
         activeCategory={activeCategory}
@@ -242,6 +263,6 @@ export default function App() {
           <span>{toast}</span>
         </div>
       )}
-    </>
+    </FavoritesProvider>
   );
 }

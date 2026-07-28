@@ -64,7 +64,7 @@ export default function RegisterForm({
     setLoading(true);
 
     try {
-      await register({
+      const registeredUser = await register({
         fullName: `${firstName.trim()} ${lastName.trim()}`,
         email: email.trim(),
         password,
@@ -72,7 +72,7 @@ export default function RegisterForm({
       });
       setSuccess("Account created successfully! Redirecting to login...");
       if (onRegisterSuccess) {
-        onRegisterSuccess();
+        onRegisterSuccess(registeredUser);
       }
       setTimeout(() => {
         onNavigateToLogin();

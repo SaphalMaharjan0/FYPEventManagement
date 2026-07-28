@@ -1,4 +1,3 @@
-import React from "react";
 import { 
   Home, 
   Users, 
@@ -114,7 +113,12 @@ export default function AdminSidebar({ currentPage, onNavigate, currentUser, onL
 
       {/* User & Logout */}
       <div style={{ padding: "1rem", borderTop: "1px solid rgba(255,255,255,0.05)" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", padding: "0.75rem", marginBottom: "0.5rem" }}>
+        <div
+          onClick={() => onNavigate("admin-profile")}
+          style={{ display: "flex", alignItems: "center", gap: "0.75rem", padding: "0.75rem", marginBottom: "0.5rem", cursor: "pointer", borderRadius: "0.5rem", transition: "background 0.2s" }}
+          onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.07)"; }}
+          onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; }}
+        >
           <div style={{
             width: "36px",
             height: "36px",
@@ -131,7 +135,7 @@ export default function AdminSidebar({ currentPage, onNavigate, currentUser, onL
           </div>
           <div style={{ flex: 1, overflow: "hidden" }}>
             <div style={{ color: "white", fontSize: "0.9rem", fontWeight: "600", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-              {currentUser?.name || "Carlos Rivera"}
+              {currentUser?.fullName || currentUser?.name || "Admin"}
             </div>
             <div style={{ color: "#64748b", fontSize: "0.75rem", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
               {currentUser?.email || "alex@example.com"}

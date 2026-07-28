@@ -9,6 +9,8 @@
 -- ============================================================
 
 -- Drop tables if re-running during development (safe order: children first)
+DROP TABLE IF EXISTS VENDOR_BLOCKED_DATES CASCADE;
+DROP TABLE IF EXISTS VENDOR_AVAILABILITY CASCADE;
 DROP TABLE IF EXISTS SERVICE_REQUESTS CASCADE;
 DROP TABLE IF EXISTS PAYMENTS CASCADE;
 DROP TABLE IF EXISTS BOOKINGS CASCADE;
@@ -42,6 +44,7 @@ CREATE TABLE USERS (
     email           VARCHAR(150)    NOT NULL UNIQUE,
     password_hash   VARCHAR(255)    NOT NULL,
     phone           VARCHAR(20),
+    location        VARCHAR(200),
     role            user_role       NOT NULL DEFAULT 'customer',
     is_active       BOOLEAN         NOT NULL DEFAULT TRUE,
     created_at      TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -66,6 +69,30 @@ CREATE TABLE VENDORS (
 );
 
 -- ============================================================
+-- VENDOR_AVAILABILITY
+-- ============================================================
+CREATE TABLE VENDOR_AVAILABILITY (
+    id              SERIAL PRIMARY KEY,
+    vendor_id       INTEGER         NOT NULL REFERENCES VENDORS(vendor_id) ON DELETE CASCADE,
+    day_of_week     VARCHAR(20)     NOT NULL,
+    is_available    BOOLEAN         NOT NULL DEFAULT TRUE,
+    start_time      TIME            NOT NULL DEFAULT '09:00:00',
+    end_time        TIME            NOT NULL DEFAULT '17:00:00',
+    UNIQUE (vendor_id, day_of_week)
+);
+
+-- ============================================================
+-- VENDOR_BLOCKED_DATES
+-- ============================================================
+CREATE TABLE VENDOR_BLOCKED_DATES (
+    id              SERIAL PRIMARY KEY,
+    vendor_id       INTEGER         NOT NULL REFERENCES VENDORS(vendor_id) ON DELETE CASCADE,
+    blocked_date    DATE            NOT NULL,
+    reason          VARCHAR(255),
+    UNIQUE (vendor_id, blocked_date)
+);
+
+-- ============================================================
 -- EVENTS
 -- ============================================================
 CREATE TABLE EVENTS (
@@ -75,11 +102,12 @@ CREATE TABLE EVENTS (
     description     TEXT,
     category        VARCHAR(50),
     venue           VARCHAR(200),
+    image_url       VARCHAR(500),
     event_date      DATE            NOT NULL,
     start_time      TIME            NOT NULL,
     end_time        TIME,
     capacity        INTEGER         NOT NULL CHECK (capacity >= 0),
-    status          event_status    NOT NULL DEFAULT 'draft',
+    status          VARCHAR(50)     NOT NULL DEFAULT 'draft',
     created_at      TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at      TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
@@ -104,13 +132,16 @@ CREATE TABLE TICKETS (
 -- BOOKINGS (linked to TICKETS, not directly to EVENTS)
 -- ============================================================
 CREATE TABLE BOOKINGS (
-    booking_id      SERIAL PRIMARY KEY,
+    id              SERIAL PRIMARY KEY,
     customer_id     INTEGER         NOT NULL REFERENCES USERS(user_id) ON DELETE RESTRICT,
-    ticket_id       INTEGER         NOT NULL REFERENCES TICKETS(ticket_id) ON DELETE RESTRICT,
-    quantity        INTEGER         NOT NULL CHECK (quantity > 0),
-    total_amount    NUMERIC(10,2)   NOT NULL CHECK (total_amount >= 0),
-    status          booking_status  NOT NULL DEFAULT 'pending',
-    booking_date    TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP
+    ticket_id       INTEGER         REFERENCES TICKETS(ticket_id) ON DELETE RESTRICT,
+    event_id        INTEGER         NOT NULL REFERENCES EVENTS(event_id) ON DELETE CASCADE,
+    ticket_count    INTEGER         NOT NULL CHECK (ticket_count > 0),
+    amount          NUMERIC(10,2)   NOT NULL CHECK (amount >= 0),
+    status          VARCHAR(50)     NOT NULL DEFAULT 'PENDING',
+    booking_date    TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    transaction_uuid VARCHAR(255)   UNIQUE,
+    payment_method  VARCHAR(50)
 );
 
 -- ============================================================
@@ -118,7 +149,7 @@ CREATE TABLE BOOKINGS (
 -- ============================================================
 CREATE TABLE PAYMENTS (
     payment_id      SERIAL PRIMARY KEY,
-    booking_id      INTEGER         NOT NULL REFERENCES BOOKINGS(booking_id) ON DELETE CASCADE,
+    booking_id      INTEGER         NOT NULL REFERENCES BOOKINGS(id) ON DELETE CASCADE,
     amount          NUMERIC(10,2)   NOT NULL CHECK (amount >= 0),
     method          payment_method  NOT NULL,
     status          payment_status  NOT NULL DEFAULT 'pending',
@@ -157,15 +188,15 @@ CREATE TABLE SERVICE_REQUESTS (
 -- ============================================================
 -- Indexes for common lookups / reporting queries
 -- ============================================================
-CREATE INDEX idx_events_organizer ON EVENTS(organizer_id);
-CREATE INDEX idx_events_date      ON EVENTS(event_date);
-CREATE INDEX idx_tickets_event    ON TICKETS(event_id);
-CREATE INDEX idx_bookings_customer ON BOOKINGS(customer_id);
-CREATE INDEX idx_bookings_ticket  ON BOOKINGS(ticket_id);
-CREATE INDEX idx_payments_booking ON PAYMENTS(booking_id);
-CREATE INDEX idx_services_vendor  ON SERVICES(vendor_id);
-CREATE INDEX idx_srequests_event  ON SERVICE_REQUESTS(event_id);
-CREATE INDEX idx_srequests_service ON SERVICE_REQUESTS(service_id);
+CREATE INDEX idx_events_organizer   ON EVENTS(organizer_id);
+CREATE INDEX idx_events_date        ON EVENTS(event_date);
+CREATE INDEX idx_tickets_event      ON TICKETS(event_id);
+CREATE INDEX idx_bookings_customer  ON BOOKINGS(customer_id);
+CREATE INDEX idx_bookings_ticket    ON BOOKINGS(ticket_id);
+CREATE INDEX idx_payments_booking   ON PAYMENTS(booking_id);
+CREATE INDEX idx_services_vendor    ON SERVICES(vendor_id);
+CREATE INDEX idx_srequests_event    ON SERVICE_REQUESTS(event_id);
+CREATE INDEX idx_srequests_service  ON SERVICE_REQUESTS(service_id);
 
 -- ============================================================
 -- Trigger function to auto-update "updated_at" columns

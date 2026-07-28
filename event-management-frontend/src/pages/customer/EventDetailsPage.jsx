@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { ArrowLeft, Calendar, Clock, MapPin, Star, User, ShieldAlert, Award } from "lucide-react";
+import { ArrowLeft, Calendar, Clock, MapPin, Star, User, ShieldAlert, Award, Heart } from "lucide-react";
 import { useSettings } from "../../contexts/SettingsContext";
 import { formatPrice, formatDate } from "../../utils/formatting";
 import EventCard from "../../components/event/EventCard";
+import { useFavorites } from "../../contexts/FavoritesContext";
 
 export default function EventDetailsPage({
   event,
@@ -13,6 +14,7 @@ export default function EventDetailsPage({
   isDashboardContext = false
 }) {
   const { currency, region } = useSettings();
+  const { favoriteIds, toggleFavorite } = useFavorites();
   const [quantity, setQuantity] = useState(1);
 
   // Scroll to top on page load/change
@@ -20,7 +22,24 @@ export default function EventDetailsPage({
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [event]);
 
+  // Redirect if accessed directly without a selected event
+  useEffect(() => {
+    if (!event) {
+      onNavigate("events");
+    }
+  }, [event, onNavigate]);
+
   if (!event) return null;
+
+  const actualId = event.id || event.eventId;
+  const isFavorite = favoriteIds ? favoriteIds.has(actualId) : false;
+
+  const handleFavoriteToggle = async () => {
+    if (!actualId || !currentUser) return;
+    if (toggleFavorite) {
+      await toggleFavorite(actualId);
+    }
+  };
 
   const handleIncrement = () => {
     if (quantity < event.seatsLeft) {
@@ -59,7 +78,33 @@ export default function EventDetailsPage({
           {/* Main Left Details column */}
           <div className="details-main-content">
             {/* Event Hero Cover Image */}
-            <img src={event.image} alt={event.title} className="details-hero-image" />
+            <div style={{ position: "relative" }}>
+              <img src={event.image} alt={event.title} className="details-hero-image" />
+              {currentUser && (
+                <button
+                  onClick={handleFavoriteToggle}
+                  style={{
+                    position: "absolute",
+                    top: "16px",
+                    right: "16px",
+                    background: "var(--bg-card, white)",
+                    border: "none",
+                    borderRadius: "50%",
+                    width: "48px",
+                    height: "48px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    cursor: "pointer",
+                    boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
+                    transition: "all 0.2s"
+                  }}
+                  title={isFavorite ? "Remove from Favorites" : "Add to Favorites"}
+                >
+                  <Heart size={24} fill={isFavorite ? "var(--color-red-500, #ef4444)" : "none"} color={isFavorite ? "var(--color-red-500, #ef4444)" : "var(--text-subtle, #64748b)"} />
+                </button>
+              )}
+            </div>
 
             {/* Title & Badge */}
             <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>

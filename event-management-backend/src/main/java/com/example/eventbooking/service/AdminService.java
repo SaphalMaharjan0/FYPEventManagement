@@ -32,6 +32,7 @@ public class AdminService {
     private final VendorRepository vendorRepository;
     private final BookingRepository bookingRepository;
     private final PasswordEncoder passwordEncoder;
+    private final org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
 
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("MMM dd, yyyy");
 
@@ -42,9 +43,14 @@ public class AdminService {
 
         long totalUsers = users.size();
         long totalEvents = events.size();
-        long totalBookings = bookings.size();
         
-        BigDecimal totalRevenue = bookings.stream()
+        List<Booking> activeBookings = bookings.stream()
+                .filter(b -> !"CANCELLED".equalsIgnoreCase(b.getStatus()) && !"FAILED".equalsIgnoreCase(b.getStatus()))
+                .collect(Collectors.toList());
+
+        long totalBookings = activeBookings.size();
+
+        BigDecimal totalRevenue = activeBookings.stream()
                 .map(Booking::getAmount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
@@ -57,9 +63,10 @@ public class AdminService {
 
         // 1. Daily Revenue
         java.util.Map<String, BigDecimal> revenueByDate = new java.util.LinkedHashMap<>();
-        for (String d : last14Days) revenueByDate.put(d, BigDecimal.ZERO);
-        
-        bookings.forEach(b -> {
+        for (String d : last14Days)
+            revenueByDate.put(d, BigDecimal.ZERO);
+
+        activeBookings.forEach(b -> {
             if (b.getBookingDate() != null) {
                 String dateStr = b.getBookingDate().toLocalDate().format(DateTimeFormatter.ofPattern("MMM dd"));
                 if (revenueByDate.containsKey(dateStr)) {
@@ -68,29 +75,31 @@ public class AdminService {
             }
         });
         List<AdminDashboardStatsDto.ChartData> monthlyRevenue = revenueByDate.entrySet().stream()
-            .map(e -> AdminDashboardStatsDto.ChartData.builder().name(e.getKey()).value(e.getValue()).build())
-            .collect(Collectors.toList());
+                .map(e -> AdminDashboardStatsDto.ChartData.builder().name(e.getKey()).value(e.getValue()).build())
+                .collect(Collectors.toList());
 
         // 2. Events by Category
         java.util.Map<String, Long> categoryCounts = events.stream()
-            .collect(Collectors.groupingBy(e -> e.getCategory() != null ? e.getCategory() : "Other", Collectors.counting()));
-        
-        String[] colors = {"#3b82f6", "#10b981", "#f59e0b", "#8b5cf6", "#ef4444"};
+                .collect(Collectors.groupingBy(e -> e.getCategory() != null ? e.getCategory() : "Other",
+                        Collectors.counting()));
+
+        String[] colors = { "#3b82f6", "#10b981", "#f59e0b", "#8b5cf6", "#ef4444" };
         List<AdminDashboardStatsDto.ChartData> eventsByCategory = new java.util.ArrayList<>();
         int colorIdx = 0;
         for (java.util.Map.Entry<String, Long> entry : categoryCounts.entrySet()) {
             eventsByCategory.add(AdminDashboardStatsDto.ChartData.builder()
-                .name(entry.getKey())
-                .value(entry.getValue())
-                .color(colors[colorIdx % colors.length])
-                .build());
+                    .name(entry.getKey())
+                    .value(entry.getValue())
+                    .color(colors[colorIdx % colors.length])
+                    .build());
             colorIdx++;
         }
 
         // 3. User Growth
         java.util.Map<String, Long> userCountsByDate = new java.util.LinkedHashMap<>();
-        for (String d : last14Days) userCountsByDate.put(d, 0L);
-        
+        for (String d : last14Days)
+            userCountsByDate.put(d, 0L);
+
         users.forEach(u -> {
             if (u.getCreatedAt() != null) {
                 String dateStr = u.getCreatedAt().toLocalDate().format(DateTimeFormatter.ofPattern("MMM dd"));
@@ -99,7 +108,7 @@ public class AdminService {
                 }
             }
         });
-        
+
         long cumulativeUsers = users.stream()
                 .filter(u -> u.getCreatedAt() != null && u.getCreatedAt().toLocalDate().isBefore(today.minusDays(13)))
                 .count();
@@ -111,15 +120,15 @@ public class AdminService {
 
         // 4. Recent Activity
         List<java.util.Map.Entry<AdminDashboardStatsDto.ActivityDto, java.time.LocalDateTime>> allActivities = new java.util.ArrayList<>();
-        
+
         bookings.forEach(b -> {
             if (b.getBookingDate() != null) {
                 AdminDashboardStatsDto.ActivityDto dto = AdminDashboardStatsDto.ActivityDto.builder()
-                    .id("BK-" + b.getId())
-                    .type("booking")
-                    .description("New booking for " + (b.getEvent() != null ? b.getEvent().getTitle() : "Event"))
-                    .timeAgo(getTimeAgo(b.getBookingDate()))
-                    .build();
+                        .id(com.example.eventbooking.service.CustomerService.generateTicketCode(b.getId()))
+                        .type("booking")
+                        .description("New booking for " + (b.getEvent() != null ? b.getEvent().getTitle() : "Event"))
+                        .timeAgo(getTimeAgo(b.getBookingDate()))
+                        .build();
                 allActivities.add(new java.util.AbstractMap.SimpleEntry<>(dto, b.getBookingDate()));
             }
         });
@@ -127,11 +136,11 @@ public class AdminService {
         users.forEach(u -> {
             if (u.getCreatedAt() != null) {
                 AdminDashboardStatsDto.ActivityDto dto = AdminDashboardStatsDto.ActivityDto.builder()
-                    .id("USR-" + u.getUserId())
-                    .type("user")
-                    .description("New user registered: " + u.getFullName())
-                    .timeAgo(getTimeAgo(u.getCreatedAt()))
-                    .build();
+                        .id("USR-" + u.getUserId())
+                        .type("user")
+                        .description("New user registered: " + u.getFullName())
+                        .timeAgo(getTimeAgo(u.getCreatedAt()))
+                        .build();
                 allActivities.add(new java.util.AbstractMap.SimpleEntry<>(dto, u.getCreatedAt()));
             }
         });
@@ -139,24 +148,25 @@ public class AdminService {
         events.forEach(e -> {
             if (e.getCreatedAt() != null) {
                 AdminDashboardStatsDto.ActivityDto dto = AdminDashboardStatsDto.ActivityDto.builder()
-                    .id("EVT-" + e.getEventId())
-                    .type("event")
-                    .description("Event created: " + e.getTitle())
-                    .timeAgo(getTimeAgo(e.getCreatedAt()))
-                    .build();
+                        .id("EVT-" + e.getEventId())
+                        .type("event")
+                        .description("Event created: " + e.getTitle())
+                        .timeAgo(getTimeAgo(e.getCreatedAt()))
+                        .build();
                 allActivities.add(new java.util.AbstractMap.SimpleEntry<>(dto, e.getCreatedAt()));
             }
         });
 
         List<AdminDashboardStatsDto.ActivityDto> recentActivity = allActivities.stream()
-            .sorted((a, b) -> b.getValue().compareTo(a.getValue()))
-            .limit(5)
-            .map(java.util.Map.Entry::getKey)
-            .collect(Collectors.toList());
+                .sorted((a, b) -> b.getValue().compareTo(a.getValue()))
+                .limit(5)
+                .map(java.util.Map.Entry::getKey)
+                .collect(Collectors.toList());
 
         // 5. Bookings by Date (for Reports)
         java.util.Map<String, Long> bookingsCountByDate = new java.util.LinkedHashMap<>();
-        for (String d : last14Days) bookingsCountByDate.put(d, 0L);
+        for (String d : last14Days)
+            bookingsCountByDate.put(d, 0L);
         bookings.forEach(b -> {
             if (b.getBookingDate() != null) {
                 String dateStr = b.getBookingDate().toLocalDate().format(DateTimeFormatter.ofPattern("MMM dd"));
@@ -166,29 +176,32 @@ public class AdminService {
             }
         });
         List<AdminDashboardStatsDto.ChartData> bookingsByDate = bookingsCountByDate.entrySet().stream()
-            .map(e -> AdminDashboardStatsDto.ChartData.builder().name(e.getKey()).value(e.getValue()).build())
-            .collect(Collectors.toList());
+                .map(e -> AdminDashboardStatsDto.ChartData.builder().name(e.getKey()).value(e.getValue()).build())
+                .collect(Collectors.toList());
 
         // 6. Top Events (for Reports)
         java.util.Map<Event, BigDecimal> eventRevenue = new java.util.HashMap<>();
         for (Booking b : bookings) {
             if (b.getEvent() != null) {
-                eventRevenue.put(b.getEvent(), eventRevenue.getOrDefault(b.getEvent(), BigDecimal.ZERO).add(b.getAmount()));
+                eventRevenue.put(b.getEvent(),
+                        eventRevenue.getOrDefault(b.getEvent(), BigDecimal.ZERO).add(b.getAmount()));
             }
         }
-        BigDecimal totalPlatformRevenue = totalRevenue.compareTo(BigDecimal.ZERO) == 0 ? BigDecimal.ONE : totalRevenue; // avoid division by zero
+        BigDecimal totalPlatformRevenue = totalRevenue.compareTo(BigDecimal.ZERO) == 0 ? BigDecimal.ONE : totalRevenue; // avoid
+                                                                                                                        // division
+                                                                                                                        // by
+                                                                                                                        // zero
         List<AdminDashboardStatsDto.TopEventDto> topEvents = eventRevenue.entrySet().stream()
-            .sorted((a, b) -> b.getValue().compareTo(a.getValue()))
-            .limit(5)
-            .map(e -> AdminDashboardStatsDto.TopEventDto.builder()
-                .id(e.getKey().getEventId())
-                .name(e.getKey().getTitle())
-                .revenue(e.getValue())
-                .percentage(e.getValue().multiply(new BigDecimal("100")).divide(totalPlatformRevenue, 2, java.math.RoundingMode.HALF_UP).doubleValue())
-                .build())
-            .collect(Collectors.toList());
-
-
+                .sorted((a, b) -> b.getValue().compareTo(a.getValue()))
+                .limit(5)
+                .map(e -> AdminDashboardStatsDto.TopEventDto.builder()
+                        .id(e.getKey().getEventId())
+                        .name(e.getKey().getTitle())
+                        .revenue(e.getValue())
+                        .percentage(e.getValue().multiply(new BigDecimal("100"))
+                                .divide(totalPlatformRevenue, 2, java.math.RoundingMode.HALF_UP).doubleValue())
+                        .build())
+                .collect(Collectors.toList());
 
         return AdminDashboardStatsDto.builder()
                 .totalUsers(totalUsers)
@@ -205,13 +218,17 @@ public class AdminService {
     }
 
     private String getTimeAgo(java.time.LocalDateTime pastTime) {
-        if (pastTime == null) return "Unknown";
+        if (pastTime == null)
+            return "Unknown";
         java.time.LocalDateTime now = java.time.LocalDateTime.now();
         long minutes = java.time.Duration.between(pastTime, now).toMinutes();
-        if (minutes < 1) return "Just now";
-        if (minutes < 60) return minutes + " min ago";
+        if (minutes < 1)
+            return "Just now";
+        if (minutes < 60)
+            return minutes + " min ago";
         long hours = minutes / 60;
-        if (hours < 24) return hours + " hour" + (hours > 1 ? "s" : "") + " ago";
+        if (hours < 24)
+            return hours + " hour" + (hours > 1 ? "s" : "") + " ago";
         long days = hours / 24;
         return days + " day" + (days > 1 ? "s" : "") + " ago";
     }
@@ -241,7 +258,7 @@ public class AdminService {
                         .venue(event.getVenue())
                         .imageUrl(event.getImageUrl())
                         .price("Free") // Defaulting for now
-                        .seats("0/" + event.getCapacity())
+                        .seats(formatSeats(event))
                         .rating(4.5) // Defaulting for now
                         .description(event.getDescription())
                         .startTime(event.getStartTime() != null ? event.getStartTime().toString() : null)
@@ -268,7 +285,7 @@ public class AdminService {
     public List<AdminBookingDto> getAllBookings() {
         return bookingRepository.findAll().stream()
                 .map(booking -> AdminBookingDto.builder()
-                        .id("BKG-" + String.format("%04d", booking.getId()))
+                        .id(com.example.eventbooking.service.CustomerService.generateTicketCode(booking.getId()))
                         .user(booking.getUser().getFullName())
                         .event(booking.getEvent().getTitle())
                         .amount("$" + booking.getAmount().toString())
@@ -329,17 +346,20 @@ public class AdminService {
         if (dto.getStartTime() != null && !dto.getStartTime().isEmpty()) {
             try {
                 event.setStartTime(LocalTime.parse(dto.getStartTime()));
-            } catch (Exception e) {}
+            } catch (Exception e) {
+            }
         }
         if (dto.getEndTime() != null && !dto.getEndTime().isEmpty()) {
             try {
                 event.setEndTime(LocalTime.parse(dto.getEndTime()));
-            } catch (Exception e) {}
+            } catch (Exception e) {
+            }
         }
         if (dto.getStatus() != null) {
             try {
                 event.setStatus(EventStatus.valueOf(dto.getStatus()));
-            } catch (Exception e) {}
+            } catch (Exception e) {
+            }
         }
         if (dto.getSeats() != null) {
             try {
@@ -363,7 +383,7 @@ public class AdminService {
                 .venue(event.getVenue())
                 .imageUrl(event.getImageUrl())
                 .price(dto.getPrice() != null ? dto.getPrice() : "Free")
-                .seats("0/" + event.getCapacity())
+                .seats(formatSeats(event))
                 .rating(4.5)
                 .description(event.getDescription())
                 .startTime(event.getStartTime() != null ? event.getStartTime().toString() : null)
@@ -372,10 +392,17 @@ public class AdminService {
                 .build();
     }
 
+    public void deleteEvent(Integer id) {
+        Event event = eventRepository.findById(id).orElseThrow(() -> new RuntimeException("Event not found"));
+        eventRepository.delete(event);
+    }
+
     public AdminEventDto createEvent(AdminEventDto dto) {
-        // Assume first user is admin/organizer for dummy creation since auth might not be fully wired in this method signature
-        User admin = userRepository.findAll().stream().findFirst().orElseThrow(() -> new RuntimeException("No admin user found"));
-        
+        // Assume first user is admin/organizer for dummy creation since auth might not
+        // be fully wired in this method signature
+        User admin = userRepository.findAll().stream().findFirst()
+                .orElseThrow(() -> new RuntimeException("No admin user found"));
+
         Event event = Event.builder()
                 .organizer(admin)
                 .title(dto.getName() != null ? dto.getName() : "Untitled Event")
@@ -383,15 +410,16 @@ public class AdminService {
                 .category(dto.getCategory() != null ? dto.getCategory() : "General")
                 .venue(dto.getVenue() != null ? dto.getVenue() : "TBD")
                 .imageUrl(dto.getImageUrl())
-                .status(EventStatus.draft)
+                .status(EventStatus.published)
                 .capacity(100)
                 .eventDate(LocalDate.now())
-                .startTime(LocalTime.of(9,0))
+                .startTime(LocalTime.of(9, 0))
                 .build();
         if (dto.getDate() != null && !dto.getDate().equals("N/A") && !dto.getDate().isEmpty()) {
             try {
                 event.setEventDate(LocalDate.parse(dto.getDate()));
-            } catch (Exception e) {}
+            } catch (Exception e) {
+            }
         }
         event = eventRepository.save(event);
         return AdminEventDto.builder()
@@ -402,7 +430,7 @@ public class AdminService {
                 .date(event.getEventDate() != null ? event.getEventDate().toString() : "N/A")
                 .venue(event.getVenue())
                 .price(dto.getPrice() != null ? dto.getPrice() : "Free")
-                .seats("0/" + event.getCapacity())
+                .seats(formatSeats(event))
                 .rating(0.0)
                 .description(event.getDescription())
                 .status(event.getStatus().name())
@@ -429,7 +457,7 @@ public class AdminService {
                 .isActive(true)
                 .build();
         user = userRepository.save(user);
-        
+
         AdminUserDto createdUser = AdminUserDto.builder()
                 .dbId(user.getUserId())
                 .id("USR-" + String.format("%03d", user.getUserId()))
@@ -439,7 +467,49 @@ public class AdminService {
                 .status("Active")
                 .joinedDate(user.getCreatedAt() != null ? user.getCreatedAt().format(FORMATTER) : "Just now")
                 .build();
-                
+
         return createdUser;
+    }
+
+    public void deleteUser(Integer id) {
+        User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
+
+        // 1. Delete favorites made by this user
+        jdbcTemplate.update("DELETE FROM favorites WHERE user_id = ?", id);
+
+        // 2. Delete service_requests made by this user
+        jdbcTemplate.update("DELETE FROM service_requests WHERE requested_by = ?", id);
+
+        // 3. Delete payments and bookings for this user as a customer
+        jdbcTemplate.update("DELETE FROM payments WHERE booking_id IN (SELECT id FROM bookings WHERE customer_id = ?)",
+                id);
+        jdbcTemplate.update("DELETE FROM bookings WHERE customer_id = ?", id);
+
+        // 4. Delete related records for events organized by this user
+        String eventsQuery = "SELECT event_id FROM events WHERE organizer_id = ?";
+        String ticketsQuery = "SELECT ticket_id FROM tickets WHERE event_id IN (" + eventsQuery + ")";
+
+        jdbcTemplate.update("DELETE FROM payments WHERE booking_id IN (SELECT id FROM bookings WHERE ticket_id IN ("
+                + ticketsQuery + "))", id);
+        jdbcTemplate.update("DELETE FROM bookings WHERE ticket_id IN (" + ticketsQuery + ")", id);
+        jdbcTemplate.update("DELETE FROM tickets WHERE event_id IN (" + eventsQuery + ")", id);
+        jdbcTemplate.update("DELETE FROM favorites WHERE event_id IN (" + eventsQuery + ")", id);
+        jdbcTemplate.update("DELETE FROM service_requests WHERE event_id IN (" + eventsQuery + ")", id);
+
+        // 5. Delete events organized by this user
+        jdbcTemplate.update("DELETE FROM events WHERE organizer_id = ?", id);
+
+        // 6. Delete vendor profile for this user
+        jdbcTemplate.update("DELETE FROM vendors WHERE user_id = ?", id);
+
+        userRepository.delete(user);
+    }
+
+    private String formatSeats(Event event) {
+        long bookedCount = bookingRepository.findByEvent_EventId(event.getEventId()).stream()
+                .filter(b -> "CONFIRMED".equalsIgnoreCase(b.getStatus()) || "PENDING".equalsIgnoreCase(b.getStatus()))
+                .mapToInt(Booking::getTicketCount)
+                .sum();
+        return bookedCount + "/" + event.getCapacity();
     }
 }

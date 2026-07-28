@@ -2,11 +2,15 @@ import React, { useState } from "react";
 import { Check, ArrowLeft, Ticket } from "lucide-react";
 import { useSettings } from "../../contexts/SettingsContext";
 import { formatPrice, formatDate } from "../../utils/formatting";
+import { useFetch } from "../../hooks/useFetch";
 
 export default function BookingPage({ event, initialQuantity, onBookingSuccess, onNavigate }) {
+  const fetchWithAuth = useFetch();
   const { currency, region } = useSettings();
   const [quantity, setQuantity] = useState(initialQuantity || 1);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState("esewa");
+  const [isProcessing, setIsProcessing] = useState(false);
 
   if (!event) {
     return (
@@ -34,10 +38,39 @@ export default function BookingPage({ event, initialQuantity, onBookingSuccess, 
     }
   };
 
-  const handleCheckoutSubmit = (e) => {
+  const handleCheckoutSubmit = async (e) => {
     e.preventDefault();
-    onBookingSuccess(event.id, quantity);
-    setIsSuccess(true);
+    if (paymentMethod === "esewa") {
+      setIsProcessing(true);
+      try {
+        const response = await fetchWithAuth("/api/customer/bookings/initiate-esewa", {
+          method: "POST",
+          body: JSON.stringify({ eventId: event.id, quantity })
+        });
+        
+        if (response && response.signature) {
+          // Redirect to our local Mock eSewa page
+          const queryParams = new URLSearchParams({
+            transaction_uuid: response.transactionUuid,
+            amount: response.totalAmount,
+            success_url: response.successUrl,
+            failure_url: response.failureUrl
+          }).toString();
+          
+          window.location.href = `/customer/mock-esewa?${queryParams}`;
+        } else {
+          alert("Failed to initiate eSewa payment");
+          setIsProcessing(false);
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Error connecting to server for payment");
+        setIsProcessing(false);
+      }
+    } else {
+      onBookingSuccess(event.id, quantity);
+      setIsSuccess(true);
+    }
   };
 
   const totalPrice = event.price * quantity;
@@ -131,6 +164,23 @@ export default function BookingPage({ event, initialQuantity, onBookingSuccess, 
               </div>
             </div>
 
+            {/* Payment Method Selector */}
+            <div style={{ backgroundColor: "var(--color-white)", padding: "1.5rem", borderRadius: "1rem", border: "1px solid #e2e8f0" }}>
+              <h3 style={{ fontSize: "1.1rem", fontWeight: "600", color: "var(--color-slate-900)", marginBottom: "1rem" }}>
+                Payment Method
+              </h3>
+              <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+                <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", cursor: "pointer" }}>
+                  <input type="radio" name="paymentMethod" value="esewa" checked={paymentMethod === "esewa"} onChange={() => setPaymentMethod("esewa")} />
+                  <img src="https://esewa.com.np/common/images/esewa-logo.png" alt="eSewa" style={{ height: "24px", objectFit: "contain", marginLeft: "0.5rem" }} />
+                </label>
+                <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", cursor: "pointer" }}>
+                  <input type="radio" name="paymentMethod" value="cash" checked={paymentMethod === "cash"} onChange={() => setPaymentMethod("cash")} />
+                  <span style={{ fontWeight: "500", marginLeft: "0.5rem" }}>Cash on Arrival / Mock</span>
+                </label>
+              </div>
+            </div>
+
             {/* Total Calculation */}
             <div style={{ backgroundColor: "var(--color-slate-50)", padding: "1.5rem", borderRadius: "1rem", border: "1px solid #e2e8f0" }}>
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.75rem", color: "var(--color-slate-500)" }}>
@@ -150,10 +200,11 @@ export default function BookingPage({ event, initialQuantity, onBookingSuccess, 
             <button 
               type="submit"
               style={{ width: "100%", padding: "1rem", backgroundColor: "var(--color-blue-500)", color: "var(--color-white)", border: "none", borderRadius: "0.5rem", fontSize: "1.1rem", fontWeight: "bold", cursor: "pointer", transition: "background-color 0.2s" }}
-              onMouseEnter={(e) => e.target.style.backgroundColor = "var(--color-blue-600)"}
-              onMouseLeave={(e) => e.target.style.backgroundColor = "var(--color-blue-500)"}
+              onMouseEnter={(e) => { if(!isProcessing) e.target.style.backgroundColor = "var(--color-blue-600)" }}
+              onMouseLeave={(e) => { if(!isProcessing) e.target.style.backgroundColor = "var(--color-blue-500)" }}
+              disabled={isProcessing}
             >
-              Confirm Booking • {formatPrice(totalPrice, currency)}
+              {isProcessing ? "Processing..." : `Confirm Booking • ${formatPrice(totalPrice, currency)}`}
             </button>
           </form>
         </div>

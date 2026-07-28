@@ -38,6 +38,9 @@ public class User implements UserDetails {
     @Column(length = 20)
     private String phone;
 
+    @Column(length = 200)
+    private String location;
+
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(nullable = false)

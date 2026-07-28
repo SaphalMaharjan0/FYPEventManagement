@@ -11,13 +11,27 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.example.eventbooking.repository.BookingRepository;
+
 @Service
 @RequiredArgsConstructor
 public class EventService {
 
     private final EventRepository eventRepository;
+    private final BookingRepository bookingRepository;
+
+    public List<EventDto> getAllEventsDebug() {
+        return eventRepository.findAll()
+                .stream()
+                .map(this::mapToDto)
+                .collect(Collectors.toList());
+    }
 
     public List<EventDto> getAllPublishedEvents() {
+        // Log the count of all events in the database to see what's going on
+        System.out.println("Total events in DB: " + eventRepository.count());
+        eventRepository.findAll().forEach(e -> System.out.println("Event ID: " + e.getEventId() + ", Title: " + e.getTitle() + ", Status: " + e.getStatus()));
+        
         return eventRepository.findByStatus(EventStatus.published)
                 .stream()
                 .map(this::mapToDto)
@@ -30,8 +44,14 @@ public class EventService {
 
         double dummyPrice = 50.0;
         String dummyImage = "https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&q=80&w=1000";
+        String actualImage = (event.getImageUrl() != null && !event.getImageUrl().trim().isEmpty()) 
+                                ? event.getImageUrl() : dummyImage;
         int totalSeats = event.getCapacity();
-        int seatsLeft = event.getCapacity();
+        int bookedTickets = bookingRepository.findByEvent_EventId(event.getEventId()).stream()
+                .filter(b -> "CONFIRMED".equalsIgnoreCase(b.getStatus()) || "PENDING".equalsIgnoreCase(b.getStatus()))
+                .mapToInt(com.example.eventbooking.entity.Booking::getTicketCount)
+                .sum();
+        int seatsLeft = Math.max(0, totalSeats - bookedTickets);
         int percentAvailable = (totalSeats > 0) ? (seatsLeft * 100 / totalSeats) : 0;
         boolean featured = event.getEventId() % 2 != 0; 
 
@@ -43,7 +63,8 @@ public class EventService {
                 .time(event.getStartTime().format(timeFormatter))
                 .venue(event.getVenue())
                 .price(dummyPrice)
-                .image(dummyImage)
+                .image(actualImage)
+                .imageUrl(actualImage)
                 .organizer(event.getOrganizer().getFullName())
                 .totalSeats(totalSeats)
                 .seatsLeft(seatsLeft)

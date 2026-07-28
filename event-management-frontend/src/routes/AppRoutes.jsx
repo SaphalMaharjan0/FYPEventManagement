@@ -20,6 +20,9 @@ import ProfilePage from '../pages/customer/ProfilePage';
 import NotificationsPage from '../pages/customer/NotificationsPage';
 import BookingPage from '../pages/customer/BookingPage';
 import EventDetailsPage from '../pages/customer/EventDetailsPage';
+import EsewaSuccessPage from '../pages/customer/EsewaSuccessPage';
+import EsewaFailurePage from '../pages/customer/EsewaFailurePage';
+import MockEsewaPage from '../pages/customer/MockEsewaPage';
 
 import VendorDashboard from '../pages/vendor/VendorDashboard';
 import ServiceListingsPage from '../pages/vendor/ServiceListingsPage';
@@ -37,6 +40,7 @@ import ReportsPage from '../pages/admin/ReportsPage';
 import ManageVendorsPage from '../pages/admin/ManageVendorsPage';
 import ManageBookingsPage from '../pages/admin/ManageBookingsPage';
 import AdminSettingsPage from '../pages/admin/AdminSettingsPage';
+import AdminProfilePage from '../pages/admin/AdminProfilePage';
 
 import DiscoverPage from '../pages/guest/DiscoverPage';
 import LoginPage from '../pages/auth/LoginPage';
@@ -56,6 +60,7 @@ import { X } from 'lucide-react';
 
 export default function AppRoutes({
   currentUser,
+  onUpdateUser,
   events,
   activeCategory, setActiveCategory,
   searchQuery, setSearchQuery,
@@ -317,7 +322,7 @@ export default function AppRoutes({
           <Route path="history" element={<BookingHistoryPage events={events} />} />
           <Route path="favorites" element={<FavoritesPage events={events} onBookClick={handleBookClick} />} />
           <Route path="settings" element={<SettingsPage />} />
-          <Route path="profile" element={<ProfilePage currentUser={currentUser} />} />
+          <Route path="profile" element={<ProfilePage currentUser={currentUser} onUpdateUser={onUpdateUser} />} />
           <Route path="notifications" element={<NotificationsPage />} />
           <Route path="booking" element={<BookingPage event={selectedEvent} initialQuantity={bookingQuantity} onBookingSuccess={handleBookingSuccess} onNavigate={onNavigate} />} />
           <Route path="event-details" element={
@@ -336,6 +341,9 @@ export default function AppRoutes({
               isDashboardContext={true}
             />
           } />
+          <Route path="esewa-success" element={<EsewaSuccessPage onNavigate={onNavigate} />} />
+          <Route path="esewa-failure" element={<EsewaFailurePage onNavigate={onNavigate} />} />
+          <Route path="mock-esewa" element={<MockEsewaPage />} />
         </Route>
 
         {/* Vendor Routes */}
@@ -357,7 +365,7 @@ export default function AppRoutes({
           <Route path="requests" element={<VendorRequestsPage />} />
           <Route path="availability" element={<VendorAvailabilityPage />} />
           <Route path="settings" element={<VendorSettingsPage />} />
-          <Route path="profile" element={<VendorProfilePage currentUser={currentUser} />} />
+          <Route path="profile" element={<VendorProfilePage currentUser={currentUser} onUpdateUser={onUpdateUser} />} />
         </Route>
 
         {/* Admin Routes */}
@@ -378,6 +386,7 @@ export default function AppRoutes({
           <Route path="bookings" element={<ManageBookingsPage />} />
           <Route path="reports" element={<ReportsPage />} />
           <Route path="settings" element={<AdminSettingsPage />} />
+          <Route path="profile" element={<AdminProfilePage currentUser={currentUser} />} />
         </Route>
         
         {/* Fallback */}

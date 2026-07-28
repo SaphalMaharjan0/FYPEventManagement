@@ -374,32 +374,6 @@ export default function LoginPage({
           </button>
         </form>
 
-        {/* Quick Access */}
-        <div
-          style={{
-            marginTop: "1.25rem",
-            padding: "0.65rem",
-            backgroundColor: "var(--bg-body-alt)",
-            border: "1px solid var(--border-main)",
-            borderRadius: "var(--radius-sm)",
-            fontSize: "0.8rem",
-            textAlign: "center",
-            color: "var(--text-subtle)",
-          }}
-        >
-          Quick access:{" "}
-          <span onClick={() => handleQuickAccess("customer")} style={linkStyle}>
-            Customer
-          </span>{" "}
-          •{" "}
-          <span onClick={() => handleQuickAccess("vendor")} style={linkStyle}>
-            Vendor
-          </span>{" "}
-          •{" "}
-          <span onClick={() => handleQuickAccess("admin")} style={linkStyle}>
-            Admin
-          </span>
-        </div>
 
         {/* Redirect */}
         <p

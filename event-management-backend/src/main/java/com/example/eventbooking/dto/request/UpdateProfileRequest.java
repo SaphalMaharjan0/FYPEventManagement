@@ -12,4 +12,7 @@ import lombok.NoArgsConstructor;
 public class UpdateProfileRequest {
     private String fullName;
     private String phone;
+    private String email;
+    private String location;
+    private String password;
 }

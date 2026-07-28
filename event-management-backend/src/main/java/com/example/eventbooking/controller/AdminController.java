@@ -72,4 +72,16 @@ public class AdminController {
     public ResponseEntity<AdminVendorDto> inviteVendor(@RequestBody AdminVendorInviteDto dto) {
         return ResponseEntity.ok(adminService.inviteVendor(dto));
     }
+
+    @org.springframework.web.bind.annotation.DeleteMapping("/events/{id}")
+    public ResponseEntity<Void> deleteEvent(@PathVariable Integer id) {
+        adminService.deleteEvent(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @org.springframework.web.bind.annotation.DeleteMapping("/users/{id}")
+    public ResponseEntity<Void> deleteUser(@PathVariable Integer id) {
+        adminService.deleteUser(id);
+        return ResponseEntity.noContent().build();
+    }
 }

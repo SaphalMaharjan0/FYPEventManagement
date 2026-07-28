@@ -83,6 +83,20 @@ export default function ManageEventsPage() {
     }
   };
 
+  const handleDeleteEvent = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this event?")) return;
+    try {
+      const res = await fetchWithAuth(`/api/admin/events/${id}`, {
+        method: "DELETE",
+      });
+      // fetchWithAuth returns the parsed JSON or null if 204 No Content
+      setEvents(events.filter(ev => ev.dbId !== id));
+    } catch (err) {
+      console.error("Failed to delete event", err);
+      alert("Failed to delete event.");
+    }
+  };
+
   return (
     <div style={{ maxWidth: "1400px", margin: "0 auto" }}>
       {/* Header */}
@@ -206,7 +220,7 @@ export default function ManageEventsPage() {
                       <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: "0.75rem" }}>
                         <button style={{ background: "none", border: "none", color: "var(--color-slate-400)", cursor: "pointer" }}><Eye size={16} /></button>
                         <button onClick={() => handleEditClick(event)} style={{ background: "none", border: "none", color: "var(--color-blue-500)", cursor: "pointer" }}><Edit2 size={16} /></button>
-                        <button style={{ background: "none", border: "none", color: "var(--color-slate-400)", cursor: "pointer" }}><Trash2 size={16} /></button>
+                        <button onClick={() => handleDeleteEvent(event.dbId)} style={{ background: "none", border: "none", color: "var(--color-slate-400)", cursor: "pointer" }}><Trash2 size={16} /></button>
                       </div>
                     </td>
                   </tr>
@@ -268,14 +282,44 @@ export default function ManageEventsPage() {
               </div>
 
               <div>
-                <label style={{ display: "block", marginBottom: "0.5rem", fontSize: "0.9rem", fontWeight: "500" }}>Image URL</label>
+                <label style={{ display: "block", marginBottom: "0.5rem", fontSize: "0.9rem", fontWeight: "500" }}>Event Poster</label>
+                <input 
+                  type="file" 
+                  accept="image/*"
+                  onChange={async (e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                      const formData = new FormData();
+                      formData.append("file", file);
+                      try {
+                        const res = await fetch("http://localhost:8080/api/upload", {
+                          method: "POST",
+                          body: formData
+                        });
+                        const data = await res.json();
+                        if (data.url) {
+                          setNewEvent({...newEvent, imageUrl: "http://localhost:8080" + data.url});
+                        }
+                      } catch (err) {
+                        console.error("Upload failed", err);
+                      }
+                    }
+                  }}
+                  style={{ width: "100%", padding: "0.75rem", borderRadius: "6px", border: "1px solid #e2e8f0", marginBottom: "0.5rem" }}
+                />
+                <div style={{ textAlign: "center", color: "var(--color-slate-500)", fontSize: "0.85rem", marginBottom: "0.5rem" }}>OR enter URL</div>
                 <input 
                   type="text" 
                   value={newEvent.imageUrl} 
                   onChange={(e) => setNewEvent({...newEvent, imageUrl: e.target.value})}
                   style={{ width: "100%", padding: "0.75rem", borderRadius: "6px", border: "1px solid #e2e8f0" }}
-                  placeholder="https://example.com/image.jpg"
+                  placeholder="https://example.com/poster.jpg"
                 />
+                {newEvent.imageUrl && (
+                  <div style={{ marginTop: "0.5rem", width: "100%", height: "150px", borderRadius: "6px", overflow: "hidden", backgroundColor: "#f1f5f9" }}>
+                    <img src={newEvent.imageUrl} alt="Poster Preview" style={{ width: "100%", height: "100%", objectFit: "cover" }} onError={(e) => e.target.style.display = 'none'} />
+                  </div>
+                )}
               </div>
 
               <div>
@@ -419,14 +463,44 @@ export default function ManageEventsPage() {
               </div>
 
               <div>
-                <label style={{ display: "block", marginBottom: "0.5rem", fontSize: "0.9rem", fontWeight: "500" }}>Image URL</label>
+                <label style={{ display: "block", marginBottom: "0.5rem", fontSize: "0.9rem", fontWeight: "500" }}>Event Poster</label>
+                <input 
+                  type="file" 
+                  accept="image/*"
+                  onChange={async (e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                      const formData = new FormData();
+                      formData.append("file", file);
+                      try {
+                        const res = await fetch("http://localhost:8080/api/upload", {
+                          method: "POST",
+                          body: formData
+                        });
+                        const data = await res.json();
+                        if (data.url) {
+                          setEditingEvent({...editingEvent, imageUrl: "http://localhost:8080" + data.url});
+                        }
+                      } catch (err) {
+                        console.error("Upload failed", err);
+                      }
+                    }
+                  }}
+                  style={{ width: "100%", padding: "0.75rem", borderRadius: "6px", border: "1px solid #e2e8f0", marginBottom: "0.5rem" }}
+                />
+                <div style={{ textAlign: "center", color: "var(--color-slate-500)", fontSize: "0.85rem", marginBottom: "0.5rem" }}>OR enter URL</div>
                 <input 
                   type="text" 
                   value={editingEvent.imageUrl || ""} 
                   onChange={(e) => setEditingEvent({...editingEvent, imageUrl: e.target.value})}
                   style={{ width: "100%", padding: "0.75rem", borderRadius: "6px", border: "1px solid #e2e8f0" }}
-                  placeholder="https://example.com/image.jpg"
+                  placeholder="https://example.com/poster.jpg"
                 />
+                {editingEvent.imageUrl && (
+                  <div style={{ marginTop: "0.5rem", width: "100%", height: "150px", borderRadius: "6px", overflow: "hidden", backgroundColor: "#f1f5f9" }}>
+                    <img src={editingEvent.imageUrl} alt="Poster Preview" style={{ width: "100%", height: "100%", objectFit: "cover" }} onError={(e) => e.target.style.display = 'none'} />
+                  </div>
+                )}
               </div>
 
               <div>

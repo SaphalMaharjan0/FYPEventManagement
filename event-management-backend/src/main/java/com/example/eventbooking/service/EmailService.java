@@ -8,6 +8,10 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
+import com.example.eventbooking.entity.User;
+import com.example.eventbooking.entity.Booking;
+import com.example.eventbooking.entity.Event;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -80,5 +84,64 @@ public class EmailService {
         } catch (Exception e) {
             log.error("Failed to send email to {}", toEmail, e);
         }
+    }
+
+    public void sendBookingConfirmation(User customer, Booking booking, Event event) {
+        String subject = "Booking Confirmed - " + event.getTitle();
+        String htmlContent = "<div style=\"font-family: Arial, sans-serif; background-color: #f4f5f7; padding: 20px; color: #333;\">" +
+                "<div style=\"max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0; overflow: hidden;\">" +
+                "<div style=\"padding: 30px;\">" +
+                "<h1 style=\"margin-top: 0; font-size: 24px; font-weight: bold; color: #22c55e;\">Booking Confirmed!</h1>" +
+                "<p style=\"font-size: 16px; margin-bottom: 20px;\">Dear " + customer.getFullName() + ",</p>" +
+                "<p style=\"font-size: 16px; line-height: 1.5; margin-bottom: 30px;\">" +
+                "Thank you for your purchase. Your booking is confirmed. Here are your ticket details:" +
+                "</p>" +
+                "<div style=\"background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; font-size: 16px; color: #0f172a; margin-bottom: 30px;\">" +
+                "<p style=\"margin: 0 0 10px 0;\"><strong>Event:</strong> " + event.getTitle() + "</p>" +
+                "<p style=\"margin: 0 0 10px 0;\"><strong>Date & Time:</strong> " + event.getEventDate() + " @ " + event.getStartTime() + "</p>" +
+                "<p style=\"margin: 0 0 10px 0;\"><strong>Venue:</strong> " + event.getVenue() + "</p>" +
+                "<p style=\"margin: 0 0 10px 0;\"><strong>Tickets:</strong> " + booking.getTicketCount() + "</p>" +
+                "<p style=\"margin: 0;\"><strong>Amount Paid:</strong> Rs. " + booking.getAmount() + "</p>" +
+                "</div>" +
+                "<div style=\"text-align: center; margin-bottom: 30px;\">" +
+                "<p style=\"font-size: 14px; color: #64748b; margin-bottom: 10px;\">Booking reference ID:</p>" +
+                "<p style=\"font-size: 18px; font-weight: bold; letter-spacing: 2px; color: #0f172a;\">" + com.example.eventbooking.service.CustomerService.generateTicketCode(booking.getId()) + "</p>" +
+                "</div>" +
+                "</div>" +
+                "</div>" +
+                "</div>";
+
+        sendEmail(customer.getEmail(), subject, htmlContent);
+    }
+
+    public void sendAdminBookingAlert(User admin, User customer, Booking booking, Event event) {
+        String subject = "New Booking Notification - EventPulse";
+        String htmlContent = "<div style=\"font-family: Arial, sans-serif; background-color: #f4f5f7; padding: 20px; color: #333;\">" +
+                "<div style=\"max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0; overflow: hidden;\">" +
+                "<div style=\"padding: 30px;\">" +
+                "<h1 style=\"margin-top: 0; font-size: 22px; font-weight: bold; color: #0f172a;\">New Booking Received</h1>" +
+                "<p style=\"font-size: 16px; margin-bottom: 20px;\">Hello Admin (" + admin.getFullName() + "),</p>" +
+                "<p style=\"font-size: 16px; line-height: 1.5; margin-bottom: 30px;\">" +
+                "A new booking has been made on the platform. Details below:" +
+                "</p>" +
+                "<h3>Customer Details</h3>" +
+                "<div style=\"background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 15px; font-size: 15px; color: #0f172a; margin-bottom: 20px;\">" +
+                "<p style=\"margin: 0 0 10px 0;\"><strong>Name:</strong> " + customer.getFullName() + "</p>" +
+                "<p style=\"margin: 0;\"><strong>Email:</strong> " + customer.getEmail() + "</p>" +
+                "</div>" +
+                "<h3>Booking & Payment Details</h3>" +
+                "<div style=\"background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 15px; font-size: 15px; color: #0f172a; margin-bottom: 20px;\">" +
+                "<p style=\"margin: 0 0 10px 0;\"><strong>Booking ID:</strong> " + com.example.eventbooking.service.CustomerService.generateTicketCode(booking.getId()) + "</p>" +
+                "<p style=\"margin: 0 0 10px 0;\"><strong>Event:</strong> " + event.getTitle() + "</p>" +
+                "<p style=\"margin: 0 0 10px 0;\"><strong>Ticket Count:</strong> " + booking.getTicketCount() + "</p>" +
+                "<p style=\"margin: 0 0 10px 0;\"><strong>Total Paid:</strong> Rs. " + booking.getAmount() + "</p>" +
+                "<p style=\"margin: 0 0 10px 0;\"><strong>Payment Method:</strong> " + booking.getPaymentMethod() + "</p>" +
+                "<p style=\"margin: 0;\"><strong>Transaction Ref:</strong> " + booking.getTransactionUuid() + "</p>" +
+                "</div>" +
+                "</div>" +
+                "</div>" +
+                "</div>";
+
+        sendEmail(admin.getEmail(), subject, htmlContent);
     }
 }

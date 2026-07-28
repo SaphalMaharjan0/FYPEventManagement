@@ -6,6 +6,8 @@ export default function ManageBookingsPage() {
   const fetchWithAuth = useFetch();
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedEvent, setSelectedEvent] = useState("all");
 
   useEffect(() => {
     const loadBookings = async () => {
@@ -30,6 +32,20 @@ export default function ManageBookingsPage() {
     }
   };
 
+  // Get unique list of events for the filter dropdown
+  const eventsList = ["all", ...new Set(bookings.map(b => b.event))];
+
+  // Filter bookings based on search term and selected event dropdown
+  const filteredBookings = bookings.filter(b => {
+    const matchesSearch = 
+      (b.id || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (b.user || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (b.event || "").toLowerCase().includes(searchTerm.toLowerCase());
+      
+    const matchesEvent = selectedEvent === "all" || b.event === selectedEvent;
+    return matchesSearch && matchesEvent;
+  });
+
   return (
     <div style={{ maxWidth: "1400px", margin: "0 auto" }}>
       {/* Header */}
@@ -50,9 +66,10 @@ export default function ManageBookingsPage() {
       <div style={{ backgroundColor: "var(--color-white)", borderRadius: "12px", border: "1px solid #e2e8f0", overflow: "hidden" }}>
         
         {/* Search and Filter Bar */}
-        <div style={{ padding: "1.5rem", borderBottom: "1px solid #e2e8f0", display: "flex", gap: "1rem" }}>
+        <div style={{ padding: "1.5rem", borderBottom: "1px solid #e2e8f0", display: "flex", gap: "1rem", alignItems: "center", flexWrap: "wrap" }}>
           <div style={{
             flex: 1,
+            minWidth: "280px",
             display: "flex",
             alignItems: "center",
             backgroundColor: "var(--color-slate-50)",
@@ -63,7 +80,9 @@ export default function ManageBookingsPage() {
             <Search size={18} color="var(--color-slate-400)" />
             <input 
               type="text" 
-              placeholder="Search by Booking ID, User, or Event..." 
+              placeholder="Search by Ticket ID, User, or Event..." 
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
               style={{
                 border: "none",
                 backgroundColor: "transparent",
@@ -76,14 +95,29 @@ export default function ManageBookingsPage() {
             />
           </div>
           
-          <button style={{
-            display: "flex", alignItems: "center", justifyContent: "center",
-            padding: "0 1rem", backgroundColor: "var(--color-slate-50)",
-            border: "1px solid #e2e8f0", borderRadius: "8px", color: "var(--color-slate-600)",
-            cursor: "pointer"
-          }}>
-            <Filter size={18} />
-          </button>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+            <span style={{ fontSize: "0.85rem", color: "var(--color-slate-500)", fontWeight: "600" }}>Event:</span>
+            <select
+              value={selectedEvent}
+              onChange={(e) => setSelectedEvent(e.target.value)}
+              style={{
+                padding: "0.6rem 1rem",
+                backgroundColor: "var(--color-slate-50)",
+                border: "1px solid #e2e8f0",
+                borderRadius: "8px",
+                fontSize: "0.9rem",
+                color: "var(--color-slate-700)",
+                outline: "none",
+                cursor: "pointer"
+              }}
+            >
+              {eventsList.map(evt => (
+                <option key={evt} value={evt}>
+                  {evt === "all" ? "All Events" : evt}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
 
         {/* Bookings Table */}
@@ -91,7 +125,7 @@ export default function ManageBookingsPage() {
           <table style={{ width: "100%", borderCollapse: "collapse", minWidth: "900px" }}>
             <thead style={{ backgroundColor: "var(--color-slate-50)", borderBottom: "1px solid #e2e8f0" }}>
               <tr>
-                <th style={{ padding: "1rem 1.5rem", textAlign: "left", fontSize: "0.85rem", fontWeight: "600", color: "var(--color-slate-500)" }}>Booking ID</th>
+                <th style={{ padding: "1rem 1.5rem", textAlign: "left", fontSize: "0.85rem", fontWeight: "600", color: "var(--color-slate-500)" }}>Ticket ID</th>
                 <th style={{ padding: "1rem 1.5rem", textAlign: "left", fontSize: "0.85rem", fontWeight: "600", color: "var(--color-slate-500)" }}>User</th>
                 <th style={{ padding: "1rem 1.5rem", textAlign: "left", fontSize: "0.85rem", fontWeight: "600", color: "var(--color-slate-500)" }}>Event</th>
                 <th style={{ padding: "1rem 1.5rem", textAlign: "left", fontSize: "0.85rem", fontWeight: "600", color: "var(--color-slate-500)" }}>Amount</th>
@@ -106,16 +140,16 @@ export default function ManageBookingsPage() {
                 <tr>
                   <td colSpan="8" style={{ padding: "1.5rem", textAlign: "center", color: "var(--color-slate-500)" }}>Loading bookings...</td>
                 </tr>
-              ) : bookings.length === 0 ? (
+              ) : filteredBookings.length === 0 ? (
                 <tr>
                   <td colSpan="8" style={{ padding: "1.5rem", textAlign: "center", color: "var(--color-slate-500)" }}>No bookings found.</td>
                 </tr>
               ) : (
-                bookings.map((booking, idx) => {
+                filteredBookings.map((booking, idx) => {
                   const statusStyle = getStatusStyle(booking.status);
                   return (
-                  <tr key={booking.id} style={{ borderBottom: idx !== bookings.length - 1 ? "1px solid #e2e8f0" : "none" }}>
-                    <td style={{ padding: "1rem 1.5rem", fontSize: "0.85rem", color: "var(--color-slate-500)", fontFamily: "monospace" }}>{booking.id}</td>
+                  <tr key={booking.id} style={{ borderBottom: idx !== filteredBookings.length - 1 ? "1px solid #e2e8f0" : "none" }}>
+                    <td style={{ padding: "1rem 1.5rem", fontSize: "0.85rem", color: "var(--color-slate-600)", fontWeight: "600", fontFamily: "monospace" }}>{booking.id}</td>
                     <td style={{ padding: "1rem 1.5rem", fontWeight: "500", color: "var(--color-slate-900)", fontSize: "0.95rem" }}>{booking.user}</td>
                     <td style={{ padding: "1rem 1.5rem", fontSize: "0.9rem", color: "var(--color-slate-600)" }}>{booking.event}</td>
                     <td style={{ padding: "1rem 1.5rem", fontSize: "0.9rem", fontWeight: "600", color: "var(--color-slate-900)" }}>{booking.amount}</td>

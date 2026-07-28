@@ -1,28 +1,47 @@
 import React, { useState } from "react";
 import { User, Mail, Phone, MapPin, Camera } from "lucide-react";
 import { useFetch } from "../../hooks/useFetch";
+import MapPickerModal from "../../components/common/MapPickerModal";
 
 export default function ProfilePage({ currentUser, onUpdateUser }) {
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [showMapModal, setShowMapModal] = useState(false);
   const fetchWithAuth = useFetch();
 
   const [formData, setFormData] = useState({
-    firstName: currentUser?.fullName?.split(" ")[0] || "Alex",
-    lastName: currentUser?.fullName?.split(" ")[1] || "Morgan",
-    email: currentUser?.email || "alex@example.com",
-    phone: currentUser?.phone || "+1 (555) 123-4567",
-    location: "San Francisco, CA"
+    firstName: currentUser?.fullName?.split(" ")[0] || "",
+    lastName: currentUser?.fullName?.split(" ").slice(1).join(" ") || "",
+    email: currentUser?.email || "",
+    phone: currentUser?.phone || "",
+    location: currentUser?.location || ""
   });
 
-  const handleSave = async () => {
+  const [password, setPassword] = useState("");
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+
+  const handleSaveClick = () => {
+    setPassword("");
+    setShowPasswordModal(true);
+  };
+
+  const handleConfirmSave = async (e) => {
+    if (e) e.preventDefault();
+    if (!password) {
+      alert("Password is required to save changes.");
+      return;
+    }
+    
     setIsSaving(true);
     try {
       const updatedUser = await fetchWithAuth("/api/users/profile", {
         method: "PUT",
         body: JSON.stringify({
           fullName: `${formData.firstName} ${formData.lastName}`.trim(),
-          phone: formData.phone
+          phone: formData.phone,
+          email: formData.email,
+          location: formData.location,
+          password: password
         })
       });
 
@@ -30,9 +49,10 @@ export default function ProfilePage({ currentUser, onUpdateUser }) {
         onUpdateUser(updatedUser);
       }
       setIsEditing(false);
+      setShowPasswordModal(false);
     } catch (err) {
       console.error("Error updating profile:", err);
-      alert("Failed to update profile. Please try again.");
+      alert(err.message || "Failed to update profile. Please verify your password.");
     } finally {
       setIsSaving(false);
     }
@@ -61,7 +81,7 @@ export default function ProfilePage({ currentUser, onUpdateUser }) {
               Cancel
             </button>
             <button 
-              onClick={handleSave}
+              onClick={handleSaveClick}
               disabled={isSaving}
               style={{ padding: "0.5rem 1.25rem", backgroundColor: isSaving ? "#86efac" : "#22c55e", color: "var(--color-white)", borderRadius: "0.5rem", border: "none", fontWeight: "600", fontSize: "0.9rem", cursor: isSaving ? "not-allowed" : "pointer" }}
             >
@@ -168,16 +188,30 @@ export default function ProfilePage({ currentUser, onUpdateUser }) {
             <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", gridColumn: "span 2" }}>
               <label style={{ fontSize: "0.85rem", fontWeight: "600", color: "var(--color-slate-500)" }}>Location</label>
               {isEditing ? (
-                <input 
-                  type="text" 
-                  value={formData.location}
-                  onChange={(e) => setFormData({...formData, location: e.target.value})}
-                  style={{ padding: "0.75rem", border: "1px solid #e2e8f0", borderRadius: "0.5rem", fontSize: "0.9rem", color: "var(--color-slate-900)", outline: "none" }}
-                />
+                <div style={{ display: "flex", gap: "0.5rem" }}>
+                  <input 
+                    type="text" 
+                    value={formData.location}
+                    onChange={(e) => setFormData({...formData, location: e.target.value})}
+                    style={{ flex: 1, padding: "0.75rem", border: "1px solid #e2e8f0", borderRadius: "0.5rem", fontSize: "0.9rem", color: "var(--color-slate-900)", outline: "none" }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowMapModal(true)}
+                    style={{
+                      display: "flex", alignItems: "center", gap: "0.35rem",
+                      padding: "0.75rem 1.25rem", backgroundColor: "var(--color-slate-900)",
+                      color: "var(--color-white)", border: "none", borderRadius: "0.5rem",
+                      fontWeight: "600", fontSize: "0.85rem", cursor: "pointer", transition: "all 0.2s"
+                    }}
+                  >
+                    <MapPin size={16} /> Map
+                  </button>
+                </div>
               ) : (
                 <div style={{ padding: "0.75rem", backgroundColor: "var(--color-slate-50)", borderRadius: "0.5rem", fontSize: "0.9rem", color: "var(--color-slate-900)", display: "flex", alignItems: "center", gap: "0.5rem" }}>
                   <MapPin size={16} color="var(--color-slate-400)" />
-                  {formData.location}
+                  {formData.location || "Not specified"}
                 </div>
               )}
             </div>
@@ -186,6 +220,76 @@ export default function ProfilePage({ currentUser, onUpdateUser }) {
         </div>
 
       </div>
+
+      {showPasswordModal && (
+        <div style={{
+          position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: "rgba(15, 23, 42, 0.6)", display: "flex",
+          alignItems: "center", justifyContent: "center", zIndex: 1000,
+          backdropFilter: "blur(4px)"
+        }}>
+          <div style={{
+            backgroundColor: "var(--color-white)", borderRadius: "0.75rem",
+            padding: "2rem", width: "400px", maxWidth: "90%",
+            boxShadow: "0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04)",
+            border: "1px solid #e2e8f0"
+          }}>
+            <h3 style={{ fontSize: "1.2rem", fontWeight: "bold", color: "var(--color-slate-900)", marginBottom: "0.5rem" }}>
+              Confirm Password
+            </h3>
+            <p style={{ color: "var(--color-slate-500)", fontSize: "0.85rem", marginBottom: "1.5rem" }}>
+              Please enter your current password to verify your identity and save profile updates.
+            </p>
+            <form onSubmit={handleConfirmSave}>
+              <input 
+                type="password"
+                placeholder="Enter password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                autoFocus
+                required
+                style={{
+                  width: "100%", padding: "0.75rem", border: "1px solid #cbd5e1",
+                  borderRadius: "0.5rem", fontSize: "0.9rem", color: "var(--color-slate-900)",
+                  outline: "none", boxSizing: "border-box", marginBottom: "1.5rem"
+                }}
+              />
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: "1rem" }}>
+                <button
+                  type="button"
+                  onClick={() => setShowPasswordModal(false)}
+                  style={{
+                    padding: "0.5rem 1rem", backgroundColor: "var(--color-white)",
+                    color: "var(--color-slate-500)", border: "1px solid #e2e8f0",
+                    borderRadius: "0.5rem", fontWeight: "600", fontSize: "0.85rem", cursor: "pointer"
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSaving}
+                  style={{
+                    padding: "0.5rem 1.25rem", backgroundColor: "#3b82f6",
+                    color: "var(--color-white)", border: "none",
+                    borderRadius: "0.5rem", fontWeight: "600", fontSize: "0.85rem",
+                    cursor: isSaving ? "not-allowed" : "pointer"
+                  }}
+                >
+                  {isSaving ? "Saving..." : "Verify & Save"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      <MapPickerModal 
+        isOpen={showMapModal}
+        onClose={() => setShowMapModal(false)}
+        initialLocation={formData.location}
+        onSelectLocation={(loc) => setFormData({ ...formData, location: loc })}
+      />
     </div>
   );
 }

@@ -9,6 +9,8 @@ import ProfilePage from "./ProfilePage";
 import BookingPage from "./BookingPage";
 import NotificationsPage from "./NotificationsPage";
 import EventDetailsPage from "./EventDetailsPage";
+import EsewaSuccessPage from "./EsewaSuccessPage";
+import EsewaFailurePage from "./EsewaFailurePage";
 
 export default function CustomerPages({
   currentPage,
@@ -104,6 +106,14 @@ export default function CustomerPages({
         isDashboardContext={true}
       />
     );
+  }
+
+  if (currentPage === "esewa-success") {
+    return <EsewaSuccessPage onNavigate={onNavigate} />;
+  }
+
+  if (currentPage === "esewa-failure") {
+    return <EsewaFailurePage onNavigate={onNavigate} />;
   }
 
   return null;

@@ -5,6 +5,7 @@ import com.example.eventbooking.entity.Service;
 import com.example.eventbooking.entity.Vendor;
 import com.example.eventbooking.repository.ServiceRepository;
 import com.example.eventbooking.repository.VendorRepository;
+import com.example.eventbooking.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,10 +21,20 @@ public class VendorServiceListingService {
     @Autowired
     private VendorRepository vendorRepository;
 
-    @Transactional(readOnly = true)
+    @Autowired
+    private UserRepository userRepository;
+
+    @Transactional
     public List<ServiceDto> getServicesByUserId(Integer userId) {
         Vendor vendor = vendorRepository.findByUserId(userId)
-                .orElseThrow(() -> new RuntimeException("Vendor profile not found"));
+                .orElseGet(() -> {
+                    com.example.eventbooking.entity.User user = userRepository.findById(userId)
+                            .orElseThrow(() -> new RuntimeException("User not found"));
+                    Vendor newVendor = new Vendor();
+                    newVendor.setUser(user);
+                    newVendor.setBusinessName(user.getFullName() + "'s Business");
+                    return vendorRepository.save(newVendor);
+                });
         return serviceRepository.findByVendorId(vendor.getId())
                 .stream()
                 .map(this::convertToDto)

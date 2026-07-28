@@ -24,9 +24,15 @@ public class VendorServiceRequestService {
     public List<ServiceRequestDto> getVendorRequests(String userEmail) {
         User user = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        
+
+        // Auto-create vendor profile if it doesn't exist yet (first login)
         Vendor vendor = vendorRepository.findByUserId(user.getUserId())
-                .orElseThrow(() -> new RuntimeException("Vendor profile not found"));
+                .orElseGet(() -> {
+                    Vendor newVendor = new Vendor();
+                    newVendor.setUser(user);
+                    newVendor.setBusinessName(user.getFullName() + "'s Business");
+                    return vendorRepository.save(newVendor);
+                });
 
         List<ServiceRequest> requests = serviceRequestRepository.findByServiceVendorIdOrderByCreatedAtDesc(vendor.getId());
 
