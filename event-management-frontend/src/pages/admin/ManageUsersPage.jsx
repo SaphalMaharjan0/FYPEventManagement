@@ -196,17 +196,31 @@ export default function ManageUsersPage() {
                     </td>
                     <td style={{ padding: "1rem 1.5rem", fontSize: "0.9rem", color: "var(--color-slate-600)" }}>{user.email}</td>
                     <td style={{ padding: "1rem 1.5rem" }}>
-                      <span style={{ 
-                        backgroundColor: getRoleStyle(user.role).bg, 
-                        color: getRoleStyle(user.role).text, 
-                        padding: "0.25rem 0.6rem", 
-                        borderRadius: "1rem", 
-                        fontSize: "0.75rem", 
-                        fontWeight: "600",
-                        textTransform: "capitalize"
-                      }}>
-                        {user.role}
-                      </span>
+                      <div style={{ display: "flex", flexDirection: "column", gap: "0.25rem", alignItems: "flex-start" }}>
+                        <span style={{ 
+                          backgroundColor: getRoleStyle(user.role).bg, 
+                          color: getRoleStyle(user.role).text, 
+                          padding: "0.25rem 0.6rem", 
+                          borderRadius: "1rem", 
+                          fontSize: "0.75rem", 
+                          fontWeight: "600",
+                          textTransform: "capitalize"
+                        }}>
+                          {user.role}
+                        </span>
+                        {user.isSuperAdmin && (
+                          <span style={{
+                            backgroundColor: "#f5f3ff",
+                            color: "#7c3aed",
+                            padding: "0.15rem 0.4rem",
+                            borderRadius: "4px",
+                            fontSize: "0.65rem",
+                            fontWeight: "700"
+                          }}>
+                            Super Admin
+                          </span>
+                        )}
+                      </div>
                     </td>
                     <td style={{ padding: "1rem 1.5rem" }}>
                       <span style={{ 
@@ -300,6 +314,19 @@ export default function ManageUsersPage() {
                   <option value="administrator">Administrator</option>
                 </select>
               </div>
+
+              {editingUser.role === "administrator" && (
+                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", margin: "0.5rem 0" }}>
+                  <input 
+                    type="checkbox" 
+                    id="edit-is-super-admin"
+                    checked={editingUser.isSuperAdmin || false} 
+                    onChange={(e) => setEditingUser({...editingUser, isSuperAdmin: e.target.checked})}
+                    style={{ width: "16px", height: "16px" }}
+                  />
+                  <label htmlFor="edit-is-super-admin" style={{ fontSize: "0.9rem", fontWeight: "500", cursor: "pointer", color: "var(--color-slate-900)" }}>Is Super Admin</label>
+                </div>
+              )}
 
               <div>
                 <label style={{ display: "block", marginBottom: "0.5rem", fontSize: "0.9rem", fontWeight: "500" }}>Status</label>
@@ -400,6 +427,19 @@ export default function ManageUsersPage() {
                   <option value="administrator">Administrator</option>
                 </select>
               </div>
+
+              {newUser.role === "administrator" && (
+                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", margin: "0.5rem 0" }}>
+                  <input 
+                    type="checkbox" 
+                    id="add-is-super-admin"
+                    checked={newUser.isSuperAdmin || false} 
+                    onChange={(e) => setNewUser({...newUser, isSuperAdmin: e.target.checked})}
+                    style={{ width: "16px", height: "16px" }}
+                  />
+                  <label htmlFor="add-is-super-admin" style={{ fontSize: "0.9rem", fontWeight: "500", cursor: "pointer", color: "var(--color-slate-900)" }}>Is Super Admin</label>
+                </div>
+              )}
 
               <div>
                 <label style={{ display: "block", marginBottom: "0.5rem", fontSize: "0.9rem", fontWeight: "500" }}>Password</label>

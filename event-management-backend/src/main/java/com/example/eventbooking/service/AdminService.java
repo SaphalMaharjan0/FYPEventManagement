@@ -277,6 +277,7 @@ public class AdminService {
                         .role(user.getRole() != null ? user.getRole().name() : "customer")
                         .status("Active") // Defaulting for now
                         .joinedDate(user.getCreatedAt() != null ? user.getCreatedAt().format(FORMATTER) : "N/A")
+                        .isSuperAdmin(user.isSuperAdmin())
                         .build())
                 .collect(Collectors.toList());
     }
@@ -361,6 +362,8 @@ public class AdminService {
         if (dto.getPassword() != null && !dto.getPassword().trim().isEmpty()) {
             user.setPasswordHash(passwordEncoder.encode(dto.getPassword()));
         }
+        user.setSuperAdmin("administrator".equalsIgnoreCase(user.getRole().name()) && dto.isSuperAdmin());
+        
         user = userRepository.save(user);
         return AdminUserDto.builder()
                 .dbId(user.getUserId())
@@ -370,6 +373,7 @@ public class AdminService {
                 .role(user.getRole() != null ? user.getRole().name() : "customer")
                 .status(user.isActive() ? "Active" : "Inactive")
                 .joinedDate(user.getCreatedAt() != null ? user.getCreatedAt().format(FORMATTER) : "N/A")
+                .isSuperAdmin(user.isSuperAdmin())
                 .build();
     }
 
@@ -503,11 +507,13 @@ public class AdminService {
         if (!currentUser.isSuperAdmin()) {
             throw new org.springframework.security.access.AccessDeniedException("Access denied: only super admins can manage users");
         }
+        Role userRole = dto.getRole() != null ? Role.valueOf(dto.getRole().toLowerCase()) : Role.customer;
         User user = User.builder()
                 .fullName(dto.getName())
                 .email(dto.getEmail())
                 .passwordHash(passwordEncoder.encode(dto.getPassword() != null ? dto.getPassword() : "password"))
-                .role(dto.getRole() != null ? Role.valueOf(dto.getRole().toLowerCase()) : Role.customer)
+                .role(userRole)
+                .isSuperAdmin("administrator".equalsIgnoreCase(userRole.name()) && dto.isSuperAdmin())
                 .isActive(true)
                 .build();
         user = userRepository.save(user);
@@ -520,6 +526,7 @@ public class AdminService {
                 .role(user.getRole().name())
                 .status("Active")
                 .joinedDate(user.getCreatedAt() != null ? user.getCreatedAt().format(FORMATTER) : "Just now")
+                .isSuperAdmin(user.isSuperAdmin())
                 .build();
 
         return createdUser;
