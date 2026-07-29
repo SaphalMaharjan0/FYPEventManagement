@@ -13,11 +13,11 @@ import {
 export default function AdminSidebar({ currentPage, onNavigate, currentUser, onLogout }) {
   const navItems = [
     { id: "admin-dashboard", label: "Dashboard", icon: Home },
-    ...(currentUser?.isSuperAdmin ? [
+    ...(currentUser?.isSuperAdmin || currentUser?.superAdmin ? [
       { id: "admin-users", label: "Users", icon: Users }
     ] : []),
     { id: "admin-events", label: "Events", icon: Calendar },
-    ...(currentUser?.isSuperAdmin ? [
+    ...(currentUser?.isSuperAdmin || currentUser?.superAdmin ? [
       { id: "admin-vendors", label: "Vendors", icon: Store }
     ] : []),
     { id: "admin-bookings", label: "Bookings", icon: Ticket },
