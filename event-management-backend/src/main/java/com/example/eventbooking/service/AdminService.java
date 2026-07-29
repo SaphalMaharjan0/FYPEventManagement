@@ -36,10 +36,28 @@ public class AdminService {
 
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("MMM dd, yyyy");
 
-    public AdminDashboardStatsDto getDashboardStats() {
+    public AdminDashboardStatsDto getDashboardStats(User currentUser) {
         List<User> users = userRepository.findAll();
         List<Event> events = eventRepository.findAll();
         List<Booking> bookings = bookingRepository.findAll();
+
+        boolean isSuper = currentUser.isSuperAdmin();
+
+        if (!isSuper) {
+            // Filter events created by the current admin
+            events = events.stream()
+                .filter(e -> e.getOrganizer() != null && e.getOrganizer().getUserId().equals(currentUser.getUserId()))
+                .collect(Collectors.toList());
+                
+            // Filter bookings for these events
+            List<Event> finalEvents = events;
+            bookings = bookings.stream()
+                .filter(b -> b.getEvent() != null && finalEvents.stream().anyMatch(e -> e.getEventId().equals(b.getEvent().getEventId())))
+                .collect(Collectors.toList());
+                
+            // Count unique customers who booked their events
+            users = bookings.stream().map(Booking::getUser).filter(java.util.Objects::nonNull).distinct().collect(Collectors.toList());
+        }
 
         long totalUsers = users.size();
         long totalEvents = events.size();
@@ -100,18 +118,32 @@ public class AdminService {
         for (String d : last14Days)
             userCountsByDate.put(d, 0L);
 
-        users.forEach(u -> {
-            if (u.getCreatedAt() != null) {
-                String dateStr = u.getCreatedAt().toLocalDate().format(DateTimeFormatter.ofPattern("MMM dd"));
-                if (userCountsByDate.containsKey(dateStr)) {
-                    userCountsByDate.put(dateStr, userCountsByDate.get(dateStr) + 1);
+        if (isSuper) {
+            users.forEach(u -> {
+                if (u.getCreatedAt() != null) {
+                    String dateStr = u.getCreatedAt().toLocalDate().format(DateTimeFormatter.ofPattern("MMM dd"));
+                    if (userCountsByDate.containsKey(dateStr)) {
+                        userCountsByDate.put(dateStr, userCountsByDate.get(dateStr) + 1);
+                    }
                 }
-            }
-        });
+            });
+        } else {
+            bookings.forEach(b -> {
+                if (b.getBookingDate() != null) {
+                    String dateStr = b.getBookingDate().toLocalDate().format(DateTimeFormatter.ofPattern("MMM dd"));
+                    if (userCountsByDate.containsKey(dateStr)) {
+                        userCountsByDate.put(dateStr, userCountsByDate.get(dateStr) + 1);
+                    }
+                }
+            });
+        }
 
-        long cumulativeUsers = users.stream()
-                .filter(u -> u.getCreatedAt() != null && u.getCreatedAt().toLocalDate().isBefore(today.minusDays(13)))
-                .count();
+        long cumulativeUsers = 0;
+        if (isSuper) {
+            cumulativeUsers = userRepository.findAll().stream()
+                    .filter(u -> u.getCreatedAt() != null && u.getCreatedAt().toLocalDate().isBefore(today.minusDays(13)))
+                    .count();
+        }
         List<AdminDashboardStatsDto.ChartData> userGrowthData = new java.util.ArrayList<>();
         for (String d : last14Days) {
             cumulativeUsers += userCountsByDate.get(d);
@@ -133,17 +165,19 @@ public class AdminService {
             }
         });
 
-        users.forEach(u -> {
-            if (u.getCreatedAt() != null) {
-                AdminDashboardStatsDto.ActivityDto dto = AdminDashboardStatsDto.ActivityDto.builder()
-                        .id("USR-" + u.getUserId())
-                        .type("user")
-                        .description("New user registered: " + u.getFullName())
-                        .timeAgo(getTimeAgo(u.getCreatedAt()))
-                        .build();
-                allActivities.add(new java.util.AbstractMap.SimpleEntry<>(dto, u.getCreatedAt()));
-            }
-        });
+        if (isSuper) {
+            userRepository.findAll().forEach(u -> {
+                if (u.getCreatedAt() != null) {
+                    AdminDashboardStatsDto.ActivityDto dto = AdminDashboardStatsDto.ActivityDto.builder()
+                            .id("USR-" + u.getUserId())
+                            .type("user")
+                            .description("New user registered: " + u.getFullName())
+                            .timeAgo(getTimeAgo(u.getCreatedAt()))
+                            .build();
+                    allActivities.add(new java.util.AbstractMap.SimpleEntry<>(dto, u.getCreatedAt()));
+                }
+            });
+        }
 
         events.forEach(e -> {
             if (e.getCreatedAt() != null) {
@@ -187,10 +221,7 @@ public class AdminService {
                         eventRevenue.getOrDefault(b.getEvent(), BigDecimal.ZERO).add(b.getAmount()));
             }
         }
-        BigDecimal totalPlatformRevenue = totalRevenue.compareTo(BigDecimal.ZERO) == 0 ? BigDecimal.ONE : totalRevenue; // avoid
-                                                                                                                        // division
-                                                                                                                        // by
-                                                                                                                        // zero
+        BigDecimal totalPlatformRevenue = totalRevenue.compareTo(BigDecimal.ZERO) == 0 ? BigDecimal.ONE : totalRevenue; // avoid division by zero
         List<AdminDashboardStatsDto.TopEventDto> topEvents = eventRevenue.entrySet().stream()
                 .sorted((a, b) -> b.getValue().compareTo(a.getValue()))
                 .limit(5)
@@ -233,7 +264,10 @@ public class AdminService {
         return days + " day" + (days > 1 ? "s" : "") + " ago";
     }
 
-    public List<AdminUserDto> getAllUsers() {
+    public List<AdminUserDto> getAllUsers(User currentUser) {
+        if (!currentUser.isSuperAdmin()) {
+            throw new org.springframework.security.access.AccessDeniedException("Access denied: only super admins can manage users");
+        }
         return userRepository.findAll().stream()
                 .map(user -> AdminUserDto.builder()
                         .dbId(user.getUserId())
@@ -247,8 +281,12 @@ public class AdminService {
                 .collect(Collectors.toList());
     }
 
-    public List<AdminEventDto> getAllEvents() {
-        return eventRepository.findAll().stream()
+    public List<AdminEventDto> getAllEvents(User currentUser) {
+        java.util.stream.Stream<Event> stream = eventRepository.findAll().stream();
+        if (!currentUser.isSuperAdmin()) {
+            stream = stream.filter(e -> e.getOrganizer() != null && e.getOrganizer().getUserId().equals(currentUser.getUserId()));
+        }
+        return stream
                 .map(event -> AdminEventDto.builder()
                         .dbId(event.getEventId())
                         .id("EVT-" + String.format("%03d", event.getEventId()))
@@ -268,7 +306,10 @@ public class AdminService {
                 .collect(Collectors.toList());
     }
 
-    public List<AdminVendorDto> getAllVendors() {
+    public List<AdminVendorDto> getAllVendors(User currentUser) {
+        if (!currentUser.isSuperAdmin()) {
+            throw new org.springframework.security.access.AccessDeniedException("Access denied: only super admins can manage vendors");
+        }
         return vendorRepository.findAll().stream()
                 .map(vendor -> AdminVendorDto.builder()
                         .id("VND-" + String.format("%03d", vendor.getId()))
@@ -282,8 +323,12 @@ public class AdminService {
                 .collect(Collectors.toList());
     }
 
-    public List<AdminBookingDto> getAllBookings() {
-        return bookingRepository.findAll().stream()
+    public List<AdminBookingDto> getAllBookings(User currentUser) {
+        java.util.stream.Stream<Booking> stream = bookingRepository.findAll().stream();
+        if (!currentUser.isSuperAdmin()) {
+            stream = stream.filter(b -> b.getEvent() != null && b.getEvent().getOrganizer() != null && b.getEvent().getOrganizer().getUserId().equals(currentUser.getUserId()));
+        }
+        return stream
                 .map(booking -> AdminBookingDto.builder()
                         .id(com.example.eventbooking.service.CustomerService.generateTicketCode(booking.getId()))
                         .user(booking.getUser().getFullName())
@@ -296,7 +341,10 @@ public class AdminService {
                 .collect(Collectors.toList());
     }
 
-    public AdminUserDto updateUser(Integer id, AdminUserDto dto) {
+    public AdminUserDto updateUser(User currentUser, Integer id, AdminUserDto dto) {
+        if (!currentUser.isSuperAdmin()) {
+            throw new org.springframework.security.access.AccessDeniedException("Access denied: only super admins can manage users");
+        }
         User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
         user.setFullName(dto.getName());
         user.setEmail(dto.getEmail());
@@ -325,8 +373,11 @@ public class AdminService {
                 .build();
     }
 
-    public AdminEventDto updateEvent(Integer id, AdminEventDto dto) {
+    public AdminEventDto updateEvent(User currentUser, Integer id, AdminEventDto dto) {
         Event event = eventRepository.findById(id).orElseThrow(() -> new RuntimeException("Event not found"));
+        if (!currentUser.isSuperAdmin() && !event.getOrganizer().getUserId().equals(currentUser.getUserId())) {
+            throw new org.springframework.security.access.AccessDeniedException("Access denied: you can only update your own events");
+        }
         event.setTitle(dto.getName());
         event.setCategory(dto.getCategory());
         event.setVenue(dto.getVenue());
@@ -392,19 +443,17 @@ public class AdminService {
                 .build();
     }
 
-    public void deleteEvent(Integer id) {
+    public void deleteEvent(User currentUser, Integer id) {
         Event event = eventRepository.findById(id).orElseThrow(() -> new RuntimeException("Event not found"));
+        if (!currentUser.isSuperAdmin() && !event.getOrganizer().getUserId().equals(currentUser.getUserId())) {
+            throw new org.springframework.security.access.AccessDeniedException("Access denied: you can only delete your own events");
+        }
         eventRepository.delete(event);
     }
 
-    public AdminEventDto createEvent(AdminEventDto dto) {
-        // Assume first user is admin/organizer for dummy creation since auth might not
-        // be fully wired in this method signature
-        User admin = userRepository.findAll().stream().findFirst()
-                .orElseThrow(() -> new RuntimeException("No admin user found"));
-
+    public AdminEventDto createEvent(User currentUser, AdminEventDto dto) {
         Event event = Event.builder()
-                .organizer(admin)
+                .organizer(currentUser)
                 .title(dto.getName() != null ? dto.getName() : "Untitled Event")
                 .description(dto.getDescription())
                 .category(dto.getCategory() != null ? dto.getCategory() : "General")
@@ -437,8 +486,10 @@ public class AdminService {
                 .build();
     }
 
-    public AdminVendorDto inviteVendor(AdminVendorInviteDto dto) {
-        // Simple stub
+    public AdminVendorDto inviteVendor(User currentUser, AdminVendorInviteDto dto) {
+        if (!currentUser.isSuperAdmin()) {
+            throw new org.springframework.security.access.AccessDeniedException("Access denied: only super admins can manage vendors");
+        }
         return AdminVendorDto.builder()
                 .name(dto.getBusinessName())
                 .owner("Invited Vendor")
@@ -448,7 +499,10 @@ public class AdminService {
                 .build();
     }
 
-    public AdminUserDto createUser(AdminUserDto dto) {
+    public AdminUserDto createUser(User currentUser, AdminUserDto dto) {
+        if (!currentUser.isSuperAdmin()) {
+            throw new org.springframework.security.access.AccessDeniedException("Access denied: only super admins can manage users");
+        }
         User user = User.builder()
                 .fullName(dto.getName())
                 .email(dto.getEmail())
@@ -471,7 +525,10 @@ public class AdminService {
         return createdUser;
     }
 
-    public void deleteUser(Integer id) {
+    public void deleteUser(User currentUser, Integer id) {
+        if (!currentUser.isSuperAdmin()) {
+            throw new org.springframework.security.access.AccessDeniedException("Access denied: only super admins can manage users");
+        }
         User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
 
         // 1. Delete favorites made by this user

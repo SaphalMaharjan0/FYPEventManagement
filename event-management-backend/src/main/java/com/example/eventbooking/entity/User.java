@@ -48,6 +48,10 @@ public class User implements UserDetails {
     
     @Column(name = "is_active", nullable = false)
     private boolean isActive;
+
+    @Builder.Default
+    @Column(name = "is_super_admin", nullable = false)
+    private boolean isSuperAdmin = false;
     
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;

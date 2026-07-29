@@ -13,9 +13,13 @@ import {
 export default function AdminSidebar({ currentPage, onNavigate, currentUser, onLogout }) {
   const navItems = [
     { id: "admin-dashboard", label: "Dashboard", icon: Home },
-    { id: "admin-users", label: "Users", icon: Users },
+    ...(currentUser?.isSuperAdmin ? [
+      { id: "admin-users", label: "Users", icon: Users }
+    ] : []),
     { id: "admin-events", label: "Events", icon: Calendar },
-    { id: "admin-vendors", label: "Vendors", icon: Store },
+    ...(currentUser?.isSuperAdmin ? [
+      { id: "admin-vendors", label: "Vendors", icon: Store }
+    ] : []),
     { id: "admin-bookings", label: "Bookings", icon: Ticket },
     { id: "admin-reports", label: "Reports & Analytics", icon: BarChart2 },
     { id: "admin-settings", label: "Settings", icon: Settings }

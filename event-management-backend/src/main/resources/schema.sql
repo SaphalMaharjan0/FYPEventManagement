@@ -47,6 +47,7 @@ CREATE TABLE USERS (
     location        VARCHAR(200),
     role            user_role       NOT NULL DEFAULT 'customer',
     is_active       BOOLEAN         NOT NULL DEFAULT TRUE,
+    is_super_admin  BOOLEAN         NOT NULL DEFAULT FALSE,
     created_at      TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at      TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP
 );

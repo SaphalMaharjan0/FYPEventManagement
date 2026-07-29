@@ -51,6 +51,7 @@ public class AuthService {
                         .email(user.getEmail())
                         .phone(user.getPhone())
                         .role(user.getRole())
+                        .isSuperAdmin(user.isSuperAdmin())
                         .build())
                 .build();
     }
@@ -74,6 +75,7 @@ public class AuthService {
                         .email(user.getEmail())
                         .phone(user.getPhone())
                         .role(user.getRole())
+                        .isSuperAdmin(user.isSuperAdmin())
                         .build())
                 .build();
     }

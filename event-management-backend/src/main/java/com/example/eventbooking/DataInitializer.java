@@ -37,6 +37,7 @@ public class DataInitializer {
                             .passwordHash("$2a$10$dummyHash...") // dummy
                             .phone("1234567890")
                             .role(Role.administrator)
+                            .isSuperAdmin(true)
                             .isActive(true)
                             .build();
                     return userRepository.save(newUser);
