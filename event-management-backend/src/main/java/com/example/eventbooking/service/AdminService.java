@@ -346,35 +346,37 @@ public class AdminService {
         if (!currentUser.isSuperAdmin()) {
             throw new org.springframework.security.access.AccessDeniedException("Access denied: only super admins can manage users");
         }
-        User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
-        user.setFullName(dto.getName());
-        user.setEmail(dto.getEmail());
-        if (dto.getRole() != null) {
-            try {
-                user.setRole(Role.valueOf(dto.getRole()));
-            } catch (IllegalArgumentException e) {
-                // Ignore invalid role
+        try {
+            User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
+            user.setFullName(dto.getName());
+            user.setEmail(dto.getEmail());
+            if (dto.getRole() != null) {
+                user.setRole(parseRole(dto.getRole()));
             }
+            if (dto.getStatus() != null) {
+                user.setActive("Active".equalsIgnoreCase(dto.getStatus()));
+            }
+            if (dto.getPassword() != null && !dto.getPassword().trim().isEmpty()) {
+                user.setPasswordHash(passwordEncoder.encode(dto.getPassword()));
+            }
+            user.setSuperAdmin("administrator".equalsIgnoreCase(user.getRole().name()) && dto.isSuperAdmin());
+            
+            user = userRepository.save(user);
+            return AdminUserDto.builder()
+                    .dbId(user.getUserId())
+                    .id("USR-" + String.format("%03d", user.getUserId()))
+                    .name(user.getFullName())
+                    .email(user.getEmail())
+                    .role(user.getRole() != null ? user.getRole().name() : "customer")
+                    .status(user.isActive() ? "Active" : "Inactive")
+                    .joinedDate(user.getCreatedAt() != null ? user.getCreatedAt().format(FORMATTER) : "N/A")
+                    .isSuperAdmin(user.isSuperAdmin())
+                    .build();
+        } catch (Exception e) {
+            System.err.println("ERROR: Failed to update user in AdminService: " + e.getMessage());
+            e.printStackTrace();
+            throw e;
         }
-        if (dto.getStatus() != null) {
-            user.setActive("Active".equalsIgnoreCase(dto.getStatus()));
-        }
-        if (dto.getPassword() != null && !dto.getPassword().trim().isEmpty()) {
-            user.setPasswordHash(passwordEncoder.encode(dto.getPassword()));
-        }
-        user.setSuperAdmin("administrator".equalsIgnoreCase(user.getRole().name()) && dto.isSuperAdmin());
-        
-        user = userRepository.save(user);
-        return AdminUserDto.builder()
-                .dbId(user.getUserId())
-                .id("USR-" + String.format("%03d", user.getUserId()))
-                .name(user.getFullName())
-                .email(user.getEmail())
-                .role(user.getRole() != null ? user.getRole().name() : "customer")
-                .status(user.isActive() ? "Active" : "Inactive")
-                .joinedDate(user.getCreatedAt() != null ? user.getCreatedAt().format(FORMATTER) : "N/A")
-                .isSuperAdmin(user.isSuperAdmin())
-                .build();
     }
 
     public AdminEventDto updateEvent(User currentUser, Integer id, AdminEventDto dto) {
@@ -503,33 +505,52 @@ public class AdminService {
                 .build();
     }
 
+    private Role parseRole(String roleStr) {
+        if (roleStr == null) return Role.customer;
+        String normalized = roleStr.trim().toLowerCase();
+        if ("admin".equals(normalized) || "administrator".equals(normalized)) {
+            return Role.administrator;
+        }
+        try {
+            return Role.valueOf(normalized);
+        } catch (IllegalArgumentException e) {
+            return Role.customer;
+        }
+    }
+
     public AdminUserDto createUser(User currentUser, AdminUserDto dto) {
         if (!currentUser.isSuperAdmin()) {
             throw new org.springframework.security.access.AccessDeniedException("Access denied: only super admins can manage users");
         }
-        Role userRole = dto.getRole() != null ? Role.valueOf(dto.getRole().toLowerCase()) : Role.customer;
-        User user = User.builder()
-                .fullName(dto.getName())
-                .email(dto.getEmail())
-                .passwordHash(passwordEncoder.encode(dto.getPassword() != null ? dto.getPassword() : "password"))
-                .role(userRole)
-                .isSuperAdmin("administrator".equalsIgnoreCase(userRole.name()) && dto.isSuperAdmin())
-                .isActive(true)
-                .build();
-        user = userRepository.save(user);
+        try {
+            Role userRole = parseRole(dto.getRole());
+            User user = User.builder()
+                    .fullName(dto.getName())
+                    .email(dto.getEmail())
+                    .passwordHash(passwordEncoder.encode(dto.getPassword() != null && !dto.getPassword().trim().isEmpty() ? dto.getPassword() : "password123"))
+                    .role(userRole)
+                    .isSuperAdmin("administrator".equalsIgnoreCase(userRole.name()) && dto.isSuperAdmin())
+                    .isActive(true)
+                    .build();
+            user = userRepository.save(user);
 
-        AdminUserDto createdUser = AdminUserDto.builder()
-                .dbId(user.getUserId())
-                .id("USR-" + String.format("%03d", user.getUserId()))
-                .name(user.getFullName())
-                .email(user.getEmail())
-                .role(user.getRole().name())
-                .status("Active")
-                .joinedDate(user.getCreatedAt() != null ? user.getCreatedAt().format(FORMATTER) : "Just now")
-                .isSuperAdmin(user.isSuperAdmin())
-                .build();
+            AdminUserDto createdUser = AdminUserDto.builder()
+                    .dbId(user.getUserId())
+                    .id("USR-" + String.format("%03d", user.getUserId()))
+                    .name(user.getFullName())
+                    .email(user.getEmail())
+                    .role(user.getRole().name())
+                    .status("Active")
+                    .joinedDate(user.getCreatedAt() != null ? user.getCreatedAt().format(FORMATTER) : "Just now")
+                    .isSuperAdmin(user.isSuperAdmin())
+                    .build();
 
-        return createdUser;
+            return createdUser;
+        } catch (Exception e) {
+            System.err.println("ERROR: Failed to create user in AdminService: " + e.getMessage());
+            e.printStackTrace();
+            throw e;
+        }
     }
 
     public void deleteUser(User currentUser, Integer id) {
