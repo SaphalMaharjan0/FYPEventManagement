@@ -54,7 +54,18 @@ public class VendorServiceRequestService {
             throw new RuntimeException("Unauthorized: You do not own this service request.");
         }
 
-        request.setStatus(status);
+        String dbStatus = status;
+        if ("Pending".equalsIgnoreCase(status) || "requested".equalsIgnoreCase(status)) {
+            dbStatus = "requested";
+        } else if ("Active".equalsIgnoreCase(status) || "accepted".equalsIgnoreCase(status)) {
+            dbStatus = "accepted";
+        } else if ("Completed".equalsIgnoreCase(status)) {
+            dbStatus = "completed";
+        } else if ("Rejected".equalsIgnoreCase(status)) {
+            dbStatus = "rejected";
+        }
+
+        request.setStatus(dbStatus);
         request = serviceRequestRepository.save(request);
 
         return convertToDto(request);
@@ -68,7 +79,18 @@ public class VendorServiceRequestService {
         dto.setService(request.getService().getServiceName());
         dto.setDate(request.getEventDate());
         dto.setAmount(request.getAmount());
-        dto.setStatus(request.getStatus());
+        
+        String feStatus = request.getStatus();
+        if ("requested".equalsIgnoreCase(feStatus)) {
+            feStatus = "Pending";
+        } else if ("accepted".equalsIgnoreCase(feStatus)) {
+            feStatus = "Active";
+        } else if ("completed".equalsIgnoreCase(feStatus)) {
+            feStatus = "Completed";
+        } else if ("rejected".equalsIgnoreCase(feStatus)) {
+            feStatus = "Rejected";
+        }
+        dto.setStatus(feStatus);
         return dto;
     }
 }

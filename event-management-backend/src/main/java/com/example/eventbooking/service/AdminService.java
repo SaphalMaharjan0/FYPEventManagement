@@ -403,7 +403,7 @@ public class AdminService {
             req.setClient(currentUser);
             req.setEventDate(event.getEventDate());
             req.setAmount(service.getPrice());
-            req.setStatus("Pending"); // Set status as Pending so it goes to vendor requests dashboard
+            req.setStatus("requested"); // Set status as requested so it goes to vendor requests dashboard
             serviceRequestRepository.save(req);
         }
     }
