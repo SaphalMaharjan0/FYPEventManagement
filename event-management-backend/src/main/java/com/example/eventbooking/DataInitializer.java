@@ -20,6 +20,20 @@ public class DataInitializer {
     @Bean
     public CommandLineRunner initData(UserRepository userRepository, EventRepository eventRepository) {
         return args -> {
+            // Force set seeded admin accounts to super admin status
+            userRepository.findByEmail("admin@example.com").ifPresent(admin -> {
+                if (!admin.isSuperAdmin()) {
+                    admin.setSuperAdmin(true);
+                    userRepository.save(admin);
+                }
+            });
+            userRepository.findByEmail("admin@eventpulse.com").ifPresent(admin -> {
+                if (!admin.isSuperAdmin()) {
+                    admin.setSuperAdmin(true);
+                    userRepository.save(admin);
+                }
+            });
+
             // Auto-publish existing draft events so they show up on the events page
             eventRepository.findAll().forEach(e -> {
                 if (e.getStatus() == EventStatus.draft) {
