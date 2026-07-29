@@ -33,7 +33,8 @@ export function useFetch() {
 
       if (response.status === 401) {
         localStorage.removeItem('token');
-        localStorage.removeItem('eventpulse_user');
+        localStorage.removeItem('user');
+        localStorage.removeItem('session_start_time');
         window.location.href = '/login';
         throw new Error('Session expired. Please log in again.');
       }

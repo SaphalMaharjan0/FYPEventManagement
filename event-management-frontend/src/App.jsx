@@ -58,6 +58,16 @@ export default function App() {
   const [currentUser, setCurrentUser] = useState(() => {
     try {
       const savedUser = localStorage.getItem('user');
+      const sessionStart = localStorage.getItem('session_start_time');
+      const SIX_HOURS = 6 * 60 * 60 * 1000;
+      
+      if (sessionStart && Date.now() - parseInt(sessionStart, 10) > SIX_HOURS) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        localStorage.removeItem('session_start_time');
+        return null;
+      }
+
       if (savedUser && savedUser !== 'undefined') {
         return JSON.parse(savedUser);
       }
@@ -84,6 +94,34 @@ export default function App() {
       localStorage.setItem("eventpulse_theme", "light");
     }
   }, [isDarkMode]);
+
+  // Session validation & Server connectivity check
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token && currentUser) {
+      // Use a public or role-appropriate endpoint to check token and backend connectivity
+      const endpoint = currentUser.role?.toLowerCase() === 'administrator' ? '/api/admin/dashboard' : '/api/customer/dashboard-stats';
+      fetch(`http://localhost:8080${endpoint}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      .then(res => {
+        if (res.status === 401 || res.status === 403) {
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          localStorage.removeItem('session_start_time');
+          setCurrentUser(null);
+          window.location.reload();
+        }
+      })
+      .catch(err => {
+        console.error("Backend server is unreachable. Logging out.", err);
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        localStorage.removeItem('session_start_time');
+        setCurrentUser(null);
+      });
+    }
+  }, [currentUser]);
 
   const onNavigate = (page) => {
     navigate(pageToUrl(page));

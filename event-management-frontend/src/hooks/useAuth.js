@@ -17,6 +17,7 @@ export function useAuth() {
       
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
+      localStorage.setItem('session_start_time', Date.now().toString());
       setUser(data.user);
       return data.user;
     } catch (error) {
@@ -41,6 +42,7 @@ export function useAuth() {
   const logout = useCallback(() => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
+    localStorage.removeItem('session_start_time');
     setUser(null);
   }, []);
 
