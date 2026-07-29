@@ -22,21 +22,28 @@ export default function ManageEventsPage() {
     status: "draft",
     seats: "0/100",
     price: "Free",
-    imageUrl: ""
+    imageUrl: "",
+    serviceIds: []
   });
 
+  const [availableServices, setAvailableServices] = useState([]);
+
   useEffect(() => {
-    const loadEvents = async () => {
+    const loadData = async () => {
       try {
-        const data = await fetchWithAuth("/api/admin/events");
-        setEvents(data || []);
+        const [eventsData, servicesData] = await Promise.all([
+          fetchWithAuth("/api/admin/events"),
+          fetchWithAuth("/api/admin/services")
+        ]);
+        setEvents(eventsData || []);
+        setAvailableServices(servicesData || []);
       } catch (err) {
-        console.error("Failed to load admin events", err);
+        console.error("Failed to load admin events/services", err);
       } finally {
         setLoading(false);
       }
     };
-    loadEvents();
+    loadData();
   }, [fetchWithAuth]);
 
   const handleEditClick = (event) => {
@@ -74,7 +81,7 @@ export default function ManageEventsPage() {
         setEvents([created, ...events]);
         setIsAddModalOpen(false);
         setNewEvent({
-          name: "", category: "", date: "", venue: "", description: "", startTime: "", endTime: "", status: "draft", seats: "0/100", price: "Free", imageUrl: ""
+          name: "", category: "", date: "", venue: "", description: "", startTime: "", endTime: "", status: "draft", seats: "0/100", price: "Free", imageUrl: "", serviceIds: []
         });
       }
     } catch (err) {
@@ -400,6 +407,31 @@ export default function ManageEventsPage() {
                 />
               </div>
 
+              <div>
+                <label style={{ display: "block", marginBottom: "0.5rem", fontSize: "0.9rem", fontWeight: "500" }}>Contract Vendor Services</label>
+                <div style={{ maxHeight: "150px", overflowY: "auto", border: "1px solid #e2e8f0", borderRadius: "6px", padding: "0.75rem", display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+                  {availableServices.length === 0 ? (
+                    <span style={{ fontSize: "0.85rem", color: "var(--color-slate-500)" }}>No vendor services available.</span>
+                  ) : (
+                    availableServices.map(service => (
+                      <label key={service.id} style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.85rem", color: "var(--color-slate-700)", cursor: "pointer" }}>
+                        <input 
+                          type="checkbox" 
+                          checked={newEvent.serviceIds?.includes(service.id) || false}
+                          onChange={(e) => {
+                            const newIds = e.target.checked 
+                              ? [...(newEvent.serviceIds || []), service.id]
+                              : (newEvent.serviceIds || []).filter(id => id !== service.id);
+                            setNewEvent({...newEvent, serviceIds: newIds});
+                          }}
+                        />
+                        {service.serviceName} - ${service.price}
+                      </label>
+                    ))
+                  )}
+                </div>
+              </div>
+
               <div style={{ display: "flex", justifyContent: "flex-end", gap: "1rem", marginTop: "1rem" }}>
                 <button type="button" onClick={() => setIsAddModalOpen(false)} style={{ padding: "0.75rem 1.5rem", border: "1px solid #e2e8f0", borderRadius: "6px", backgroundColor: "white", cursor: "pointer" }}>
                   Cancel
@@ -568,6 +600,31 @@ export default function ManageEventsPage() {
                   required
                   style={{ width: "100%", padding: "0.75rem", borderRadius: "6px", border: "1px solid #e2e8f0" }}
                 />
+              </div>
+
+              <div>
+                <label style={{ display: "block", marginBottom: "0.5rem", fontSize: "0.9rem", fontWeight: "500" }}>Contract Vendor Services</label>
+                <div style={{ maxHeight: "150px", overflowY: "auto", border: "1px solid #e2e8f0", borderRadius: "6px", padding: "0.75rem", display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+                  {availableServices.length === 0 ? (
+                    <span style={{ fontSize: "0.85rem", color: "var(--color-slate-500)" }}>No vendor services available.</span>
+                  ) : (
+                    availableServices.map(service => (
+                      <label key={service.id} style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.85rem", color: "var(--color-slate-700)", cursor: "pointer" }}>
+                        <input 
+                          type="checkbox" 
+                          checked={editingEvent.serviceIds?.includes(service.id) || false}
+                          onChange={(e) => {
+                            const newIds = e.target.checked 
+                              ? [...(editingEvent.serviceIds || []), service.id]
+                              : (editingEvent.serviceIds || []).filter(id => id !== service.id);
+                            setEditingEvent({...editingEvent, serviceIds: newIds});
+                          }}
+                        />
+                        {service.serviceName} - ${service.price}
+                      </label>
+                    ))
+                  )}
+                </div>
               </div>
 
               <div style={{ display: "flex", justifyContent: "flex-end", gap: "1rem", marginTop: "1rem" }}>

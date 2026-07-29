@@ -86,4 +86,9 @@ public class AdminController {
         adminService.deleteUser(currentUser, id);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/services")
+    public ResponseEntity<List<ServiceDto>> getAllAvailableServices() {
+        return ResponseEntity.ok(adminService.getAllAvailableServices());
+    }
 }

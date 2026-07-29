@@ -11,4 +11,10 @@ public interface ServiceRequestRepository extends JpaRepository<ServiceRequest, 
     
     // Find all service requests for a specific vendor's services
     List<ServiceRequest> findByServiceVendorIdOrderByCreatedAtDesc(Integer vendorId);
+
+    List<ServiceRequest> findByEventEventId(Integer eventId);
+
+    @org.springframework.data.jpa.repository.Modifying
+    @org.springframework.transaction.annotation.Transactional
+    void deleteByEventEventId(Integer eventId);
 }

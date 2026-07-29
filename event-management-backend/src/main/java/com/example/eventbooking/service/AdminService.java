@@ -33,6 +33,8 @@ public class AdminService {
     private final BookingRepository bookingRepository;
     private final PasswordEncoder passwordEncoder;
     private final org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
+    private final com.example.eventbooking.repository.ServiceRepository serviceRepository;
+    private final com.example.eventbooking.repository.ServiceRequestRepository serviceRequestRepository;
 
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("MMM dd, yyyy");
 
@@ -303,6 +305,9 @@ public class AdminService {
                         .startTime(event.getStartTime() != null ? event.getStartTime().toString() : null)
                         .endTime(event.getEndTime() != null ? event.getEndTime().toString() : null)
                         .status(event.getStatus() != null ? event.getStatus().name() : null)
+                        .serviceIds(serviceRequestRepository.findByEventEventId(event.getEventId()).stream()
+                                .map(r -> r.getService().getId())
+                                .collect(Collectors.toList()))
                         .build())
                 .collect(Collectors.toList());
     }
@@ -379,6 +384,31 @@ public class AdminService {
         }
     }
 
+    @org.springframework.transaction.annotation.Transactional
+    public void updateEventServices(Event event, User currentUser, List<Integer> serviceIds) {
+        // First delete old requests
+        serviceRequestRepository.deleteByEventEventId(event.getEventId());
+
+        if (serviceIds == null || serviceIds.isEmpty()) {
+            return;
+        }
+
+        for (Integer serviceId : serviceIds) {
+            com.example.eventbooking.entity.Service service = serviceRepository.findById(serviceId)
+                    .orElseThrow(() -> new RuntimeException("Service not found with ID: " + serviceId));
+            
+            com.example.eventbooking.entity.ServiceRequest req = new com.example.eventbooking.entity.ServiceRequest();
+            req.setEvent(event);
+            req.setService(service);
+            req.setClient(currentUser);
+            req.setEventDate(event.getEventDate());
+            req.setAmount(service.getPrice());
+            req.setStatus("Pending"); // Set status as Pending so it goes to vendor requests dashboard
+            serviceRequestRepository.save(req);
+        }
+    }
+
+    @org.springframework.transaction.annotation.Transactional
     public AdminEventDto updateEvent(User currentUser, Integer id, AdminEventDto dto) {
         Event event = eventRepository.findById(id).orElseThrow(() -> new RuntimeException("Event not found"));
         if (!currentUser.isSuperAdmin() && !event.getOrganizer().getUserId().equals(currentUser.getUserId())) {
@@ -431,6 +461,10 @@ public class AdminService {
             }
         }
         event = eventRepository.save(event);
+        
+        // Update chosen vendor services
+        updateEventServices(event, currentUser, dto.getServiceIds());
+
         return AdminEventDto.builder()
                 .dbId(event.getEventId())
                 .id("EVT-" + String.format("%03d", event.getEventId()))
@@ -446,6 +480,7 @@ public class AdminService {
                 .startTime(event.getStartTime() != null ? event.getStartTime().toString() : null)
                 .endTime(event.getEndTime() != null ? event.getEndTime().toString() : null)
                 .status(event.getStatus() != null ? event.getStatus().name() : null)
+                .serviceIds(dto.getServiceIds())
                 .build();
     }
 
@@ -457,6 +492,7 @@ public class AdminService {
         eventRepository.delete(event);
     }
 
+    @org.springframework.transaction.annotation.Transactional
     public AdminEventDto createEvent(User currentUser, AdminEventDto dto) {
         Event event = Event.builder()
                 .organizer(currentUser)
@@ -477,6 +513,10 @@ public class AdminService {
             }
         }
         event = eventRepository.save(event);
+
+        // Update chosen vendor services
+        updateEventServices(event, currentUser, dto.getServiceIds());
+
         return AdminEventDto.builder()
                 .dbId(event.getEventId())
                 .id("EVT-" + String.format("%03d", event.getEventId()))
@@ -489,6 +529,7 @@ public class AdminService {
                 .rating(0.0)
                 .description(event.getDescription())
                 .status(event.getStatus().name())
+                .serviceIds(dto.getServiceIds())
                 .build();
     }
 
@@ -588,6 +629,23 @@ public class AdminService {
         jdbcTemplate.update("DELETE FROM vendors WHERE user_id = ?", id);
 
         userRepository.delete(user);
+    }
+
+    public List<ServiceDto> getAllAvailableServices() {
+        return serviceRepository.findAll().stream()
+                .map(s -> {
+                    ServiceDto dto = new ServiceDto();
+                    dto.setId(s.getId());
+                    dto.setVendorId(s.getVendor().getId());
+                    dto.setServiceName(s.getServiceName() + " (" + s.getVendor().getBusinessName() + ")");
+                    dto.setCategory(s.getCategory());
+                    dto.setPrice(s.getPrice());
+                    dto.setIsActive(s.getIsActive());
+                    dto.setImageUrl(s.getImageUrl());
+                    dto.setDescription(s.getDescription());
+                    return dto;
+                })
+                .collect(Collectors.toList());
     }
 
     private String formatSeats(Event event) {

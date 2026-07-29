@@ -25,4 +25,5 @@ public class AdminEventDto {
     private String startTime;
     private String endTime;
     private String status;
+    private java.util.List<Integer> serviceIds;
 }
