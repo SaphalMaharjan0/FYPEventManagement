@@ -50,7 +50,7 @@ public class User implements UserDetails {
     private boolean isActive;
 
     @Builder.Default
-    @Column(name = "is_super_admin", nullable = false)
+    @Column(name = "is_super_admin", nullable = false, columnDefinition = "boolean default false")
     private boolean isSuperAdmin = false;
     
     @Column(name = "created_at", nullable = false, updatable = false)
