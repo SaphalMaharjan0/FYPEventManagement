@@ -42,8 +42,18 @@ public class VendorProfileService {
         if (dto.getContactEmail() != null) vendor.setContactEmail(dto.getContactEmail());
         if (dto.getContactPhone() != null) vendor.setContactPhone(dto.getContactPhone());
         if (dto.getBusinessAddress() != null) vendor.setBusinessAddress(dto.getBusinessAddress());
+        if (dto.getLatitude() != null) vendor.setLatitude(dto.getLatitude());
+        if (dto.getLongitude() != null) vendor.setLongitude(dto.getLongitude());
         if (dto.getPayoutMethod() != null) vendor.setPayoutMethod(dto.getPayoutMethod());
         if (dto.getPayoutAccount() != null) vendor.setPayoutAccount(dto.getPayoutAccount());
+
+        if (dto.getLoginEmail() != null && !dto.getLoginEmail().equals(vendor.getUser().getEmail())) {
+            // Check if email already exists
+            if (userRepository.existsByEmail(dto.getLoginEmail())) {
+                throw new RuntimeException("Email is already taken");
+            }
+            vendor.getUser().setEmail(dto.getLoginEmail());
+        }
         
         vendor = vendorRepository.save(vendor);
         return convertToDto(vendor);
@@ -61,6 +71,9 @@ public class VendorProfileService {
         dto.setPayoutMethod(vendor.getPayoutMethod());
         dto.setPayoutAccount(vendor.getPayoutAccount());
         dto.setIsVerified(vendor.getIsVerified());
+        dto.setLoginEmail(vendor.getUser().getEmail());
+        dto.setLatitude(vendor.getLatitude());
+        dto.setLongitude(vendor.getLongitude());
         return dto;
     }
 }

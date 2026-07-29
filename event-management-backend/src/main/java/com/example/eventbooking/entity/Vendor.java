@@ -44,6 +44,12 @@ public class Vendor {
     @Column(name = "is_verified", nullable = false)
     private Boolean isVerified = false;
 
+    @Column(name = "latitude")
+    private Double latitude;
+
+    @Column(name = "longitude")
+    private Double longitude;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;

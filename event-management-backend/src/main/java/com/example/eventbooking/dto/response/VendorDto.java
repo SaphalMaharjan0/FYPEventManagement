@@ -14,4 +14,7 @@ public class VendorDto {
     private String payoutMethod;
     private String payoutAccount;
     private Boolean isVerified;
+    private String loginEmail;
+    private Double latitude;
+    private Double longitude;
 }

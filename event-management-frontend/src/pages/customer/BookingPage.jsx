@@ -48,16 +48,34 @@ export default function BookingPage({ event, initialQuantity, onBookingSuccess, 
           body: JSON.stringify({ eventId: event.id, quantity })
         });
         
-        if (response && response.signature) {
-          // Redirect to our local Mock eSewa page
-          const queryParams = new URLSearchParams({
-            transaction_uuid: response.transactionUuid,
-            amount: response.totalAmount,
-            success_url: response.successUrl,
-            failure_url: response.failureUrl
-          }).toString();
-          
-          window.location.href = `/customer/mock-esewa?${queryParams}`;
+        if (response && (response.signature || response.transactionUuid)) {
+          // Redirect to the eSewa Sandbox (rc-epay) via form submission
+          const form = document.createElement("form");
+          form.setAttribute("method", "POST");
+          form.setAttribute("action", response.esewaUrl || "https://rc-epay.esewa.com.np/api/epay/main/v2/form"); // rc-epay is the eSewa Sandbox environment
+
+          const addField = (name, value) => {
+            const hiddenField = document.createElement("input");
+            hiddenField.setAttribute("type", "hidden");
+            hiddenField.setAttribute("name", name);
+            hiddenField.setAttribute("value", value);
+            form.appendChild(hiddenField);
+          };
+
+          addField("amount", response.amount);
+          addField("tax_amount", response.taxAmount);
+          addField("total_amount", response.totalAmount);
+          addField("transaction_uuid", response.transactionUuid);
+          addField("product_code", response.productCode);
+          addField("product_service_charge", response.productServiceCharge);
+          addField("product_delivery_charge", response.productDeliveryCharge);
+          addField("success_url", response.successUrl);
+          addField("failure_url", response.failureUrl);
+          addField("signed_field_names", response.signedFieldNames);
+          addField("signature", response.signature);
+
+          document.body.appendChild(form);
+          form.submit();
         } else {
           alert("Failed to initiate eSewa payment");
           setIsProcessing(false);

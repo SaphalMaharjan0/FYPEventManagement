@@ -612,6 +612,7 @@ export default function ManageEventsPage() {
                       <label key={service.id} style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.85rem", color: "var(--color-slate-700)", cursor: "pointer" }}>
                         <input 
                           type="checkbox" 
+                          disabled={editingEvent.lockedServiceIds?.includes(service.id)}
                           checked={editingEvent.serviceIds?.includes(service.id) || false}
                           onChange={(e) => {
                             const newIds = e.target.checked 

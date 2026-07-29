@@ -180,7 +180,7 @@ export default function MapPickerModal({ isOpen, onClose, onSelectLocation, init
 
   const handleConfirm = () => {
     if (resolvedAddress) {
-      onSelectLocation(resolvedAddress);
+      onSelectLocation(resolvedAddress, selectedCoords);
       onClose();
     }
   };

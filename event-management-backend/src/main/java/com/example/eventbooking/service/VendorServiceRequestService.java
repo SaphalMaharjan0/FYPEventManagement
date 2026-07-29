@@ -90,15 +90,6 @@ public class VendorServiceRequestService {
                         request.getId()
                 );
             }
-            // Also notify all admin users
-            notificationService.notifyAllAdmins(
-                    "Service Rejected",
-                    "Vendor \"" + vendorName + "\" rejected the service \"" + serviceName
-                            + "\" for event \"" + eventTitle + "\". Please reassign a replacement vendor.",
-                    "SERVICE_REJECTED",
-                    eventId,
-                    request.getId()
-            );
         } else if ("accepted".equals(dbStatus)) {
             // Notify the event organizer
             if (event != null && event.getOrganizer() != null) {
@@ -112,15 +103,19 @@ public class VendorServiceRequestService {
                         request.getId()
                 );
             }
-            // Also notify all admin users
-            notificationService.notifyAllAdmins(
-                    "Service Accepted",
-                    "Vendor \"" + vendorName + "\" accepted the service \"" + serviceName
-                            + "\" for event \"" + eventTitle + "\".",
-                    "SERVICE_ACCEPTED",
-                    eventId,
-                    request.getId()
-            );
+        } else if ("completed".equals(dbStatus)) {
+            // Notify the event organizer
+            if (event != null && event.getOrganizer() != null) {
+                notificationService.createNotification(
+                        event.getOrganizer(),
+                        "Service Completed",
+                        "Vendor \"" + vendorName + "\" has completed the service \"" + serviceName
+                                + "\" for event \"" + eventTitle + "\".",
+                        "SERVICE_COMPLETED",
+                        eventId,
+                        request.getId()
+                );
+            }
         }
 
         return convertToDto(request);
@@ -131,6 +126,7 @@ public class VendorServiceRequestService {
         dto.setId("REQ-" + String.format("%03d", request.getId()));
         dto.setRawId(request.getId());
         dto.setClient(request.getClient().getFullName());
+        dto.setEventTitle(request.getEvent() != null ? request.getEvent().getTitle() : "Unknown Event");
         dto.setService(request.getService().getServiceName());
         dto.setDate(request.getEventDate());
         dto.setAmount(request.getAmount());
@@ -146,6 +142,21 @@ public class VendorServiceRequestService {
             feStatus = "Rejected";
         }
         dto.setStatus(feStatus);
+
+        if (request.getEvent() != null) {
+            com.example.eventbooking.dto.response.EventDto eventDto = com.example.eventbooking.dto.response.EventDto.builder()
+                .id(request.getEvent().getEventId())
+                .title(request.getEvent().getTitle())
+                .category(request.getEvent().getCategory())
+                .date(request.getEvent().getEventDate() != null ? request.getEvent().getEventDate().toString() : "N/A")
+                .time(request.getEvent().getStartTime() != null ? request.getEvent().getStartTime().toString() : "N/A")
+                .venue(request.getEvent().getVenue())
+                .description(request.getEvent().getDescription())
+                .imageUrl(request.getEvent().getImageUrl())
+                .build();
+            dto.setEventDetails(eventDto);
+        }
+
         return dto;
     }
 }

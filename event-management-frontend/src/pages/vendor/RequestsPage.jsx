@@ -98,6 +98,7 @@ export default function RequestsPage() {
               <tr>
                 <th style={{ padding: "1rem 1.5rem", textAlign: "left", fontSize: "0.85rem", fontWeight: "600", color: "var(--color-slate-500)" }}>Request ID</th>
                 <th style={{ padding: "1rem 1.5rem", textAlign: "left", fontSize: "0.85rem", fontWeight: "600", color: "var(--color-slate-500)" }}>Client</th>
+                <th style={{ padding: "1rem 1.5rem", textAlign: "left", fontSize: "0.85rem", fontWeight: "600", color: "var(--color-slate-500)" }}>Event</th>
                 <th style={{ padding: "1rem 1.5rem", textAlign: "left", fontSize: "0.85rem", fontWeight: "600", color: "var(--color-slate-500)" }}>Service</th>
                 <th style={{ padding: "1rem 1.5rem", textAlign: "left", fontSize: "0.85rem", fontWeight: "600", color: "var(--color-slate-500)" }}>Event Date</th>
                 <th style={{ padding: "1rem 1.5rem", textAlign: "left", fontSize: "0.85rem", fontWeight: "600", color: "var(--color-slate-500)" }}>Amount</th>
@@ -108,7 +109,7 @@ export default function RequestsPage() {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan="7" style={{ padding: "3rem 1.5rem", textAlign: "center", color: "var(--color-slate-500)" }}>
+                  <td colSpan="8" style={{ padding: "3rem 1.5rem", textAlign: "center", color: "var(--color-slate-500)" }}>
                     Loading requests...
                   </td>
                 </tr>
@@ -116,6 +117,7 @@ export default function RequestsPage() {
                 <tr key={req.id} style={{ borderBottom: idx !== filteredRequests.length - 1 ? "1px solid #e2e8f0" : "none" }}>
                   <td style={{ padding: "1rem 1.5rem", fontSize: "0.9rem", color: "var(--color-blue-500)", fontWeight: "500" }}>{req.id}</td>
                   <td style={{ padding: "1rem 1.5rem", fontSize: "0.9rem", color: "var(--color-slate-900)", fontWeight: "500" }}>{req.client}</td>
+                  <td style={{ padding: "1rem 1.5rem", fontSize: "0.9rem", color: "var(--color-slate-700)" }}>{req.eventTitle}</td>
                   <td style={{ padding: "1rem 1.5rem", fontSize: "0.9rem", color: "var(--color-slate-500)" }}>{req.service}</td>
                   <td style={{ padding: "1rem 1.5rem", fontSize: "0.9rem", color: "var(--color-slate-500)" }}>{req.date}</td>
                   <td style={{ padding: "1rem 1.5rem", fontSize: "0.9rem", color: "var(--color-slate-900)", fontWeight: "600" }}>
@@ -171,7 +173,7 @@ export default function RequestsPage() {
               ))}
               {!loading && filteredRequests.length === 0 && (
                 <tr>
-                  <td colSpan="7" style={{ padding: "3rem 1.5rem", textAlign: "center", color: "var(--color-slate-500)" }}>
+                  <td colSpan="8" style={{ padding: "3rem 1.5rem", textAlign: "center", color: "var(--color-slate-500)" }}>
                     No requests found for this status.
                   </td>
                 </tr>

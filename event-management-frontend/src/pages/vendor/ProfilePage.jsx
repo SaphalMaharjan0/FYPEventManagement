@@ -19,8 +19,11 @@ export default function ProfilePage({ currentUser, onUpdateUser }) {
     contactEmail: "",
     contactPhone: "",
     businessAddress: "",
+    latitude: null,
+    longitude: null,
     payoutMethod: "bank",
     payoutAccount: "",
+    loginEmail: "",
   });
 
   useEffect(() => {
@@ -44,8 +47,11 @@ export default function ProfilePage({ currentUser, onUpdateUser }) {
             contactEmail: vendorData.contactEmail || "",
             contactPhone: vendorData.contactPhone || "",
             businessAddress: vendorData.businessAddress || "",
+            latitude: vendorData.latitude || null,
+            longitude: vendorData.longitude || null,
             payoutMethod: vendorData.payoutMethod || "bank",
             payoutAccount: vendorData.payoutAccount || "",
+            loginEmail: vendorData.loginEmail || currentUser?.email || "",
           }));
         }
       } catch (err) {
@@ -93,8 +99,11 @@ export default function ProfilePage({ currentUser, onUpdateUser }) {
           contactEmail: formData.contactEmail,
           contactPhone: formData.contactPhone,
           businessAddress: formData.businessAddress,
+          latitude: formData.latitude,
+          longitude: formData.longitude,
           payoutMethod: formData.payoutMethod,
           payoutAccount: formData.payoutAccount,
+          loginEmail: formData.loginEmail,
         }),
       });
 
@@ -235,7 +244,7 @@ export default function ProfilePage({ currentUser, onUpdateUser }) {
               </h2>
               <div style={{ display: "flex", gap: "1.5rem", color: "#64748b", fontSize: "0.85rem", marginTop: "0.75rem", flexWrap: "wrap" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
-                  <Mail size={15} /> {currentUser?.email || "—"}
+                  <Mail size={15} /> {formData.loginEmail || currentUser?.email || "—"}
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
                   <Phone size={15} /> {formData.phone || "Not provided"}
@@ -256,11 +265,19 @@ export default function ProfilePage({ currentUser, onUpdateUser }) {
                     onChange={(e) => setFormData({ ...formData, lastName: e.target.value })} />
                 </div>
               </div>
-              <div>
-                <label style={{ fontSize: "0.8rem", fontWeight: "600", color: "#64748b", display: "block", marginBottom: "0.3rem" }}>Phone</label>
-                <input type="tel" style={{ ...inputStyle, maxWidth: "240px" }} value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  placeholder="e.g. +977-98XXXXXXXX" />
+              <div style={{ display: "flex", gap: "0.75rem" }}>
+                <div style={{ flex: 1 }}>
+                  <label style={{ fontSize: "0.8rem", fontWeight: "600", color: "#64748b", display: "block", marginBottom: "0.3rem" }}>Phone</label>
+                  <input type="tel" style={inputStyle} value={formData.phone}
+                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                    placeholder="e.g. +977-98XXXXXXXX" />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <label style={{ fontSize: "0.8rem", fontWeight: "600", color: "#64748b", display: "block", marginBottom: "0.3rem" }}>Login Email</label>
+                  <input type="email" style={inputStyle} value={formData.loginEmail}
+                    onChange={(e) => setFormData({ ...formData, loginEmail: e.target.value })}
+                    placeholder="Login email" />
+                </div>
               </div>
             </div>
           )}
@@ -452,7 +469,7 @@ export default function ProfilePage({ currentUser, onUpdateUser }) {
         isOpen={showMapModal}
         onClose={() => setShowMapModal(false)}
         initialLocation={formData.businessAddress}
-        onSelectLocation={(loc) => setFormData({ ...formData, businessAddress: loc })}
+        onSelectLocation={(loc, coords) => setFormData({ ...formData, businessAddress: loc, latitude: coords?.lat, longitude: coords?.lng })}
       />
     </div>
   );

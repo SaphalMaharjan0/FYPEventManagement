@@ -313,6 +313,10 @@ public class AdminService {
                                 .filter(r -> "rejected".equalsIgnoreCase(r.getStatus()))
                                 .map(r -> r.getService().getId())
                                 .collect(Collectors.toList()))
+                        .lockedServiceIds(serviceRequestRepository.findByEventEventId(event.getEventId()).stream()
+                                .filter(r -> "accepted".equalsIgnoreCase(r.getStatus()) || "completed".equalsIgnoreCase(r.getStatus()) || "rejected".equalsIgnoreCase(r.getStatus()))
+                                .map(r -> r.getService().getId())
+                                .collect(Collectors.toList()))
                         .build())
                 .collect(Collectors.toList());
     }
@@ -437,6 +441,18 @@ public class AdminService {
                         req.getId()
                 );
             }
+            
+            // Notify other admins about the new request
+            notificationService.notifyAllAdmins(
+                    "New Service Request",
+                    "Admin requested the service '" + service.getServiceName() + "' from vendor '" + 
+                    (service.getVendor() != null ? service.getVendor().getBusinessName() : "Unknown") + 
+                    "' for event '" + event.getTitle() + "'.",
+                    "request",
+                    event.getEventId(),
+                    req.getId(),
+                    currentUser
+            );
         }
     }
 
