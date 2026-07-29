@@ -11,7 +11,7 @@ import {
   Bell
 } from "lucide-react";
 
-export default function AdminSidebar({ currentPage, onNavigate, currentUser, onLogout }) {
+export default function AdminSidebar({ currentPage, onNavigate, currentUser, onLogout, isOpen }) {
   const navItems = [
     { id: "admin-dashboard", label: "Dashboard", icon: Home },
     ...(currentUser?.isSuperAdmin || currentUser?.superAdmin ? [
@@ -28,18 +28,11 @@ export default function AdminSidebar({ currentPage, onNavigate, currentUser, onL
   ];
 
   return (
-    <aside style={{
-      width: "260px",
+    <aside className={`dashboard-sidebar ${isOpen ? 'mobile-open' : ''}`} style={{
       backgroundColor: "#111827", // dark slate
       color: "#94a3b8",
       display: "flex",
       flexDirection: "column",
-      position: "fixed",
-      top: 0,
-      bottom: 0,
-      left: 0,
-      zIndex: 40,
-      boxShadow: "2px 0 10px rgba(0,0,0,0.1)"
     }}>
       {/* Logo */}
       <div style={{

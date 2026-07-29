@@ -12,7 +12,7 @@ import {
   Bell
 } from "lucide-react";
 
-export default function VendorSidebar({ currentPage, onNavigate, currentUser, onLogout }) {
+export default function VendorSidebar({ currentPage, onNavigate, currentUser, onLogout, isOpen }) {
   const menuItems = [
     { id: "vendor-dashboard", label: "Dashboard", icon: Home },
     { id: "vendor-services", label: "Service Listings", icon: Package },
@@ -29,18 +29,11 @@ export default function VendorSidebar({ currentPage, onNavigate, currentUser, on
   };
 
   return (
-    <aside style={{
-      width: "250px",
+    <aside className={`dashboard-sidebar ${isOpen ? 'mobile-open' : ''}`} style={{
       backgroundColor: "#111827", // Dark blue-gray
       color: "var(--color-white)",
-      height: "100vh",
-      position: "fixed",
-      top: 0,
-      left: 0,
       display: "flex",
       flexDirection: "column",
-      zIndex: 50,
-      boxShadow: "2px 0 10px rgba(0, 0, 0, 0.1)"
     }}>
       {/* Brand */}
       <div style={{

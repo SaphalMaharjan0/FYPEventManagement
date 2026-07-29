@@ -76,7 +76,7 @@ export default function AdminDashboard({ currentUser }) {
       </div>
 
       {/* Middle Row */}
-      <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: "1.5rem", marginBottom: "1.5rem" }}>
+      <div className="dashboard-grid" style={{ marginBottom: "1.5rem" }}>
         
         {/* Revenue Line Chart */}
         <div style={{ backgroundColor: "var(--color-white)", borderRadius: "12px", border: "1px solid #e2e8f0", padding: "1.5rem" }}>
@@ -148,7 +148,7 @@ export default function AdminDashboard({ currentUser }) {
       </div>
 
       {/* Bottom Row */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.5rem" }}>
+      <div className="dashboard-grid-equal">
         
         {/* User Growth Line Chart */}
         <div style={{ backgroundColor: "var(--color-white)", borderRadius: "12px", border: "1px solid #e2e8f0", padding: "1.5rem" }}>

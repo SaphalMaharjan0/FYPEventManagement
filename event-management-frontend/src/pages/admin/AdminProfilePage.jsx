@@ -178,7 +178,7 @@ export default function AdminProfilePage({ currentUser }) {
           <h3 style={{ fontSize: "1.1rem", fontWeight: "bold", color: "#0f172a", marginBottom: "1.5rem" }}>
             Personal Information
           </h3>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.5rem" }}>
+          <div className="dashboard-grid-equal">
 
             <div>
               <label style={labelStyle}>First Name</label>

@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { Search, Bell, Moon, Sun } from "lucide-react";
+import { Search, Bell, Moon, Sun, Menu } from "lucide-react";
 import { useFetch } from "../../hooks/useFetch";
 
-export default function VendorTopbar({ currentUser, onNavigate, isDarkMode, toggleDarkMode }) {
+export default function VendorTopbar({ currentUser, onNavigate, isDarkMode, toggleDarkMode, onMenuClick }) {
   const [unreadCount, setUnreadCount] = useState(0);
   const fetchWithAuth = useFetch();
 
@@ -35,6 +35,21 @@ export default function VendorTopbar({ currentUser, onNavigate, isDarkMode, togg
       top: 0,
       zIndex: 40
     }}>
+      {/* Hamburger Menu (Mobile Only) */}
+      <button 
+        className="mobile-only"
+        onClick={onMenuClick}
+        style={{
+          background: 'none',
+          border: 'none',
+          color: 'var(--color-slate-900)',
+          marginRight: '1rem',
+          cursor: 'pointer'
+        }}
+      >
+        <Menu size={24} />
+      </button>
+
       {/* Search Bar */}
       <div style={{ position: "relative", width: "300px" }}>
         <div style={{ position: "absolute", left: "1rem", top: "50%", transform: "translateY(-50%)", color: "var(--color-slate-400)" }}>

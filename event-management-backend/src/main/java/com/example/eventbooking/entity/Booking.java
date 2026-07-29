@@ -29,6 +29,10 @@ public class Booking {
     @JoinColumn(name = "event_id", nullable = false)
     private Event event;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ticket_id", nullable = true) // nullable to support legacy bookings
+    private Ticket ticket;
+
     @Column(nullable = false)
     private Integer ticketCount;
 

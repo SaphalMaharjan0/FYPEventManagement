@@ -15,6 +15,7 @@ export default function Sidebar({
   onNavigate,
   currentUser,
   onLogout,
+  isOpen
 }) {
   const navItems = [
     { id: "customer-dashboard", label: "Dashboard", icon: Home },
@@ -27,19 +28,12 @@ export default function Sidebar({
 
   return (
     <aside
+      className={`dashboard-sidebar ${isOpen ? 'mobile-open' : ''}`}
       style={{
-        width: "260px",
         backgroundColor: "#111827", // dark slate
         color: "#94a3b8",
         display: "flex",
         flexDirection: "column",
-        height: "100vh",
-        position: "fixed",
-        left: 0,
-        top: 0,
-        zIndex: 50,
-        boxShadow: "2px 0 10px rgba(0,0,0,0.1)",
-        transition: "var(--transition-fast)",
       }}
     >
       {/* Brand Logo Header */}

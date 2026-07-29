@@ -49,8 +49,8 @@ export default function MockEsewaPage() {
         backgroundColor: "white",
         borderRadius: "1rem",
         boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)",
-        width: "480px",
-        maxWidth: "95vw",
+        width: "100%",
+        maxWidth: "480px",
         overflow: "hidden",
         border: "1px solid #e2e8f0"
       }}>

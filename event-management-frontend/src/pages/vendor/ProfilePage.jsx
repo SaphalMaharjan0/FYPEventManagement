@@ -287,7 +287,7 @@ export default function ProfilePage({ currentUser, onUpdateUser }) {
             <h3 style={{ fontSize: "1.15rem", fontWeight: "bold", color: "#0f172a", display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "1.25rem" }}>
               <Briefcase size={18} color="#3b82f6" /> Business Information
             </h3>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.25rem" }}>
+            <div className="dashboard-grid-equal">
               <div>
                 <label style={{ fontSize: "0.85rem", fontWeight: "600", color: "#374151", display: "block", marginBottom: "0.4rem" }}>Business Name</label>
                 {isEditing ? (
@@ -365,7 +365,7 @@ export default function ProfilePage({ currentUser, onUpdateUser }) {
             <h3 style={{ fontSize: "1.15rem", fontWeight: "bold", color: "#0f172a", display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "1.25rem" }}>
               <CreditCard size={18} color="#22c55e" /> Payment Details
             </h3>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.25rem" }}>
+            <div className="dashboard-grid-equal">
               <div>
                 <label style={{ fontSize: "0.85rem", fontWeight: "600", color: "#374151", display: "block", marginBottom: "0.4rem" }}>Payout Method</label>
                 {isEditing ? (

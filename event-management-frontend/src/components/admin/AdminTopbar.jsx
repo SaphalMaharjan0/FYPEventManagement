@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { Search, Bell } from "lucide-react";
+import { Search, Bell, Menu } from "lucide-react";
 import { useFetch } from "../../hooks/useFetch";
 
-export default function AdminTopbar({ currentUser, onNavigate }) {
+export default function AdminTopbar({ currentUser, onNavigate, onMenuClick }) {
   const [unreadCount, setUnreadCount] = useState(0);
   const fetchWithAuth = useFetch();
 
@@ -36,16 +36,32 @@ export default function AdminTopbar({ currentUser, onNavigate }) {
       zIndex: 30,
       boxShadow: "0 1px 3px rgba(0,0,0,0.05)"
     }}>
+      {/* Hamburger Menu (Mobile Only) */}
+      <button 
+        className="mobile-only"
+        onClick={onMenuClick}
+        style={{
+          background: 'none',
+          border: 'none',
+          color: 'var(--color-slate-900)',
+          marginRight: '1rem',
+          cursor: 'pointer'
+        }}
+      >
+        <Menu size={24} />
+      </button>
+
       {/* Search Input */}
-      <div style={{
-        display: "flex",
-        alignItems: "center",
-        backgroundColor: "var(--color-slate-50)",
-        borderRadius: "0.5rem",
-        padding: "0.5rem 1rem",
-        width: "350px",
-        border: "1px solid #e2e8f0"
-      }}>
+      <div style={{ flex: 1, maxWidth: "350px" }}>
+        <div style={{
+          display: "flex",
+          alignItems: "center",
+          backgroundColor: "var(--color-slate-50)",
+          borderRadius: "0.5rem",
+          padding: "0.5rem 1rem",
+          width: "100%",
+          border: "1px solid #e2e8f0"
+        }}>
         <Search size={18} color="var(--color-slate-400)" />
         <input 
           type="text" 
@@ -60,6 +76,7 @@ export default function AdminTopbar({ currentUser, onNavigate }) {
             color: "var(--color-slate-900)"
           }}
         />
+        </div>
       </div>
 
       {/* Notifications and Profile */}

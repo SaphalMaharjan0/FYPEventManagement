@@ -1930,3 +1930,111 @@ select {
     grid-template-columns: 1fr;
   }
 }
+
+/* Responsive Utilities */
+.booking-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 1.5rem;
+}
+.dashboard-grid-equal {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+@media (max-width: 900px) {
+  .dashboard-grid, .dashboard-grid-equal {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .flex-col-mobile {
+    flex-direction: column !important;
+  }
+  .w-full-mobile {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+  .p-4-mobile {
+    padding: 1rem !important;
+  }
+  .text-center-mobile {
+    text-align: center !important;
+  }
+  .hide-on-mobile {
+    display: none !important;
+  }
+  .mobile-table-wrapper {
+    overflow-x: auto;
+    display: block;
+    width: 100%;
+  }
+  .booking-grid {
+    grid-template-columns: 1fr;
+  }
+  .mobile-menu-btn {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+/* Dashboard Layout Overrides */
+.dashboard-wrapper {
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--color-slate-50);
+}
+.dashboard-main {
+  flex: 1;
+  margin-left: 260px;
+  display: flex;
+  flex-direction: column;
+  transition: margin-left 0.3s;
+}
+.dashboard-sidebar {
+  width: 260px;
+  height: 100vh;
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 50;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.mobile-overlay {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .dashboard-sidebar {
+    transform: translateX(-100%);
+  }
+  .dashboard-sidebar.mobile-open {
+    transform: translateX(0);
+  }
+  .dashboard-main {
+    margin-left: 0 !important;
+  }
+  .mobile-overlay.active {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 40;
+  }
+}
+
+.mobile-only { display: none; }
+@media (max-width: 768px) { .mobile-only { display: flex !important; align-items: center; } }
+
+.mobile-no-scroll {
+  overflow: hidden !important;
+}

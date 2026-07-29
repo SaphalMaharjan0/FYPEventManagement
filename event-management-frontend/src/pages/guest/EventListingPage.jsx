@@ -19,7 +19,7 @@ export default function EventsPage({
   isDarkMode = false, // Synced with your navbar / application state
 }) {
   // Filter States
-  const [showFilters, setShowFilters] = useState(true);
+  const [showFilters, setShowFilters] = useState(typeof window !== 'undefined' ? window.innerWidth > 768 : true);
   const [searchQuery, setSearchQuery] = useState(initialSearchQuery);
   const [locationQuery, setLocationQuery] = useState(initialLocationQuery);
   const [selectedDate, setSelectedDate] = useState("all");
@@ -227,6 +227,7 @@ export default function EventsPage({
             </p>
           </div>
           <button
+            className="mobile-only"
             onClick={() => setShowFilters(!showFilters)}
             style={{
               display: "flex",
@@ -250,9 +251,9 @@ export default function EventsPage({
 
         {/* Outer Split Layout Container */}
         <div
+          className="flex-col-mobile"
           style={{
             display: "flex",
-            flexDirection: "row",
             gap: "2rem",
             alignItems: "flex-start",
           }}
@@ -260,6 +261,7 @@ export default function EventsPage({
           {/* LEFT COLUMN: Sidebar */}
           {showFilters && (
             <aside
+              className="w-full-mobile"
               style={{
                 width: "260px",
                 flexShrink: 0,

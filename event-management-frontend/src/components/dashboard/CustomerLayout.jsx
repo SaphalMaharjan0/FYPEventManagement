@@ -1,21 +1,47 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Sidebar from "./Sidebar";
 import Topbar from "./Topbar";
-
 import { Outlet } from "react-router-dom";
 
 export default function CustomerLayout({ children, currentPage, onNavigate, currentUser, onLogout }) {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  useEffect(() => {
+    if (isMobileMenuOpen) {
+      document.body.classList.add('mobile-no-scroll');
+      document.documentElement.classList.add('mobile-no-scroll');
+    } else {
+      document.body.classList.remove('mobile-no-scroll');
+      document.documentElement.classList.remove('mobile-no-scroll');
+    }
+    return () => {
+      document.body.classList.remove('mobile-no-scroll');
+      document.documentElement.classList.remove('mobile-no-scroll');
+    };
+  }, [isMobileMenuOpen]);
+
   return (
-    <div style={{ display: "flex", minHeight: "100vh", backgroundColor: "var(--color-slate-50)" }}>
+    <div className="dashboard-wrapper">
       <Sidebar 
         currentPage={currentPage} 
         onNavigate={onNavigate} 
         currentUser={currentUser} 
         onLogout={onLogout} 
+        isOpen={isMobileMenuOpen}
       />
       
-      <div style={{ flex: 1, marginLeft: "260px", display: "flex", flexDirection: "column" }}>
-        <Topbar currentUser={currentUser} onNavigate={onNavigate} />
+      {/* Mobile Overlay */}
+      <div 
+        className={`mobile-overlay ${isMobileMenuOpen ? 'active' : ''}`}
+        onClick={() => setIsMobileMenuOpen(false)}
+      ></div>
+
+      <div className="dashboard-main">
+        <Topbar 
+          currentUser={currentUser} 
+          onNavigate={onNavigate} 
+          onMenuClick={() => setIsMobileMenuOpen(true)}
+        />
         
         <main style={{ flex: 1, padding: "2rem" }}>
           {children || <Outlet />}

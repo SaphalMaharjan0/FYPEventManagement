@@ -1,11 +1,12 @@
 import React from "react";
-import { Search, Bell, Moon, Sun } from "lucide-react";
+import { Search, Bell, Moon, Sun, Menu } from "lucide-react";
 
 export default function Topbar({
   currentUser,
   onNavigate,
   isDarkMode = false,
   toggleDarkMode,
+  onMenuClick,
 }) {
   const handleThemeToggle = (e) => {
     e.stopPropagation();
@@ -33,6 +34,21 @@ export default function Topbar({
         transition: "var(--transition-fast)",
       }}
     >
+      {/* Hamburger Menu (Mobile Only) */}
+      <button 
+        className="mobile-only"
+        onClick={onMenuClick}
+        style={{
+          background: 'none',
+          border: 'none',
+          color: 'var(--text-main)',
+          marginRight: '1rem',
+          cursor: 'pointer'
+        }}
+      >
+        <Menu size={24} />
+      </button>
+
       {/* Search Bar */}
       <div style={{ flex: 1, maxWidth: "400px" }}>
         <div

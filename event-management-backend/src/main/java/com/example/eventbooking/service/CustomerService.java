@@ -42,6 +42,7 @@ public class CustomerService {
     private final EventRepository eventRepository;
     private final UserRepository userRepository;
     private final EmailService emailService;
+    private final com.example.eventbooking.repository.TicketRepository ticketRepository;
 
     @Transactional
     public boolean toggleFavorite(Integer userId, Integer eventId) {
@@ -173,13 +174,28 @@ public class CustomerService {
                 .filter(b -> "CONFIRMED".equalsIgnoreCase(b.getStatus()) || "PENDING".equalsIgnoreCase(b.getStatus()))
                 .mapToInt(Booking::getTicketCount)
                 .sum();
-        int seatsLeft = event.getCapacity() - bookedTickets;
+        // Fetch the first available ticket for the event (assuming simple setup)
+        com.example.eventbooking.entity.Ticket ticket = ticketRepository.findByEventEventId(event.getEventId()).stream().findFirst().orElse(null);
+
+        // Fallback for legacy events without tickets: dynamically create one
+        if (ticket == null) {
+            ticket = com.example.eventbooking.entity.Ticket.builder()
+                    .event(event)
+                    .ticketType("General Admission")
+                    .price(BigDecimal.valueOf(50.0)) // Fallback price
+                    .quantityAvailable(event.getCapacity())
+                    .quantitySold(bookedTickets) // Adjust for already booked legacy seats
+                    .build();
+            ticket = ticketRepository.save(ticket);
+        }
+
+        int seatsLeft = ticket.getQuantityAvailable() - ticket.getQuantitySold();
 
         if (seatsLeft < request.getQuantity()) {
             throw new RuntimeException("Not enough seats available");
         }
 
-        BigDecimal price = BigDecimal.valueOf(50.0); // Dummy price used in EventService
+        BigDecimal price = ticket.getPrice();
         BigDecimal totalAmount = price.multiply(BigDecimal.valueOf(request.getQuantity()));
 
         String transactionUuid = UUID.randomUUID().toString();
@@ -187,6 +203,7 @@ public class CustomerService {
         Booking booking = Booking.builder()
                 .user(user)
                 .event(event)
+                .ticket(ticket)
                 .ticketCount(request.getQuantity())
                 .amount(totalAmount)
                 .status("PENDING")
@@ -238,6 +255,12 @@ public class CustomerService {
                     try {
                         User customer = booking.getUser();
                         Event event = booking.getEvent();
+                        
+                        if (booking.getTicket() != null) {
+                            com.example.eventbooking.entity.Ticket ticket = booking.getTicket();
+                            ticket.setQuantitySold(ticket.getQuantitySold() + booking.getTicketCount());
+                            ticketRepository.save(ticket);
+                        }
                         
                         // Send confirmation to customer
                         emailService.sendBookingConfirmation(customer, booking, event);

@@ -6,7 +6,7 @@ import java.util.Base64;
 
 public class EsewaUtil {
 
-    public static final String ESEWA_URL = "https://rc-epay.esewa.com.np/api/epay/main/v2/form";
+    public static final String ESEWA_URL = "http://localhost:5173/customer/mock-esewa";
     public static final String SECRET_KEY = "8gBm/:&EnhH.1/q";
     public static final String PRODUCT_CODE = "EPAYTEST";
     public static final String SUCCESS_URL = "http://localhost:5173/customer/esewa-success";

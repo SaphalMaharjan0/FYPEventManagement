@@ -51,8 +51,11 @@ export default function BookingPage({ event, initialQuantity, onBookingSuccess, 
         if (response && (response.signature || response.transactionUuid)) {
           // Redirect to the eSewa Sandbox (rc-epay) via form submission
           const form = document.createElement("form");
-          form.setAttribute("method", "POST");
-          form.setAttribute("action", response.esewaUrl || "https://rc-epay.esewa.com.np/api/epay/main/v2/form"); // rc-epay is the eSewa Sandbox environment
+          const esewaUrl = response.esewaUrl || "https://rc-epay.esewa.com.np/api/epay/main/v2/form";
+          // Use GET for mock so Vite dev server can route to the React page
+          const isMock = esewaUrl.includes("localhost") || esewaUrl.includes("mock-esewa");
+          form.setAttribute("method", isMock ? "GET" : "POST");
+          form.setAttribute("action", esewaUrl); // rc-epay is the eSewa Sandbox environment
 
           const addField = (name, value) => {
             const hiddenField = document.createElement("input");
@@ -139,7 +142,7 @@ export default function BookingPage({ event, initialQuantity, onBookingSuccess, 
         Back to Event Details
       </button>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "2rem" }}>
+      <div className="booking-grid">
         
         {/* Left Column: Event Summary */}
         <div>

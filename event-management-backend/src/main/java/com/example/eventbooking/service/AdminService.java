@@ -36,6 +36,7 @@ public class AdminService {
     private final com.example.eventbooking.repository.ServiceRepository serviceRepository;
     private final com.example.eventbooking.repository.ServiceRequestRepository serviceRequestRepository;
     private final NotificationService notificationService;
+    private final com.example.eventbooking.repository.TicketRepository ticketRepository;
 
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("MMM dd, yyyy");
 
@@ -561,6 +562,23 @@ public class AdminService {
             }
         }
         event = eventRepository.save(event);
+
+        // Create a default Ticket
+        java.math.BigDecimal price = java.math.BigDecimal.ZERO;
+        if (dto.getPrice() != null && !dto.getPrice().equalsIgnoreCase("Free")) {
+            try {
+                price = new java.math.BigDecimal(dto.getPrice().replace("$", "").trim());
+            } catch (Exception e) {}
+        }
+        
+        com.example.eventbooking.entity.Ticket ticket = com.example.eventbooking.entity.Ticket.builder()
+                .event(event)
+                .ticketType("General Admission")
+                .price(price)
+                .quantityAvailable(event.getCapacity())
+                .quantitySold(0)
+                .build();
+        ticketRepository.save(ticket);
 
         // Update chosen vendor services
         updateEventServices(event, currentUser, dto.getServiceIds());
