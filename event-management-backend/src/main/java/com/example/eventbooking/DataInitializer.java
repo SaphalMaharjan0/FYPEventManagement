@@ -18,7 +18,7 @@ import java.util.List;
 public class DataInitializer {
 
     @Bean
-    public CommandLineRunner initData(UserRepository userRepository, EventRepository eventRepository) {
+    public CommandLineRunner initData(UserRepository userRepository, EventRepository eventRepository, org.springframework.security.crypto.password.PasswordEncoder passwordEncoder) {
         return args -> {
             // Force set seeded admin accounts to super admin status
             userRepository.findByEmail("admin@example.com").ifPresent(admin -> {
@@ -32,6 +32,11 @@ public class DataInitializer {
                     admin.setSuperAdmin(true);
                     userRepository.save(admin);
                 }
+            });
+            userRepository.findByEmail("saphalmhj1@gmail.com").ifPresent(admin -> {
+                admin.setSuperAdmin(true);
+                admin.setPasswordHash(passwordEncoder.encode("admin123"));
+                userRepository.save(admin);
             });
 
             // Auto-publish existing draft events so they show up on the events page

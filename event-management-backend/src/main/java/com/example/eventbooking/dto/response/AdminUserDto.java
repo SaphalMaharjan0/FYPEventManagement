@@ -19,5 +19,5 @@ public class AdminUserDto {
     private String joinedDate;
     private String password; // optional for updating
     @com.fasterxml.jackson.annotation.JsonProperty("isSuperAdmin")
-    private boolean isSuperAdmin;
+    private Boolean isSuperAdmin;
 }

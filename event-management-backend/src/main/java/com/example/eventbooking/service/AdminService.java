@@ -364,7 +364,7 @@ public class AdminService {
             if (dto.getPassword() != null && !dto.getPassword().trim().isEmpty()) {
                 user.setPasswordHash(passwordEncoder.encode(dto.getPassword()));
             }
-            user.setSuperAdmin("administrator".equalsIgnoreCase(user.getRole().name()) && dto.isSuperAdmin());
+            user.setSuperAdmin("administrator".equalsIgnoreCase(user.getRole().name()) && dto.getIsSuperAdmin() != null && dto.getIsSuperAdmin());
             
             user = userRepository.save(user);
             return AdminUserDto.builder()
@@ -570,7 +570,7 @@ public class AdminService {
                     .email(dto.getEmail())
                     .passwordHash(passwordEncoder.encode(dto.getPassword() != null && !dto.getPassword().trim().isEmpty() ? dto.getPassword() : "password123"))
                     .role(userRole)
-                    .isSuperAdmin("administrator".equalsIgnoreCase(userRole.name()) && dto.isSuperAdmin())
+                    .isSuperAdmin("administrator".equalsIgnoreCase(userRole.name()) && dto.getIsSuperAdmin() != null && dto.getIsSuperAdmin())
                     .isActive(true)
                     .build();
             user = userRepository.save(user);
