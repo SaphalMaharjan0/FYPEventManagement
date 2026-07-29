@@ -19,7 +19,7 @@ public class ServiceRequest {
     private Integer id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "requested_by", nullable = false)
     private User client;
 
     @ManyToOne(fetch = FetchType.LAZY)
