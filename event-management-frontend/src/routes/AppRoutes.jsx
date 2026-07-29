@@ -31,6 +31,7 @@ import VendorRequestsPage from '../pages/vendor/RequestsPage';
 import VendorAvailabilityPage from '../pages/vendor/AvailabilityPage';
 import VendorSettingsPage from '../pages/vendor/SettingsPage';
 import VendorProfilePage from '../pages/vendor/ProfilePage';
+import VendorNotificationsPage from '../pages/vendor/VendorNotificationsPage';
 
 import AdminLayout from '../components/admin/AdminLayout';
 import AdminDashboard from '../pages/admin/AdminDashboard';
@@ -41,6 +42,7 @@ import ManageVendorsPage from '../pages/admin/ManageVendorsPage';
 import ManageBookingsPage from '../pages/admin/ManageBookingsPage';
 import AdminSettingsPage from '../pages/admin/AdminSettingsPage';
 import AdminProfilePage from '../pages/admin/AdminProfilePage';
+import AdminNotificationsPage from '../pages/admin/AdminNotificationsPage';
 
 import DiscoverPage from '../pages/guest/DiscoverPage';
 import LoginPage from '../pages/auth/LoginPage';
@@ -366,6 +368,7 @@ export default function AppRoutes({
           <Route path="availability" element={<VendorAvailabilityPage />} />
           <Route path="settings" element={<VendorSettingsPage />} />
           <Route path="profile" element={<VendorProfilePage currentUser={currentUser} onUpdateUser={onUpdateUser} />} />
+          <Route path="notifications" element={<VendorNotificationsPage />} />
         </Route>
 
         {/* Admin Routes */}
@@ -387,6 +390,7 @@ export default function AppRoutes({
           <Route path="reports" element={<ReportsPage />} />
           <Route path="settings" element={<AdminSettingsPage />} />
           <Route path="profile" element={<AdminProfilePage currentUser={currentUser} />} />
+          <Route path="notifications" element={<AdminNotificationsPage />} />
         </Route>
         
         {/* Fallback */}

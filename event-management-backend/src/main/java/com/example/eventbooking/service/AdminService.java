@@ -35,6 +35,7 @@ public class AdminService {
     private final org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
     private final com.example.eventbooking.repository.ServiceRepository serviceRepository;
     private final com.example.eventbooking.repository.ServiceRequestRepository serviceRequestRepository;
+    private final NotificationService notificationService;
 
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("MMM dd, yyyy");
 
@@ -308,6 +309,10 @@ public class AdminService {
                         .serviceIds(serviceRequestRepository.findByEventEventId(event.getEventId()).stream()
                                 .map(r -> r.getService().getId())
                                 .collect(Collectors.toList()))
+                        .rejectedServiceIds(serviceRequestRepository.findByEventEventId(event.getEventId()).stream()
+                                .filter(r -> "rejected".equalsIgnoreCase(r.getStatus()))
+                                .map(r -> r.getService().getId())
+                                .collect(Collectors.toList()))
                         .build())
                 .collect(Collectors.toList());
     }
@@ -386,14 +391,29 @@ public class AdminService {
 
     @org.springframework.transaction.annotation.Transactional
     public void updateEventServices(Event event, User currentUser, List<Integer> serviceIds) {
-        // First delete old requests
-        serviceRequestRepository.deleteByEventEventId(event.getEventId());
-
-        if (serviceIds == null || serviceIds.isEmpty()) {
-            return;
+        if (serviceIds == null) {
+            serviceIds = new java.util.ArrayList<>();
         }
 
+        List<com.example.eventbooking.entity.ServiceRequest> existingRequests = serviceRequestRepository.findByEventEventId(event.getEventId());
+        
+        // Remove requests not in the new list
+        for (com.example.eventbooking.entity.ServiceRequest req : existingRequests) {
+            if (!serviceIds.contains(req.getService().getId())) {
+                serviceRequestRepository.delete(req);
+            }
+        }
+
+        // Find existing service IDs to avoid duplicates
+        java.util.Set<Integer> existingServiceIds = existingRequests.stream()
+                .map(r -> r.getService().getId())
+                .collect(Collectors.toSet());
+
         for (Integer serviceId : serviceIds) {
+            if (existingServiceIds.contains(serviceId)) {
+                continue; // Already requested
+            }
+            
             com.example.eventbooking.entity.Service service = serviceRepository.findById(serviceId)
                     .orElseThrow(() -> new RuntimeException("Service not found with ID: " + serviceId));
             
@@ -404,7 +424,19 @@ public class AdminService {
             req.setEventDate(event.getEventDate());
             req.setAmount(service.getPrice());
             req.setStatus("requested"); // Set status as requested so it goes to vendor requests dashboard
-            serviceRequestRepository.save(req);
+            req = serviceRequestRepository.save(req);
+
+            // Send notification to vendor owner
+            if (service.getVendor() != null && service.getVendor().getUser() != null) {
+                notificationService.createNotification(
+                        service.getVendor().getUser(),
+                        "New Service Request",
+                        "Admin requested your service '" + service.getServiceName() + "' for event '" + event.getTitle() + "'.",
+                        "request",
+                        event.getEventId(),
+                        req.getId()
+                );
+            }
         }
     }
 

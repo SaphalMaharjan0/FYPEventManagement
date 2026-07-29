@@ -26,4 +26,5 @@ public class AdminEventDto {
     private String endTime;
     private String status;
     private java.util.List<Integer> serviceIds;
+    private java.util.List<Integer> rejectedServiceIds;
 }

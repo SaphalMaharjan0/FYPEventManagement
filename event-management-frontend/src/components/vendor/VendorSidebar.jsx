@@ -8,7 +8,8 @@ import {
   Settings, 
   LogOut,
   Hexagon,
-  ChevronRight
+  ChevronRight,
+  Bell
 } from "lucide-react";
 
 export default function VendorSidebar({ currentPage, onNavigate, currentUser, onLogout }) {
@@ -18,6 +19,7 @@ export default function VendorSidebar({ currentPage, onNavigate, currentUser, on
     { id: "vendor-add-service", label: "Add Service", icon: Plus },
     { id: "vendor-requests", label: "Requests", icon: Inbox },
     { id: "vendor-availability", label: "Availability", icon: Calendar },
+    { id: "vendor-notifications", label: "Notifications", icon: Bell },
     { id: "vendor-settings", label: "Settings", icon: Settings }
   ];
 

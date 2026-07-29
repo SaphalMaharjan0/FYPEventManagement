@@ -7,7 +7,8 @@ import {
   BarChart2, 
   Settings, 
   LogOut,
-  Layers
+  Layers,
+  Bell
 } from "lucide-react";
 
 export default function AdminSidebar({ currentPage, onNavigate, currentUser, onLogout }) {
@@ -22,6 +23,7 @@ export default function AdminSidebar({ currentPage, onNavigate, currentUser, onL
     ] : []),
     { id: "admin-bookings", label: "Bookings", icon: Ticket },
     { id: "admin-reports", label: "Reports & Analytics", icon: BarChart2 },
+    { id: "admin-notifications", label: "Notifications", icon: Bell },
     { id: "admin-settings", label: "Settings", icon: Settings }
   ];
 

@@ -17,7 +17,7 @@ export default function AdminLayout({ children, currentPage, onNavigate, current
       {/* Main Content Area */}
       <div style={{ flex: 1, marginLeft: "260px", display: "flex", flexDirection: "column" }}>
         {/* Topbar */}
-        <AdminTopbar currentUser={currentUser} />
+        <AdminTopbar currentUser={currentUser} onNavigate={onNavigate} />
         
         {/* Page Content */}
         <main style={{ flex: 1, padding: "2rem", overflowX: "hidden" }}>

@@ -621,6 +621,19 @@ export default function ManageEventsPage() {
                           }}
                         />
                         {service.serviceName} - ${service.price}
+                        {editingEvent.rejectedServiceIds?.includes(service.id) && (
+                          <span style={{ 
+                            marginLeft: "auto", 
+                            backgroundColor: "#fee2e2", 
+                            color: "#ef4444", 
+                            padding: "0.15rem 0.5rem", 
+                            borderRadius: "1rem", 
+                            fontSize: "0.7rem", 
+                            fontWeight: "600" 
+                          }}>
+                            Rejected by Vendor
+                          </span>
+                        )}
                       </label>
                     ))
                   )}

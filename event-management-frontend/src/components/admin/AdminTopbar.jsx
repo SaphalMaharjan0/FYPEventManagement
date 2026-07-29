@@ -1,7 +1,27 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Search, Bell } from "lucide-react";
+import { useFetch } from "../../hooks/useFetch";
 
-export default function AdminTopbar({ currentUser }) {
+export default function AdminTopbar({ currentUser, onNavigate }) {
+  const [unreadCount, setUnreadCount] = useState(0);
+  const fetchWithAuth = useFetch();
+
+  useEffect(() => {
+    const fetchUnread = async () => {
+      try {
+        const data = await fetchWithAuth("/api/notifications/unread-count");
+        setUnreadCount(data.count || 0);
+      } catch (err) {
+        console.error("Failed to fetch unread count", err);
+      }
+    };
+    fetchUnread();
+    
+    // Poll every 30 seconds for new notifications
+    const interval = setInterval(fetchUnread, 30000);
+    return () => clearInterval(interval);
+  }, [fetchWithAuth]);
+
   return (
     <header style={{
       height: "70px",
@@ -44,25 +64,39 @@ export default function AdminTopbar({ currentUser }) {
 
       {/* Notifications and Profile */}
       <div style={{ display: "flex", alignItems: "center", gap: "1.5rem" }}>
-        <button style={{
-          background: "none",
-          border: "none",
-          cursor: "pointer",
-          position: "relative",
-          color: "var(--color-slate-600)"
-        }}>
+        <button 
+          onClick={() => onNavigate && onNavigate("admin-notifications")}
+          style={{
+            background: "none",
+            border: "none",
+            cursor: "pointer",
+            position: "relative",
+            color: "var(--color-slate-600)"
+          }}
+        >
           <Bell size={20} />
           {/* Notification Dot */}
-          <span style={{
-            position: "absolute",
-            top: "-2px",
-            right: "-2px",
-            width: "8px",
-            height: "8px",
-            backgroundColor: "var(--color-red-500)",
-            borderRadius: "50%",
-            border: "2px solid var(--color-white)"
-          }}></span>
+          {unreadCount > 0 && (
+            <span style={{
+              position: "absolute",
+              top: "-5px",
+              right: "-5px",
+              minWidth: "16px",
+              height: "16px",
+              padding: "0 4px",
+              backgroundColor: "var(--color-red-500)",
+              color: "white",
+              fontSize: "10px",
+              fontWeight: "bold",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              borderRadius: "10px",
+              border: "2px solid var(--color-white)"
+            }}>
+              {unreadCount > 99 ? '99+' : unreadCount}
+            </span>
+          )}
         </button>
         
         <div style={{

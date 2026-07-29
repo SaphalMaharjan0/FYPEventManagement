@@ -1,6 +1,7 @@
 package com.example.eventbooking.service;
 
 import com.example.eventbooking.dto.response.ServiceRequestDto;
+import com.example.eventbooking.entity.Event;
 import com.example.eventbooking.entity.ServiceRequest;
 import com.example.eventbooking.entity.User;
 import com.example.eventbooking.entity.Vendor;
@@ -20,6 +21,7 @@ public class VendorServiceRequestService {
     private final ServiceRequestRepository serviceRequestRepository;
     private final UserRepository userRepository;
     private final VendorRepository vendorRepository;
+    private final NotificationService notificationService;
 
     public List<ServiceRequestDto> getVendorRequests(String userEmail) {
         User user = userRepository.findByEmail(userEmail)
@@ -67,6 +69,59 @@ public class VendorServiceRequestService {
 
         request.setStatus(dbStatus);
         request = serviceRequestRepository.save(request);
+
+        // --- Send notifications based on status change ---
+        String vendorName = vendor.getBusinessName();
+        String serviceName = request.getService().getServiceName();
+        Event event = request.getEvent();
+        String eventTitle = event != null ? event.getTitle() : "Unknown Event";
+        Integer eventId = event != null ? event.getEventId() : null;
+
+        if ("rejected".equals(dbStatus)) {
+            // Notify the event organizer
+            if (event != null && event.getOrganizer() != null) {
+                notificationService.createNotification(
+                        event.getOrganizer(),
+                        "Service Rejected",
+                        "Vendor \"" + vendorName + "\" rejected the service \"" + serviceName
+                                + "\" for event \"" + eventTitle + "\". Please reassign a replacement vendor.",
+                        "SERVICE_REJECTED",
+                        eventId,
+                        request.getId()
+                );
+            }
+            // Also notify all admin users
+            notificationService.notifyAllAdmins(
+                    "Service Rejected",
+                    "Vendor \"" + vendorName + "\" rejected the service \"" + serviceName
+                            + "\" for event \"" + eventTitle + "\". Please reassign a replacement vendor.",
+                    "SERVICE_REJECTED",
+                    eventId,
+                    request.getId()
+            );
+        } else if ("accepted".equals(dbStatus)) {
+            // Notify the event organizer
+            if (event != null && event.getOrganizer() != null) {
+                notificationService.createNotification(
+                        event.getOrganizer(),
+                        "Service Accepted",
+                        "Vendor \"" + vendorName + "\" accepted the service \"" + serviceName
+                                + "\" for event \"" + eventTitle + "\".",
+                        "SERVICE_ACCEPTED",
+                        eventId,
+                        request.getId()
+                );
+            }
+            // Also notify all admin users
+            notificationService.notifyAllAdmins(
+                    "Service Accepted",
+                    "Vendor \"" + vendorName + "\" accepted the service \"" + serviceName
+                            + "\" for event \"" + eventTitle + "\".",
+                    "SERVICE_ACCEPTED",
+                    eventId,
+                    request.getId()
+            );
+        }
 
         return convertToDto(request);
     }
