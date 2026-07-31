@@ -75,6 +75,17 @@ public class AdminController {
         return ResponseEntity.ok(adminService.inviteVendor(currentUser, dto));
     }
 
+    @PutMapping("/vendors/{id}")
+    public ResponseEntity<AdminVendorDto> updateVendor(@AuthenticationPrincipal User currentUser, @PathVariable Integer id, @RequestBody AdminVendorDto dto) {
+        return ResponseEntity.ok(adminService.updateVendor(currentUser, id, dto));
+    }
+
+    @org.springframework.web.bind.annotation.DeleteMapping("/vendors/{id}")
+    public ResponseEntity<Void> deleteVendor(@AuthenticationPrincipal User currentUser, @PathVariable Integer id) {
+        adminService.deleteVendor(currentUser, id);
+        return ResponseEntity.noContent().build();
+    }
+
     @org.springframework.web.bind.annotation.DeleteMapping("/events/{id}")
     public ResponseEntity<Void> deleteEvent(@AuthenticationPrincipal User currentUser, @PathVariable Integer id) {
         adminService.deleteEvent(currentUser, id);

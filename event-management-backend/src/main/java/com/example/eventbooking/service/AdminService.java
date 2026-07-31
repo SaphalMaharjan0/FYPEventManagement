@@ -292,7 +292,21 @@ public class AdminService {
             stream = stream.filter(e -> e.getOrganizer() != null && e.getOrganizer().getUserId().equals(currentUser.getUserId()));
         }
         return stream
-                .map(event -> AdminEventDto.builder()
+                .map(event -> {
+                    String priceStr = "Free";
+                    if (event.getTickets() != null && !event.getTickets().isEmpty()) {
+                        java.math.BigDecimal minPrice = null;
+                        for (com.example.eventbooking.entity.Ticket ticket : event.getTickets()) {
+                            if (minPrice == null || ticket.getPrice().compareTo(minPrice) < 0) {
+                                minPrice = ticket.getPrice();
+                            }
+                        }
+                        if (minPrice != null && minPrice.compareTo(java.math.BigDecimal.ZERO) > 0) {
+                            priceStr = "$" + minPrice.toString();
+                        }
+                    }
+                    
+                    return AdminEventDto.builder()
                         .dbId(event.getEventId())
                         .id("EVT-" + String.format("%03d", event.getEventId()))
                         .name(event.getTitle())
@@ -300,7 +314,7 @@ public class AdminService {
                         .date(event.getEventDate() != null ? event.getEventDate().toString() : "N/A")
                         .venue(event.getVenue())
                         .imageUrl(event.getImageUrl())
-                        .price("Free") // Defaulting for now
+                        .price(priceStr)
                         .seats(formatSeats(event))
                         .rating(4.5) // Defaulting for now
                         .description(event.getDescription())
@@ -318,7 +332,8 @@ public class AdminService {
                                 .filter(r -> "accepted".equalsIgnoreCase(r.getStatus()) || "completed".equalsIgnoreCase(r.getStatus()) || "rejected".equalsIgnoreCase(r.getStatus()))
                                 .map(r -> r.getService().getId())
                                 .collect(Collectors.toList()))
-                        .build())
+                        .build();
+                })
                 .collect(Collectors.toList());
     }
 
@@ -335,6 +350,10 @@ public class AdminService {
                         .status(vendor.getIsVerified() != null && vendor.getIsVerified() ? "Verified" : "Pending")
                         .properties(0)
                         .joined(vendor.getCreatedAt() != null ? vendor.getCreatedAt().format(FORMATTER) : "N/A")
+                        .businessDesc(vendor.getBusinessDesc())
+                        .contactEmail(vendor.getContactEmail())
+                        .contactPhone(vendor.getContactPhone())
+                        .businessAddress(vendor.getBusinessAddress())
                         .build())
                 .collect(Collectors.toList());
     }
@@ -604,12 +623,88 @@ public class AdminService {
             throw new org.springframework.security.access.AccessDeniedException("Access denied: only super admins can manage vendors");
         }
         return AdminVendorDto.builder()
-                .name(dto.getBusinessName())
+                .id("VND-999")
                 .owner("Invited Vendor")
+                .name(dto.getBusinessName())
                 .email(dto.getEmail())
                 .status("Pending")
+                .properties(0)
                 .joined("N/A")
                 .build();
+    }
+
+    public AdminVendorDto updateVendor(User currentUser, Integer id, AdminVendorDto dto) {
+        if (!currentUser.isSuperAdmin()) {
+            throw new org.springframework.security.access.AccessDeniedException("Access denied: only super admins can manage vendors");
+        }
+        
+        Vendor vendor = vendorRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Vendor not found"));
+            
+        User user = vendor.getUser();
+        
+        if (dto.getName() != null && !dto.getName().trim().isEmpty()) {
+            vendor.setBusinessName(dto.getName());
+        }
+        if (dto.getOwner() != null && !dto.getOwner().trim().isEmpty()) {
+            user.setFullName(dto.getOwner());
+        }
+        if (dto.getEmail() != null && !dto.getEmail().trim().isEmpty()) {
+            user.setEmail(dto.getEmail());
+        }
+        if (dto.getStatus() != null) {
+            vendor.setIsVerified("Verified".equalsIgnoreCase(dto.getStatus()));
+            user.setActive("Verified".equalsIgnoreCase(dto.getStatus()));
+        }
+        if (dto.getBusinessDesc() != null) {
+            vendor.setBusinessDesc(dto.getBusinessDesc());
+        }
+        if (dto.getContactEmail() != null) {
+            vendor.setContactEmail(dto.getContactEmail());
+        }
+        if (dto.getContactPhone() != null) {
+            vendor.setContactPhone(dto.getContactPhone());
+        }
+        if (dto.getBusinessAddress() != null) {
+            vendor.setBusinessAddress(dto.getBusinessAddress());
+        }
+        
+        userRepository.save(user);
+        vendor = vendorRepository.save(vendor);
+        
+        return AdminVendorDto.builder()
+                .id("VND-" + String.format("%03d", vendor.getId()))
+                .name(vendor.getBusinessName())
+                .owner(user.getFullName())
+                .email(user.getEmail())
+                .status(vendor.getIsVerified() != null && vendor.getIsVerified() ? "Verified" : "Pending")
+                .properties(serviceRepository.findByVendorId(vendor.getId()).size())
+                .joined(vendor.getCreatedAt() != null ? vendor.getCreatedAt().format(FORMATTER) : "N/A")
+                .businessDesc(vendor.getBusinessDesc())
+                .contactEmail(vendor.getContactEmail())
+                .contactPhone(vendor.getContactPhone())
+                .businessAddress(vendor.getBusinessAddress())
+                .build();
+    }
+
+    public void deleteVendor(User currentUser, Integer id) {
+        if (!currentUser.isSuperAdmin()) {
+            throw new org.springframework.security.access.AccessDeniedException("Access denied: only super admins can manage vendors");
+        }
+        Vendor vendor = vendorRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Vendor not found"));
+            
+        User user = vendor.getUser();
+        
+        // Delete vendor related data first
+        jdbcTemplate.update("DELETE FROM service_requests WHERE service_id IN (SELECT id FROM services WHERE vendor_id = ?)", id);
+        jdbcTemplate.update("DELETE FROM vendor_blocked_dates WHERE vendor_id = ?", id);
+        jdbcTemplate.update("DELETE FROM vendor_availability WHERE vendor_id = ?", id);
+        jdbcTemplate.update("DELETE FROM services WHERE vendor_id = ?", id);
+        jdbcTemplate.update("DELETE FROM vendors WHERE vendor_id = ?", id);
+        
+        // Then delete the user
+        deleteUser(currentUser, user.getUserId());
     }
 
     private Role parseRole(String roleStr) {

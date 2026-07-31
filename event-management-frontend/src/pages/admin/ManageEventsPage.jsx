@@ -10,6 +10,12 @@ export default function ManageEventsPage() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState(null);
 
+  // Filter State
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showFilters, setShowFilters] = useState(false);
+  const [statusFilter, setStatusFilter] = useState("All");
+  const [categoryFilter, setCategoryFilter] = useState("All");
+
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [newEvent, setNewEvent] = useState({
     name: "",
@@ -27,16 +33,23 @@ export default function ManageEventsPage() {
   });
 
   const [availableServices, setAvailableServices] = useState([]);
+  
+  // Categories State
+  const [categories, setCategories] = useState([]);
+  const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState("");
 
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [eventsData, servicesData] = await Promise.all([
+        const [eventsData, servicesData, categoriesData] = await Promise.all([
           fetchWithAuth("/api/admin/events"),
-          fetchWithAuth("/api/admin/services")
+          fetchWithAuth("/api/admin/services"),
+          fetchWithAuth("/api/public/categories")
         ]);
         setEvents(eventsData || []);
         setAvailableServices(servicesData || []);
+        setCategories(categoriesData || []);
       } catch (err) {
         console.error("Failed to load admin events/services", err);
       } finally {
@@ -104,13 +117,62 @@ export default function ManageEventsPage() {
     }
   };
 
+  const handleAddCategory = async () => {
+    if (!newCategoryName.trim()) return;
+    try {
+      const added = await fetchWithAuth("/api/admin/categories", {
+        method: "POST",
+        body: JSON.stringify({ name: newCategoryName })
+      });
+      if (added) {
+        setCategories([...categories, added]);
+        setNewCategoryName("");
+      }
+    } catch (err) {
+      console.error("Failed to add category", err);
+      alert("Failed to add category.");
+    }
+  };
+
+  const handleDeleteCategory = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this category?")) return;
+    try {
+      await fetchWithAuth(`/api/admin/categories/${id}`, {
+        method: "DELETE"
+      });
+      setCategories(categories.filter(c => c.id !== id));
+    } catch (err) {
+      console.error("Failed to delete category", err);
+      alert("Failed to delete category.");
+    }
+  };
+
+  const filteredEvents = events.filter(event => {
+    const matchesSearch = (event.name && event.name.toLowerCase().includes(searchQuery.toLowerCase())) || 
+                          (event.venue && event.venue.toLowerCase().includes(searchQuery.toLowerCase()));
+    const matchesStatus = statusFilter === "All" || (event.status && event.status.toLowerCase() === statusFilter.toLowerCase());
+    const matchesCategory = categoryFilter === "All" || (event.category && event.category.toLowerCase() === categoryFilter.toLowerCase());
+    return matchesSearch && matchesStatus && matchesCategory;
+  });
+
   return (
     <div style={{ maxWidth: "1400px", margin: "0 auto" }}>
       {/* Header */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2rem" }}>
         <h1 style={{ fontSize: "1.75rem", fontWeight: "bold", color: "var(--color-slate-900)" }}>Event Management</h1>
-        <button 
-          onClick={() => setIsAddModalOpen(true)}
+        <div style={{ display: "flex", gap: "1rem" }}>
+          <button 
+            onClick={() => setIsCategoryModalOpen(true)}
+            style={{ 
+            display: "flex", alignItems: "center", gap: "0.5rem", 
+            padding: "0.6rem 1.25rem", backgroundColor: "white", color: "#3b82f6", 
+            border: "1px solid #3b82f6", borderRadius: "8px", fontWeight: "600", fontSize: "0.9rem",
+            cursor: "pointer", transition: "background-color 0.2s"
+          }}>
+            Manage Categories
+          </button>
+          <button 
+            onClick={() => setIsAddModalOpen(true)}
           style={{ 
           display: "flex", alignItems: "center", gap: "0.5rem", 
           padding: "0.6rem 1.25rem", backgroundColor: "#3b82f6", color: "white", 
@@ -120,6 +182,7 @@ export default function ManageEventsPage() {
           <Plus size={16} />
           Add Event
         </button>
+        </div>
       </div>
 
       {/* Main Content Area */}
@@ -139,7 +202,9 @@ export default function ManageEventsPage() {
             <Search size={18} color="var(--color-slate-400)" />
             <input 
               type="text" 
-              placeholder="Search events..." 
+              placeholder="Search events by title or venue..." 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               style={{
                 border: "none",
                 backgroundColor: "transparent",
@@ -152,14 +217,55 @@ export default function ManageEventsPage() {
             />
           </div>
           
-          <button style={{
-            display: "flex", alignItems: "center", justifyContent: "center",
-            padding: "0 1rem", backgroundColor: "var(--color-slate-50)",
-            border: "1px solid #e2e8f0", borderRadius: "8px", color: "var(--color-slate-600)",
-            cursor: "pointer"
-          }}>
-            <Filter size={18} />
-          </button>
+          <div style={{ position: "relative" }}>
+            <button 
+              onClick={() => setShowFilters(!showFilters)}
+              style={{
+                display: "flex", alignItems: "center", justifyContent: "center",
+                padding: "0 1rem", backgroundColor: showFilters ? "var(--color-slate-200)" : "var(--color-slate-50)",
+                border: "1px solid #e2e8f0", borderRadius: "8px", color: "var(--color-slate-600)",
+                cursor: "pointer", height: "100%"
+              }}>
+              <Filter size={18} />
+            </button>
+
+            {showFilters && (
+              <div style={{
+                position: "absolute", top: "110%", right: 0, 
+                backgroundColor: "white", borderRadius: "8px", 
+                boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)", border: "1px solid #e2e8f0",
+                padding: "1rem", zIndex: 10, minWidth: "200px"
+              }}>
+                <div style={{ marginBottom: "0.75rem" }}>
+                  <label style={{ display: "block", fontSize: "0.8rem", color: "var(--color-slate-500)", marginBottom: "0.25rem" }}>Status</label>
+                  <select 
+                    value={statusFilter} 
+                    onChange={e => setStatusFilter(e.target.value)}
+                    style={{ width: "100%", padding: "0.5rem", borderRadius: "6px", border: "1px solid #e2e8f0", fontSize: "0.9rem" }}
+                  >
+                    <option value="All">All Statuses</option>
+                    <option value="draft">Draft</option>
+                    <option value="published">Published</option>
+                    <option value="completed">Completed</option>
+                    <option value="cancelled">Cancelled</option>
+                  </select>
+                </div>
+                <div>
+                  <label style={{ display: "block", fontSize: "0.8rem", color: "var(--color-slate-500)", marginBottom: "0.25rem" }}>Category</label>
+                  <select 
+                    value={categoryFilter} 
+                    onChange={e => setCategoryFilter(e.target.value)}
+                    style={{ width: "100%", padding: "0.5rem", borderRadius: "6px", border: "1px solid #e2e8f0", fontSize: "0.9rem" }}
+                  >
+                    <option value="All">All Categories</option>
+                    {categories.map(c => (
+                      <option key={c.id} value={c.name}>{c.name}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Events Table */}
@@ -182,13 +288,13 @@ export default function ManageEventsPage() {
                 <tr>
                   <td colSpan="8" style={{ padding: "1.5rem", textAlign: "center", color: "var(--color-slate-500)" }}>Loading events...</td>
                 </tr>
-              ) : events.length === 0 ? (
+              ) : filteredEvents.length === 0 ? (
                 <tr>
                   <td colSpan="8" style={{ padding: "1.5rem", textAlign: "center", color: "var(--color-slate-500)" }}>No events found.</td>
                 </tr>
               ) : (
-                events.map((event, idx) => (
-                  <tr key={event.id} style={{ borderBottom: idx !== events.length - 1 ? "1px solid #e2e8f0" : "none" }}>
+                filteredEvents.map((event, idx) => (
+                  <tr key={event.id} style={{ borderBottom: idx !== filteredEvents.length - 1 ? "1px solid #e2e8f0" : "none" }}>
                     <td style={{ padding: "1rem 1.5rem" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
                         <div style={{ width: "40px", height: "40px", borderRadius: "8px", backgroundColor: "var(--color-slate-800)", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
@@ -268,13 +374,17 @@ export default function ManageEventsPage() {
               
               <div>
                 <label style={{ display: "block", marginBottom: "0.5rem", fontSize: "0.9rem", fontWeight: "500" }}>Category</label>
-                <input 
-                  type="text" 
+                <select 
                   value={newEvent.category} 
                   onChange={(e) => setNewEvent({...newEvent, category: e.target.value})}
                   required
-                  style={{ width: "100%", padding: "0.75rem", borderRadius: "6px", border: "1px solid #e2e8f0" }}
-                />
+                  style={{ width: "100%", padding: "0.75rem", borderRadius: "6px", border: "1px solid #e2e8f0", backgroundColor: "white" }}
+                >
+                  <option value="" disabled>Select a category</option>
+                  {categories.map(c => (
+                    <option key={c.id} value={c.name}>{c.name}</option>
+                  ))}
+                </select>
               </div>
 
               <div>
@@ -475,13 +585,17 @@ export default function ManageEventsPage() {
               
               <div>
                 <label style={{ display: "block", marginBottom: "0.5rem", fontSize: "0.9rem", fontWeight: "500" }}>Category</label>
-                <input 
-                  type="text" 
+                <select 
                   value={editingEvent.category} 
                   onChange={(e) => setEditingEvent({...editingEvent, category: e.target.value})}
                   required
-                  style={{ width: "100%", padding: "0.75rem", borderRadius: "6px", border: "1px solid #e2e8f0" }}
-                />
+                  style={{ width: "100%", padding: "0.75rem", borderRadius: "6px", border: "1px solid #e2e8f0", backgroundColor: "white" }}
+                >
+                  <option value="" disabled>Select a category</option>
+                  {categories.map(c => (
+                    <option key={c.id} value={c.name}>{c.name}</option>
+                  ))}
+                </select>
               </div>
 
               <div>
@@ -650,6 +764,60 @@ export default function ManageEventsPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Category Management Modal */}
+      {isCategoryModalOpen && (
+        <div style={{
+          position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: "rgba(0,0,0,0.5)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 1000
+        }}>
+          <div style={{
+            backgroundColor: "white", padding: "2rem", borderRadius: "12px", width: "90%", maxWidth: "500px",
+            maxHeight: "90vh", overflowY: "auto", position: "relative"
+          }}>
+            <button 
+              onClick={() => setIsCategoryModalOpen(false)}
+              style={{ position: "absolute", top: "1rem", right: "1rem", background: "none", border: "none", cursor: "pointer", color: "var(--color-slate-500)" }}
+            >
+              <X size={24} />
+            </button>
+            <h2 style={{ fontSize: "1.5rem", fontWeight: "bold", marginBottom: "1.5rem", color: "var(--color-slate-900)" }}>Manage Categories</h2>
+            
+            <div style={{ display: "flex", gap: "0.5rem", marginBottom: "1.5rem" }}>
+              <input 
+                type="text" 
+                placeholder="New Category Name" 
+                value={newCategoryName}
+                onChange={(e) => setNewCategoryName(e.target.value)}
+                style={{ flex: 1, padding: "0.75rem", borderRadius: "6px", border: "1px solid #e2e8f0" }}
+              />
+              <button 
+                onClick={handleAddCategory}
+                style={{ padding: "0.75rem 1.25rem", backgroundColor: "#3b82f6", color: "white", border: "none", borderRadius: "6px", fontWeight: "600", cursor: "pointer" }}
+              >
+                Add
+              </button>
+            </div>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+              {categories.map(cat => (
+                <div key={cat.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "0.75rem", border: "1px solid #e2e8f0", borderRadius: "6px" }}>
+                  <span style={{ fontWeight: "500" }}>{cat.name}</span>
+                  <button 
+                    onClick={() => handleDeleteCategory(cat.id)}
+                    style={{ background: "none", border: "none", color: "#ef4444", cursor: "pointer", padding: "0.25rem" }}
+                  >
+                    <Trash2 size={18} />
+                  </button>
+                </div>
+              ))}
+              {categories.length === 0 && (
+                <p style={{ textAlign: "center", color: "var(--color-slate-500)", padding: "1rem 0" }}>No categories found.</p>
+              )}
+            </div>
           </div>
         </div>
       )}

@@ -10,6 +10,9 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import com.example.eventbooking.entity.EventCategory;
+import com.example.eventbooking.repository.EventCategoryRepository;
+
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
@@ -18,8 +21,19 @@ import java.util.List;
 public class DataInitializer {
 
     @Bean
-    public CommandLineRunner initData(UserRepository userRepository, EventRepository eventRepository, org.springframework.security.crypto.password.PasswordEncoder passwordEncoder) {
+    public CommandLineRunner initData(UserRepository userRepository, EventRepository eventRepository, EventCategoryRepository categoryRepository, org.springframework.security.crypto.password.PasswordEncoder passwordEncoder) {
         return args -> {
+            // Seed Categories
+            if (categoryRepository.count() == 0) {
+                categoryRepository.saveAll(List.of(
+                        EventCategory.builder().name("Corporate").slug("corporate").build(),
+                        EventCategory.builder().name("Wedding").slug("wedding").build(),
+                        EventCategory.builder().name("Social").slug("social").build(),
+                        EventCategory.builder().name("Tech").slug("tech").build(),
+                        EventCategory.builder().name("Music").slug("music").build()
+                ));
+            }
+
             // Force set seeded admin accounts to super admin status
             userRepository.findByEmail("admin@example.com").ifPresent(admin -> {
                 if (!admin.isSuperAdmin()) {
@@ -34,9 +48,10 @@ public class DataInitializer {
                 }
             });
             userRepository.findByEmail("saphalmhj1@gmail.com").ifPresent(admin -> {
-                admin.setSuperAdmin(true);
-                admin.setPasswordHash(passwordEncoder.encode("admin123"));
-                userRepository.save(admin);
+                if (!admin.isSuperAdmin()) {
+                    admin.setSuperAdmin(true);
+                    userRepository.save(admin);
+                }
             });
 
             // Auto-publish existing draft events so they show up on the events page

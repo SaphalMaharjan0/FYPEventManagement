@@ -13,4 +13,10 @@ public class AdminVendorDto {
     private String status;
     private Integer properties;
     private String joined;
+    
+    // Additional business details
+    private String businessDesc;
+    private String contactEmail;
+    private String contactPhone;
+    private String businessAddress;
 }

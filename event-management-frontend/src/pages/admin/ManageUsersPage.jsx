@@ -13,6 +13,20 @@ export default function ManageUsersPage() {
   const [newUser, setNewUser] = useState({ name: "", email: "", password: "", role: "customer", status: "Active" });
   const [showPassword, setShowPassword] = useState(false);
 
+  // Filter State
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showFilters, setShowFilters] = useState(false);
+  const [roleFilter, setRoleFilter] = useState("All");
+  const [statusFilter, setStatusFilter] = useState("All");
+
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 8; // Adjust as needed
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, roleFilter, statusFilter]);
+
   useEffect(() => {
     const loadUsers = async () => {
       try {
@@ -103,6 +117,17 @@ export default function ManageUsersPage() {
     }
   };
 
+  const filteredUsers = users.filter(user => {
+    const matchesSearch = (user.name && user.name.toLowerCase().includes(searchQuery.toLowerCase())) || 
+                          (user.email && user.email.toLowerCase().includes(searchQuery.toLowerCase()));
+    const matchesRole = roleFilter === "All" || (user.role && user.role.toLowerCase() === roleFilter.toLowerCase());
+    const matchesStatus = statusFilter === "All" || (user.status && user.status.toLowerCase() === statusFilter.toLowerCase());
+    return matchesSearch && matchesRole && matchesStatus;
+  });
+
+  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+  const paginatedUsers = filteredUsers.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
   return (
     <div style={{ maxWidth: "1400px", margin: "0 auto" }}>
       {/* Header */}
@@ -137,6 +162,8 @@ export default function ManageUsersPage() {
             <input 
               type="text" 
               placeholder="Search users by name or email..." 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               style={{
                 border: "none",
                 backgroundColor: "transparent",
@@ -149,14 +176,54 @@ export default function ManageUsersPage() {
             />
           </div>
           
-          <button style={{
-            display: "flex", alignItems: "center", justifyContent: "center",
-            padding: "0 1rem", backgroundColor: "var(--color-slate-50)",
-            border: "1px solid #e2e8f0", borderRadius: "8px", color: "var(--color-slate-600)",
-            cursor: "pointer"
-          }}>
-            <Filter size={18} />
-          </button>
+          <div style={{ position: "relative" }}>
+            <button 
+              onClick={() => setShowFilters(!showFilters)}
+              style={{
+                display: "flex", alignItems: "center", justifyContent: "center",
+                padding: "0 1rem", backgroundColor: showFilters ? "var(--color-slate-200)" : "var(--color-slate-50)",
+                border: "1px solid #e2e8f0", borderRadius: "8px", color: "var(--color-slate-600)",
+                cursor: "pointer", height: "100%"
+              }}>
+              <Filter size={18} />
+            </button>
+
+            {showFilters && (
+              <div style={{
+                position: "absolute", top: "110%", right: 0, 
+                backgroundColor: "white", borderRadius: "8px", 
+                boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)", border: "1px solid #e2e8f0",
+                padding: "1rem", zIndex: 10, minWidth: "200px"
+              }}>
+                <div style={{ marginBottom: "0.75rem" }}>
+                  <label style={{ display: "block", fontSize: "0.8rem", color: "var(--color-slate-500)", marginBottom: "0.25rem" }}>Role</label>
+                  <select 
+                    value={roleFilter} 
+                    onChange={e => setRoleFilter(e.target.value)}
+                    style={{ width: "100%", padding: "0.5rem", borderRadius: "6px", border: "1px solid #e2e8f0", fontSize: "0.9rem" }}
+                  >
+                    <option value="All">All Roles</option>
+                    <option value="Customer">Customer</option>
+                    <option value="Vendor">Vendor</option>
+                    <option value="administrator">Admin</option>
+                  </select>
+                </div>
+                <div>
+                  <label style={{ display: "block", fontSize: "0.8rem", color: "var(--color-slate-500)", marginBottom: "0.25rem" }}>Status</label>
+                  <select 
+                    value={statusFilter} 
+                    onChange={e => setStatusFilter(e.target.value)}
+                    style={{ width: "100%", padding: "0.5rem", borderRadius: "6px", border: "1px solid #e2e8f0", fontSize: "0.9rem" }}
+                  >
+                    <option value="All">All Statuses</option>
+                    <option value="Active">Active</option>
+                    <option value="Inactive">Inactive</option>
+                    <option value="Pending">Pending</option>
+                  </select>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Users Table */}
@@ -178,13 +245,13 @@ export default function ManageUsersPage() {
                 <tr>
                   <td colSpan="7" style={{ padding: "1.5rem", textAlign: "center", color: "var(--color-slate-500)" }}>Loading users...</td>
                 </tr>
-              ) : users.length === 0 ? (
+              ) : paginatedUsers.length === 0 ? (
                 <tr>
                   <td colSpan="7" style={{ padding: "1.5rem", textAlign: "center", color: "var(--color-slate-500)" }}>No users found.</td>
                 </tr>
               ) : (
-                users.map((user, idx) => (
-                  <tr key={user.id} style={{ borderBottom: idx !== users.length - 1 ? "1px solid #e2e8f0" : "none" }}>
+                paginatedUsers.map((user, idx) => (
+                  <tr key={user.id} style={{ borderBottom: idx !== paginatedUsers.length - 1 ? "1px solid #e2e8f0" : "none" }}>
                     <td style={{ padding: "1rem 1.5rem", fontSize: "0.85rem", color: "var(--color-slate-500)", fontFamily: "monospace" }}>{user.id}</td>
                     <td style={{ padding: "1rem 1.5rem" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
@@ -250,16 +317,39 @@ export default function ManageUsersPage() {
         </div>
 
         {/* Pagination */}
-        <div style={{ padding: "1rem 1.5rem", borderTop: "1px solid #e2e8f0", display: "flex", justifyContent: "space-between", alignItems: "center", color: "var(--color-slate-500)", fontSize: "0.9rem" }}>
-          <span>Showing {users.length} users</span>
-          <div style={{ display: "flex", gap: "0.25rem" }}>
-            <button style={{ padding: "0.4rem 0.75rem", border: "1px solid #e2e8f0", backgroundColor: "white", borderRadius: "6px", cursor: "pointer" }}>&larr;</button>
-            <button style={{ padding: "0.4rem 0.75rem", border: "none", backgroundColor: "#3b82f6", color: "white", borderRadius: "6px", fontWeight: "500", cursor: "pointer" }}>1</button>
-            <button style={{ padding: "0.4rem 0.75rem", border: "1px solid transparent", backgroundColor: "transparent", borderRadius: "6px", cursor: "pointer" }}>2</button>
-            <button style={{ padding: "0.4rem 0.75rem", border: "1px solid transparent", backgroundColor: "transparent", borderRadius: "6px", cursor: "pointer" }}>3</button>
-            <button style={{ padding: "0.4rem 0.75rem", border: "1px solid #e2e8f0", backgroundColor: "white", borderRadius: "6px", cursor: "pointer" }}>&rarr;</button>
+        {totalPages > 1 && (
+          <div style={{ padding: "1rem 1.5rem", borderTop: "1px solid #e2e8f0", display: "flex", justifyContent: "space-between", alignItems: "center", color: "var(--color-slate-500)", fontSize: "0.9rem" }}>
+            <span>Showing {(currentPage - 1) * itemsPerPage + 1} to {Math.min(currentPage * itemsPerPage, filteredUsers.length)} of {filteredUsers.length} users</span>
+            <div style={{ display: "flex", gap: "0.25rem" }}>
+              <button 
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                style={{ padding: "0.4rem 0.75rem", border: "1px solid #e2e8f0", backgroundColor: "white", borderRadius: "6px", cursor: currentPage === 1 ? "not-allowed" : "pointer", opacity: currentPage === 1 ? 0.5 : 1 }}>&larr;</button>
+              
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                <button 
+                  key={page}
+                  onClick={() => setCurrentPage(page)}
+                  style={{ 
+                    padding: "0.4rem 0.75rem", 
+                    border: page === currentPage ? "none" : "1px solid transparent", 
+                    backgroundColor: page === currentPage ? "#3b82f6" : "transparent", 
+                    color: page === currentPage ? "white" : "var(--color-slate-600)", 
+                    borderRadius: "6px", 
+                    fontWeight: page === currentPage ? "500" : "normal",
+                    cursor: "pointer" 
+                  }}>
+                  {page}
+                </button>
+              ))}
+              
+              <button 
+                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+                style={{ padding: "0.4rem 0.75rem", border: "1px solid #e2e8f0", backgroundColor: "white", borderRadius: "6px", cursor: currentPage === totalPages ? "not-allowed" : "pointer", opacity: currentPage === totalPages ? 0.5 : 1 }}>&rarr;</button>
+            </div>
           </div>
-        </div>
+        )}
 
       </div>
 
