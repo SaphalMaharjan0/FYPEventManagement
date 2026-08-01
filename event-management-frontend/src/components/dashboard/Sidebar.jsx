@@ -8,6 +8,7 @@ import {
   Settings,
   LogOut,
   ChevronRight,
+  X,
 } from "lucide-react";
 
 export default function Sidebar({
@@ -15,7 +16,9 @@ export default function Sidebar({
   onNavigate,
   currentUser,
   onLogout,
-  isOpen
+  isOpen,
+  onClose,
+  isDarkMode = false,
 }) {
   const navItems = [
     { id: "customer-dashboard", label: "Dashboard", icon: Home },
@@ -26,80 +29,307 @@ export default function Sidebar({
     { id: "customer-settings", label: "Settings", icon: Settings },
   ];
 
+  const handleNavClick = (id) => {
+    if (onNavigate) onNavigate(id);
+    if (onClose) onClose();
+  };
+
+  const handleLogoutClick = () => {
+    if (onLogout) onLogout();
+    if (onClose) onClose();
+  };
+
   return (
     <aside
-      className={`dashboard-sidebar ${isOpen ? 'mobile-open' : ''}`}
-      style={{
-        backgroundColor: "#111827", // dark slate
-        color: "#94a3b8",
-        display: "flex",
-        flexDirection: "column",
-      }}
+      className={`sidebar-aside ${isOpen ? "mobile-open" : ""} ${isDarkMode ? "dark-theme" : "light-theme"}`}
     >
-      {/* Brand Logo Header */}
-      <div
-        style={{
-          padding: "1.5rem",
-          display: "flex",
-          alignItems: "center",
-          gap: "0.75rem",
-          borderBottom: "1px solid rgba(255,255,255,0.05)",
-        }}
-      >
-        <div
-          style={{
-            backgroundColor: "#3b82f6",
-            borderRadius: "8px",
-            width: "32px",
-            height: "32px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            color: "white"
-          }}
-        >
-          <Compass size={20} />
+      <style>{`
+        /* Dynamic Theme Variables for Sidebar */
+        .sidebar-aside.light-theme {
+          --sb-bg: var(--bg-card, #ffffff);
+          --sb-border: var(--border-main, #e2e8f0);
+          --sb-text: var(--text-main, #0f172a);
+          --sb-text-subtle: var(--text-subtle, #64748b);
+          --sb-hover-bg: var(--hover-bg, rgba(0, 0, 0, 0.05));
+          --sb-hover-text: #0f172a;
+          --sb-nav-color: #475569;
+        }
+
+        .sidebar-aside.dark-theme {
+          --sb-bg: var(--bg-card, #111827);
+          --sb-border: var(--border-main, rgba(255, 255, 255, 0.05));
+          --sb-text: var(--text-main, #ffffff);
+          --sb-text-subtle: var(--text-subtle, #94a3b8);
+          --sb-hover-bg: var(--hover-bg, rgba(255, 255, 255, 0.08));
+          --sb-hover-text: #ffffff;
+          --sb-nav-color: #cbd5e1;
+        }
+
+        .sidebar-aside {
+          position: fixed;
+          top: 0;
+          left: 0;
+          bottom: 0;
+          width: 280px;
+          height: 100vh;
+          background-color: var(--sb-bg);
+          color: var(--sb-text-subtle);
+          display: flex;
+          flex-direction: column;
+          z-index: 1000;
+          transform: translateX(-100%);
+          transition: transform 0.3s ease-in-out, background-color 0.2s ease;
+          box-shadow: 4px 0 20px rgba(0, 0, 0, 0.15);
+          box-sizing: border-box;
+          user-select: none;
+        }
+
+        .sidebar-aside.mobile-open {
+          transform: translateX(0);
+        }
+
+        @media (min-width: 768px) {
+          .sidebar-aside {
+            position: sticky;
+            top: 0;
+            left: auto;
+            bottom: auto;
+            width: 260px;
+            height: 100vh;
+            transform: none !important;
+            box-shadow: none;
+            flex-shrink: 0;
+            z-index: 10;
+            border-right: 1px solid var(--sb-border);
+          }
+
+          .sidebar-close-btn {
+            display: none !important;
+          }
+        }
+
+        .sidebar-header {
+          height: 70px;
+          padding: 0 1.5rem;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          border-bottom: 1px solid var(--sb-border);
+          box-sizing: border-box;
+          flex-shrink: 0;
+        }
+
+        .sidebar-brand-wrapper {
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+        }
+
+        .sidebar-brand-logo {
+          background-color: #3b82f6;
+          border-radius: 8px;
+          width: 32px;
+          height: 32px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: #ffffff;
+          flex-shrink: 0;
+        }
+
+        .sidebar-brand-title {
+          font-size: 1.25rem;
+          font-weight: 700;
+          letter-spacing: -0.5px;
+          color: var(--sb-text);
+        }
+
+        .sidebar-close-btn {
+          background: none;
+          border: none;
+          color: var(--sb-text-subtle);
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 0.25rem;
+          border-radius: 0.375rem;
+          transition: background-color 0.2s ease, color 0.2s ease;
+        }
+
+        .sidebar-close-btn:hover {
+          color: var(--sb-hover-text);
+          background-color: var(--sb-hover-bg);
+        }
+
+        .sidebar-section-label {
+          padding: 1.25rem 1rem 0.5rem;
+        }
+
+        .sidebar-section-text {
+          font-size: 0.7rem;
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 1px;
+          color: #64748b;
+          margin-left: 0.5rem;
+        }
+
+        .sidebar-nav {
+          flex: 1;
+          overflow-y: auto;
+          display: flex;
+          flex-direction: column;
+          padding: 0 1rem;
+        }
+
+        .sidebar-nav-list {
+          list-style: none;
+          padding: 0;
+          margin: 0;
+          display: flex;
+          flex-direction: column;
+          gap: 0.25rem;
+        }
+
+        .sidebar-nav-btn {
+          width: 100%;
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+          padding: 0.75rem 1rem;
+          border-radius: 0.5rem;
+          background-color: transparent;
+          color: var(--sb-nav-color);
+          border: none;
+          cursor: pointer;
+          text-align: left;
+          font-size: 0.95rem;
+          font-weight: 500;
+          transition: background-color 0.2s ease, color 0.2s ease;
+        }
+
+        .sidebar-nav-btn:hover {
+          color: var(--sb-hover-text);
+          background-color: var(--sb-hover-bg);
+        }
+
+        .sidebar-nav-btn.active {
+          background-color: #3b82f6 !important;
+          color: #ffffff !important;
+          font-weight: 600;
+        }
+
+        .sidebar-footer {
+          padding: 1rem;
+          border-top: 1px solid var(--sb-border);
+          margin-top: auto;
+        }
+
+        .sidebar-user-card {
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+          cursor: pointer;
+          padding: 0.75rem;
+          margin-bottom: 0.5rem;
+          border-radius: 0.5rem;
+          transition: background-color 0.2s ease;
+        }
+
+        .sidebar-user-card:hover {
+          background-color: var(--sb-hover-bg);
+        }
+
+        .sidebar-user-avatar {
+          width: 36px;
+          height: 36px;
+          border-radius: 50%;
+          background-color: #3b82f6;
+          color: #ffffff;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-weight: 700;
+          font-size: 0.9rem;
+          flex-shrink: 0;
+        }
+
+        .sidebar-user-info {
+          flex: 1;
+          overflow: hidden;
+        }
+
+        .sidebar-user-name {
+          font-size: 0.9rem;
+          font-weight: 600;
+          color: var(--sb-text);
+          white-space: nowrap;
+          text-overflow: ellipsis;
+          overflow: hidden;
+        }
+
+        .sidebar-user-email {
+          font-size: 0.75rem;
+          color: #64748b;
+          white-space: nowrap;
+          text-overflow: ellipsis;
+          overflow: hidden;
+        }
+
+        .sidebar-chevron {
+          color: #64748b;
+          flex-shrink: 0;
+        }
+
+        .sidebar-logout-btn {
+          width: 100%;
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+          padding: 0.75rem 1rem;
+          background-color: transparent;
+          border: none;
+          color: var(--sb-text-subtle);
+          cursor: pointer;
+          font-size: 0.9rem;
+          font-weight: 500;
+          border-radius: 0.5rem;
+          transition: background-color 0.2s ease, color 0.2s ease;
+        }
+
+        .sidebar-logout-btn:hover {
+          color: var(--sb-hover-text);
+          background-color: var(--sb-hover-bg);
+        }
+      `}</style>
+
+      {/* Header */}
+      <div className="sidebar-header">
+        <div className="sidebar-brand-wrapper">
+          <div className="sidebar-brand-logo">
+            <Compass size={20} />
+          </div>
+          <span className="sidebar-brand-title">EventPulse</span>
         </div>
-        <span
-          style={{
-            fontSize: "1.25rem",
-            fontWeight: "bold",
-            letterSpacing: "-0.5px",
-            color: "white",
-          }}
+
+        <button
+          type="button"
+          className="sidebar-close-btn"
+          onClick={onClose}
+          aria-label="Close menu"
         >
-          EventPulse
-        </span>
+          <X size={20} />
+        </button>
       </div>
 
-      <div
-        style={{
-          padding: "1.5rem 1rem 0.5rem",
-        }}
-      >
-        <span style={{ 
-          fontSize: "0.7rem", 
-          fontWeight: "600", 
-          textTransform: "uppercase", 
-          letterSpacing: "1px", 
-          color: "#64748b", 
-          marginLeft: "0.5rem" 
-        }}>
-          Customer
-        </span>
+      <div className="sidebar-section-label">
+        <span className="sidebar-section-text">Customer</span>
       </div>
 
-      {/* Navigation Links */}
-      <nav
-        style={{
-          flex: 1,
-          overflowY: "auto",
-          display: "flex",
-          flexDirection: "column",
-          padding: "0 1rem",
-        }}
-      >
-        <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: "0.25rem" }}>
+      {/* Nav links */}
+      <nav className="sidebar-nav">
+        <ul className="sidebar-nav-list">
           {navItems.map((item) => {
             const isActive =
               currentPage === item.id ||
@@ -111,35 +341,8 @@ export default function Sidebar({
               <li key={item.id}>
                 <button
                   type="button"
-                  onClick={() => onNavigate && onNavigate(item.id)}
-                  style={{
-                    width: "100%",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "0.75rem",
-                    padding: "0.75rem 1rem",
-                    borderRadius: "0.5rem",
-                    backgroundColor: isActive ? "#3b82f6" : "transparent",
-                    color: isActive ? "white" : "#cbd5e1",
-                    border: "none",
-                    cursor: "pointer",
-                    textAlign: "left",
-                    fontSize: "0.95rem",
-                    fontWeight: isActive ? "600" : "500",
-                    transition: "all 0.2s ease",
-                  }}
-                  onMouseEnter={(e) => {
-                    if (!isActive) {
-                      e.currentTarget.style.color = "white";
-                      e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.05)";
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!isActive) {
-                      e.currentTarget.style.color = "#cbd5e1";
-                      e.currentTarget.style.backgroundColor = "transparent";
-                    }
-                  }}
+                  onClick={() => handleNavClick(item.id)}
+                  className={`sidebar-nav-btn ${isActive ? "active" : ""}`}
                 >
                   <Icon size={18} />
                   {item.label}
@@ -150,47 +353,13 @@ export default function Sidebar({
         </ul>
       </nav>
 
-      {/* User Profile Section */}
-      <div
-        style={{
-          padding: "1rem",
-          borderTop: "1px solid rgba(255,255,255,0.05)",
-        }}
-      >
+      {/* Footer Profile & Sign out */}
+      <div className="sidebar-footer">
         <div
-          onClick={() => onNavigate && onNavigate("customer-profile")}
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "0.75rem",
-            cursor: "pointer",
-            padding: "0.75rem",
-            marginBottom: "0.5rem",
-            borderRadius: "0.5rem",
-            transition: "all 0.2s ease",
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.05)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = "transparent";
-          }}
+          onClick={() => handleNavClick("customer-profile")}
+          className="sidebar-user-card"
         >
-          <div
-            style={{
-              width: "36px",
-              height: "36px",
-              borderRadius: "50%",
-              backgroundColor: "#3b82f6",
-              color: "white",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontWeight: "bold",
-              fontSize: "0.9rem",
-              flexShrink: 0,
-            }}
-          >
+          <div className="sidebar-user-avatar">
             {currentUser?.fullName
               ? currentUser.fullName
                   .split(" ")
@@ -203,67 +372,23 @@ export default function Sidebar({
                     .map((n) => n[0])
                     .join("")
                     .toUpperCase()
-                : "U"}
+                : "GU"}
           </div>
-          <div style={{ flex: 1, overflow: "hidden" }}>
-            <div
-              style={{
-                fontSize: "0.9rem",
-                fontWeight: "600",
-                color: "white",
-                whiteSpace: "nowrap",
-                textOverflow: "ellipsis",
-                overflow: "hidden",
-              }}
-            >
-              {currentUser?.fullName || currentUser?.name || "User"}
+          <div className="sidebar-user-info">
+            <div className="sidebar-user-name">
+              {currentUser?.fullName || currentUser?.name || "Google User"}
             </div>
-            <div
-              style={{
-                fontSize: "0.75rem",
-                color: "#64748b",
-                whiteSpace: "nowrap",
-                textOverflow: "ellipsis",
-                overflow: "hidden",
-              }}
-            >
-              {currentUser?.email || "user@example.com"}
+            <div className="sidebar-user-email">
+              {currentUser?.email || "google.user@gmail.com"}
             </div>
           </div>
-          <ChevronRight
-            size={16}
-            color="#64748b"
-            style={{ flexShrink: 0 }}
-          />
+          <ChevronRight size={16} className="sidebar-chevron" />
         </div>
 
-        {/* Sign Out Button */}
         <button
           type="button"
-          onClick={onLogout}
-          style={{
-            width: "100%",
-            display: "flex",
-            alignItems: "center",
-            gap: "0.75rem",
-            padding: "0.75rem 1rem",
-            background: "transparent",
-            border: "none",
-            color: "#94a3b8",
-            cursor: "pointer",
-            fontSize: "0.9rem",
-            fontWeight: "500",
-            borderRadius: "0.5rem",
-            transition: "all 0.2s ease",
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.color = "white";
-            e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.05)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.color = "#94a3b8";
-            e.currentTarget.style.backgroundColor = "transparent";
-          }}
+          onClick={handleLogoutClick}
+          className="sidebar-logout-btn"
         >
           <LogOut size={18} />
           Sign Out
