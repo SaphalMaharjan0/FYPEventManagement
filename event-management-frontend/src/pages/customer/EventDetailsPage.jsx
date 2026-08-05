@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { ArrowLeft, Calendar, Clock, MapPin, Star, User, ShieldAlert, Award, Heart } from "lucide-react";
 import { useSettings } from "../../contexts/SettingsContext";
-import { formatPrice, formatDate } from "../../utils/formatting";
+import { formatPrice, formatDate, formatShortAddress } from "../../utils/formatting";
 import EventCard from "../../components/event/EventCard";
 import { useFavorites } from "../../contexts/FavoritesContext";
 
@@ -148,7 +148,7 @@ export default function EventDetailsPage({
                 </div>
                 <div className="details-meta-info">
                   <span className="details-meta-label">Venue</span>
-                  <span className="details-meta-value">{event.venue}</span>
+                  <span className="details-meta-value">{formatShortAddress(event.venue)}</span>
                 </div>
               </div>
 

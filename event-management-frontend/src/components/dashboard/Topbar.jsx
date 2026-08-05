@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Search, Bell, Moon, Sun, Menu } from "lucide-react";
+import { useFetch } from "../../hooks/useFetch";
 
 export default function Topbar({
   currentUser,
@@ -17,6 +18,26 @@ export default function Topbar({
       console.error("toggleDarkMode prop was not passed into Topbar!");
     }
   };
+
+  const fetchWithAuth = useFetch();
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    const fetchUnreadCount = async () => {
+      try {
+        const res = await fetchWithAuth("/api/notifications/unread-count");
+        if (res && res.count !== undefined) {
+          setUnreadCount(res.count);
+        }
+      } catch (err) {
+        console.error("Failed to fetch unread count:", err);
+      }
+    };
+
+    fetchUnreadCount();
+    const intervalId = setInterval(fetchUnreadCount, 30000); // Poll every 30s
+    return () => clearInterval(intervalId);
+  }, []);
 
   return (
     <header
@@ -136,19 +157,29 @@ export default function Topbar({
             color="var(--text-subtle)"
             style={{ pointerEvents: "none" }}
           />
-          <span
-            style={{
-              position: "absolute",
-              top: "4px",
-              right: "4px",
-              width: "8px",
-              height: "8px",
-              backgroundColor: "#ef4444",
-              borderRadius: "50%",
-              border: "1.5px solid var(--bg-card)",
-              pointerEvents: "none",
-            }}
-          />
+          {unreadCount > 0 && (
+            <span
+              style={{
+                position: "absolute",
+                top: "0px",
+                right: "0px",
+                backgroundColor: "#ef4444",
+                color: "white",
+                fontSize: "10px",
+                fontWeight: "bold",
+                borderRadius: "50%",
+                width: "16px",
+                height: "16px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                border: "1.5px solid var(--bg-card)",
+                pointerEvents: "none",
+              }}
+            >
+              {unreadCount > 9 ? "9+" : unreadCount}
+            </span>
+          )}
         </button>
 
         {/* User Profile Avatar */}

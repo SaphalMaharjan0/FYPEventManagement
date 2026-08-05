@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import com.example.eventbooking.dto.request.EsewaInitiateRequest;
 import com.example.eventbooking.dto.response.EsewaInitiateResponse;
 
+import com.example.eventbooking.dto.request.KhaltiInitiateRequest;
+import com.example.eventbooking.dto.response.KhaltiInitiateResponse;
 
 @RestController
 @RequestMapping("/api/customer")
@@ -59,6 +61,28 @@ public class CustomerController {
     @GetMapping("/bookings/esewa-callback")
     public ResponseEntity<java.util.Map<String, Boolean>> verifyEsewa(@RequestParam("data") String base64Data) {
         boolean success = customerService.verifyEsewaPayment(base64Data);
+        java.util.Map<String, Boolean> res = new java.util.HashMap<>();
+        res.put("success", success);
+        return ResponseEntity.ok(res);
+    }
+
+    @PostMapping("/bookings/initiate-khalti")
+    public ResponseEntity<KhaltiInitiateResponse> initiateKhalti(@AuthenticationPrincipal User currentUser, @RequestBody KhaltiInitiateRequest request) {
+        return ResponseEntity.ok(customerService.initiateKhaltiBooking(currentUser.getUserId(), request));
+    }
+
+    @GetMapping("/bookings/khalti-callback")
+    public ResponseEntity<java.util.Map<String, Boolean>> verifyKhalti(@RequestParam("pidx") String pidx, @RequestParam("amount") String amount) {
+        boolean success = customerService.verifyKhaltiPayment(pidx, amount);
+        java.util.Map<String, Boolean> res = new java.util.HashMap<>();
+        res.put("success", success);
+        return ResponseEntity.ok(res);
+    }
+
+    @PostMapping("/bookings/cash")
+    public ResponseEntity<java.util.Map<String, Boolean>> processCashBooking(@AuthenticationPrincipal User currentUser, @RequestBody KhaltiInitiateRequest request) {
+        // Reusing KhaltiInitiateRequest since it just needs eventId and quantity
+        boolean success = customerService.processCashBooking(currentUser.getUserId(), request.getEventId(), request.getQuantity());
         java.util.Map<String, Boolean> res = new java.util.HashMap<>();
         res.put("success", success);
         return ResponseEntity.ok(res);

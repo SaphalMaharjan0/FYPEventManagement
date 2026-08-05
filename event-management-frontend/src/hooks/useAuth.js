@@ -46,11 +46,17 @@ export function useAuth() {
     setUser(null);
   }, []);
 
+  const updateUser = useCallback((userData) => {
+    localStorage.setItem('user', JSON.stringify(userData));
+    setUser(userData);
+  }, []);
+
   return {
     user,
     login,
     register,
     logout,
+    updateUser,
     isAuthenticated: !!user
   };
 }

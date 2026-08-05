@@ -1,48 +1,44 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Bell, Check, Clock, Ticket, AlertCircle } from "lucide-react";
+import { useFetch } from "../../hooks/useFetch";
 
 export default function NotificationsPage() {
-  const [notifications, setNotifications] = useState([
-    {
-      id: 1,
-      type: "booking",
-      title: "Booking Confirmed",
-      message: "Your booking for 'Neon Nights Music Festival' has been confirmed. You have 2 General Admission tickets.",
-      time: "2 hours ago",
-      isRead: false,
-      icon: Ticket,
-      color: "var(--color-blue-500)" // blue
-    },
-    {
-      id: 2,
-      type: "alert",
-      title: "Event Update",
-      message: "The venue for 'Tech Innovators Summit 2026' has been changed to the Grand Convention Center.",
-      time: "1 day ago",
-      isRead: false,
-      icon: AlertCircle,
-      color: "var(--color-amber-500)" // amber
-    },
-    {
-      id: 3,
-      type: "system",
-      title: "Welcome to EventPulse",
-      message: "Thanks for joining! Complete your profile to get personalized event recommendations.",
-      time: "3 days ago",
-      isRead: true,
-      icon: Bell,
-      color: "var(--color-green-500)" // green
-    }
-  ]);
+  const [notifications, setNotifications] = useState([]);
+  const fetchWithAuth = useFetch();
 
-  const markAsRead = (id) => {
-    setNotifications(notifications.map(n => 
-      n.id === id ? { ...n, isRead: true } : n
-    ));
+  const fetchNotifications = async () => {
+    try {
+      const data = await fetchWithAuth("/api/notifications");
+      if (data) setNotifications(data);
+    } catch (err) {
+      console.error("Failed to fetch notifications:", err);
+    }
   };
 
-  const markAllAsRead = () => {
-    setNotifications(notifications.map(n => ({ ...n, isRead: true })));
+  useEffect(() => {
+    fetchNotifications();
+    const intervalId = setInterval(fetchNotifications, 30000); // Poll every 30s
+    return () => clearInterval(intervalId);
+  }, []);
+
+  const markAsRead = async (id) => {
+    try {
+      await fetchWithAuth(`/api/notifications/${id}/read`, { method: "PUT" });
+      setNotifications(notifications.map(n => 
+        n.id === id ? { ...n, isRead: true } : n
+      ));
+    } catch (err) {
+      console.error("Failed to mark as read:", err);
+    }
+  };
+
+  const markAllAsRead = async () => {
+    try {
+      await fetchWithAuth("/api/notifications/read-all", { method: "PUT" });
+      setNotifications(notifications.map(n => ({ ...n, isRead: true })));
+    } catch (err) {
+      console.error("Failed to mark all as read:", err);
+    }
   };
 
   const unreadCount = notifications.filter(n => !n.isRead).length;
@@ -85,11 +81,36 @@ export default function NotificationsPage() {
           </div>
         ) : (
           notifications.map((notification) => {
-            const Icon = notification.icon;
+            let Icon = Bell;
+            let color = "var(--color-slate-500)";
+            if (notification.type === "booking") {
+              Icon = Ticket;
+              color = "var(--color-blue-500)";
+            } else if (notification.type === "alert") {
+              Icon = AlertCircle;
+              color = "var(--color-amber-500)";
+            } else if (notification.type === "system") {
+              Icon = Bell;
+              color = "var(--color-green-500)";
+            }
+
+            const timeAgo = (dateStr) => {
+              if (!dateStr) return "";
+              const date = new Date(dateStr);
+              const now = new Date();
+              const diffMs = now - date;
+              const diffMins = Math.floor(diffMs / 60000);
+              const diffHours = Math.floor(diffMins / 60);
+              const diffDays = Math.floor(diffHours / 24);
+              if (diffMins < 60) return `${diffMins} mins ago`;
+              if (diffHours < 24) return `${diffHours} hours ago`;
+              return `${diffDays} days ago`;
+            };
+
             return (
               <div 
                 key={notification.id}
-                onClick={() => markAsRead(notification.id)}
+                onClick={() => !notification.isRead && markAsRead(notification.id)}
                 style={{
                   display: "flex",
                   gap: "1.5rem",
@@ -105,8 +126,8 @@ export default function NotificationsPage() {
                   width: "48px", 
                   height: "48px", 
                   borderRadius: "50%", 
-                  backgroundColor: `${notification.color}15`, 
-                  color: notification.color,
+                  backgroundColor: `${color}15`, 
+                  color: color,
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
@@ -122,7 +143,7 @@ export default function NotificationsPage() {
                     </h3>
                     <div style={{ display: "flex", alignItems: "center", gap: "0.25rem", color: "var(--color-slate-400)", fontSize: "0.8rem" }}>
                       <Clock size={14} />
-                      {notification.time}
+                      {timeAgo(notification.createdAt)}
                     </div>
                   </div>
                   <p style={{ color: "var(--color-slate-600)", lineHeight: "1.5", fontSize: "0.95rem" }}>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Calendar, Clock, MapPin, Star, Heart } from "lucide-react";
 import { useSettings } from "../../contexts/SettingsContext";
-import { formatPrice, formatDate } from "../../utils/formatting";
+import { formatPrice, formatDate, formatShortAddress } from "../../utils/formatting";
 import { useFavorites } from "../../contexts/FavoritesContext";
 
 export default function EventCard({ event, onBookClick, initialIsFavorite = false }) {
@@ -87,7 +87,7 @@ export default function EventCard({ event, onBookClick, initialIsFavorite = fals
           </div>
           <div className="card-meta-item">
             <MapPin size={14} />
-            <span>{venue}</span>
+            <span>{formatShortAddress(venue)}</span>
           </div>
         </div>
 

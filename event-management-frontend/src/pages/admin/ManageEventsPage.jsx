@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { Plus, Search, Eye, Edit2, Trash2, Filter, Star, X } from "lucide-react";
+import { Plus, Search, Eye, Edit2, Trash2, Filter, Star, X, MapPin } from "lucide-react";
 import { useFetch } from "../../hooks/useFetch";
+import { formatPrice, formatDate, formatShortAddress } from "../../utils/formatting";
+import { useSettings } from "../../contexts/SettingsContext";
+import MapLocationPicker from "../../components/admin/MapLocationPicker";
 
 export default function ManageEventsPage() {
   const fetchWithAuth = useFetch();
@@ -17,6 +20,9 @@ export default function ManageEventsPage() {
   const [categoryFilter, setCategoryFilter] = useState("All");
 
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isMapModalOpen, setIsMapModalOpen] = useState(false);
+  const [mapTarget, setMapTarget] = useState(null); // 'new' or 'edit'
+
   const [newEvent, setNewEvent] = useState({
     name: "",
     category: "",
@@ -320,7 +326,7 @@ export default function ManageEventsPage() {
                       </span>
                     </td>
                     <td style={{ padding: "1rem 1.5rem", fontSize: "0.9rem", color: "var(--color-slate-600)" }}>{event.date}</td>
-                    <td style={{ padding: "1rem 1.5rem", fontSize: "0.9rem", color: "var(--color-slate-600)" }}>{event.venue}</td>
+                    <td style={{ padding: "1rem 1.5rem", fontSize: "0.9rem", color: "var(--color-slate-600)" }}>{formatShortAddress(event.venue)}</td>
                     <td style={{ padding: "1rem 1.5rem", fontSize: "0.9rem", fontWeight: "600", color: "var(--color-slate-900)" }}>{event.price}</td>
                     <td style={{ padding: "1rem 1.5rem", fontSize: "0.9rem", color: "var(--color-slate-600)" }}>{event.seats}</td>
                     <td style={{ padding: "1rem 1.5rem" }}>
@@ -372,6 +378,7 @@ export default function ManageEventsPage() {
                 />
               </div>
               
+
               <div>
                 <label style={{ display: "block", marginBottom: "0.5rem", fontSize: "0.9rem", fontWeight: "500" }}>Category</label>
                 <select 
@@ -441,24 +448,73 @@ export default function ManageEventsPage() {
 
               <div>
                 <label style={{ display: "block", marginBottom: "0.5rem", fontSize: "0.9rem", fontWeight: "500" }}>Venue</label>
-                <input 
-                  type="text" 
-                  value={newEvent.venue} 
-                  onChange={(e) => setNewEvent({...newEvent, venue: e.target.value})}
-                  required
-                  style={{ width: "100%", padding: "0.75rem", borderRadius: "6px", border: "1px solid #e2e8f0" }}
-                />
+                <div style={{ display: "flex", gap: "0.5rem" }}>
+                  <input 
+                    type="text" 
+                    value={newEvent.venue} 
+                    onChange={(e) => setNewEvent({...newEvent, venue: e.target.value})}
+                    required
+                    style={{ flex: 1, padding: "0.75rem", borderRadius: "6px", border: "1px solid #e2e8f0" }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMapTarget('new');
+                      setIsMapModalOpen(true);
+                    }}
+                    style={{
+                      padding: "0 1rem",
+                      backgroundColor: "var(--bg-body-alt)",
+                      border: "1px solid #e2e8f0",
+                      borderRadius: "6px",
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "0.5rem",
+                      color: "var(--color-slate-700)"
+                    }}
+                    title="Choose on Map"
+                  >
+                    <MapPin size={18} />
+                    Map
+                  </button>
+                </div>
               </div>
 
               <div>
                 <label style={{ display: "block", marginBottom: "0.5rem", fontSize: "0.9rem", fontWeight: "500" }}>Price</label>
-                <input 
-                  type="text" 
-                  value={newEvent.price} 
-                  onChange={(e) => setNewEvent({...newEvent, price: e.target.value})}
-                  required
-                  style={{ width: "100%", padding: "0.75rem", borderRadius: "6px", border: "1px solid #e2e8f0" }}
-                />
+                <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "0.5rem" }}>
+                  <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.9rem", cursor: "pointer" }}>
+                    <input 
+                      type="radio" 
+                      name="priceTypeNew"
+                      checked={newEvent.price === "Free" || newEvent.price === 0 || newEvent.price === "0"}
+                      onChange={() => setNewEvent({...newEvent, price: "Free"})}
+                    />
+                    Free
+                  </label>
+                  <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.9rem", cursor: "pointer" }}>
+                    <input 
+                      type="radio" 
+                      name="priceTypeNew"
+                      checked={newEvent.price !== "Free" && newEvent.price !== 0 && newEvent.price !== "0"}
+                      onChange={() => setNewEvent({...newEvent, price: ""})}
+                    />
+                    Paid
+                  </label>
+                </div>
+                {newEvent.price !== "Free" && newEvent.price !== 0 && newEvent.price !== "0" && (
+                  <input 
+                    type="number" 
+                    min="0"
+                    step="0.01"
+                    placeholder="Enter price amount"
+                    value={newEvent.price} 
+                    onChange={(e) => setNewEvent({...newEvent, price: e.target.value})}
+                    required
+                    style={{ width: "100%", padding: "0.75rem", borderRadius: "6px", border: "1px solid #e2e8f0" }}
+                  />
+                )}
               </div>
 
               <div>
@@ -651,13 +707,73 @@ export default function ManageEventsPage() {
 
               <div>
                 <label style={{ display: "block", marginBottom: "0.5rem", fontSize: "0.9rem", fontWeight: "500" }}>Venue</label>
-                <input 
-                  type="text" 
-                  value={editingEvent.venue} 
-                  onChange={(e) => setEditingEvent({...editingEvent, venue: e.target.value})}
-                  required
-                  style={{ width: "100%", padding: "0.75rem", borderRadius: "6px", border: "1px solid #e2e8f0" }}
-                />
+                <div style={{ display: "flex", gap: "0.5rem" }}>
+                  <input 
+                    type="text" 
+                    value={editingEvent.venue} 
+                    onChange={(e) => setEditingEvent({...editingEvent, venue: e.target.value})}
+                    required
+                    style={{ flex: 1, padding: "0.75rem", borderRadius: "6px", border: "1px solid #e2e8f0" }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMapTarget('edit');
+                      setIsMapModalOpen(true);
+                    }}
+                    style={{
+                      padding: "0 1rem",
+                      backgroundColor: "var(--bg-body-alt)",
+                      border: "1px solid #e2e8f0",
+                      borderRadius: "6px",
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "0.5rem",
+                      color: "var(--color-slate-700)"
+                    }}
+                    title="Choose on Map"
+                  >
+                    <MapPin size={18} />
+                    Map
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label style={{ display: "block", marginBottom: "0.5rem", fontSize: "0.9rem", fontWeight: "500" }}>Price</label>
+                <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "0.5rem" }}>
+                  <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.9rem", cursor: "pointer" }}>
+                    <input 
+                      type="radio" 
+                      name="priceTypeEdit"
+                      checked={editingEvent.price === "Free" || editingEvent.price === 0 || editingEvent.price === "0"}
+                      onChange={() => setEditingEvent({...editingEvent, price: "Free"})}
+                    />
+                    Free
+                  </label>
+                  <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.9rem", cursor: "pointer" }}>
+                    <input 
+                      type="radio" 
+                      name="priceTypeEdit"
+                      checked={editingEvent.price !== "Free" && editingEvent.price !== 0 && editingEvent.price !== "0"}
+                      onChange={() => setEditingEvent({...editingEvent, price: ""})}
+                    />
+                    Paid
+                  </label>
+                </div>
+                {editingEvent.price !== "Free" && editingEvent.price !== 0 && editingEvent.price !== "0" && (
+                  <input 
+                    type="number" 
+                    min="0"
+                    step="0.01"
+                    placeholder="Enter price amount"
+                    value={editingEvent.price} 
+                    onChange={(e) => setEditingEvent({...editingEvent, price: e.target.value})}
+                    required
+                    style={{ width: "100%", padding: "0.75rem", borderRadius: "6px", border: "1px solid #e2e8f0" }}
+                  />
+                )}
               </div>
 
               <div>
@@ -820,6 +936,21 @@ export default function ManageEventsPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Map Location Modal */}
+      {isMapModalOpen && (
+        <MapLocationPicker
+          onClose={() => setIsMapModalOpen(false)}
+          onConfirm={(address) => {
+            if (mapTarget === 'new') {
+              setNewEvent({...newEvent, venue: address});
+            } else if (mapTarget === 'edit') {
+              setEditingEvent({...editingEvent, venue: address});
+            }
+            setIsMapModalOpen(false);
+          }}
+        />
       )}
 
     </div>

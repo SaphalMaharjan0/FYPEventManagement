@@ -23,6 +23,8 @@ import EventDetailsPage from '../pages/customer/EventDetailsPage';
 import EsewaSuccessPage from '../pages/customer/EsewaSuccessPage';
 import EsewaFailurePage from '../pages/customer/EsewaFailurePage';
 import MockEsewaPage from '../pages/customer/MockEsewaPage';
+import MockKhaltiPage from '../pages/customer/MockKhaltiPage';
+import KhaltiSuccessPage from '../pages/customer/KhaltiSuccessPage';
 
 import VendorDashboard from '../pages/vendor/VendorDashboard';
 import ServiceListingsPage from '../pages/vendor/ServiceListingsPage';
@@ -346,6 +348,8 @@ export default function AppRoutes({
           <Route path="esewa-success" element={<EsewaSuccessPage onNavigate={onNavigate} />} />
           <Route path="esewa-failure" element={<EsewaFailurePage onNavigate={onNavigate} />} />
           <Route path="mock-esewa" element={<MockEsewaPage />} />
+          <Route path="mock-khalti" element={<MockKhaltiPage />} />
+          <Route path="khalti-success" element={<KhaltiSuccessPage />} />
         </Route>
 
         {/* Vendor Routes */}

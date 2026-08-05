@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Download, Eye, X, MapPin, Calendar, Clock, DollarSign, Tag, CheckCircle } from "lucide-react";
 import { useSettings } from "../../contexts/SettingsContext";
-import { formatPrice, formatDate } from "../../utils/formatting";
+import { formatPrice, formatDate, formatShortAddress } from "../../utils/formatting";
 import { useFetch } from "../../hooks/useFetch";
 
 export default function BookingHistoryPage() {
@@ -143,7 +143,7 @@ export default function BookingHistoryPage() {
                 <div>
                   <h3 style={{ fontSize: "1.1rem", fontWeight: "bold", color: "var(--color-slate-900)", marginBottom: "0.25rem" }}>{selectedHistory.title}</h3>
                   <p style={{ color: "var(--color-slate-500)", fontSize: "0.85rem", display: "flex", alignItems: "center", gap: "0.25rem", marginBottom: "0.25rem" }}>
-                    <MapPin size={14} /> {selectedHistory.venue}
+                    <MapPin size={14} /> {formatShortAddress(selectedHistory.venue)}
                   </p>
                   <p style={{ color: "var(--color-slate-500)", fontSize: "0.85rem", display: "flex", alignItems: "center", gap: "0.25rem" }}>
                     <Calendar size={14} /> {selectedHistory.date} <Clock size={14} style={{ marginLeft: "0.5rem" }} /> {selectedHistory.time}

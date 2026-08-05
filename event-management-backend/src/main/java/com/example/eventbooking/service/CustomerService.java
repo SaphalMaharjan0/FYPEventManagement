@@ -33,6 +33,14 @@ import com.example.eventbooking.dto.request.EsewaInitiateRequest;
 import com.example.eventbooking.dto.response.EsewaInitiateResponse;
 import com.example.eventbooking.util.EsewaUtil;
 
+import com.example.eventbooking.dto.request.KhaltiInitiateRequest;
+import com.example.eventbooking.dto.response.KhaltiInitiateResponse;
+import com.example.eventbooking.util.KhaltiUtil;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.ResponseEntity;
+
 @Service
 @RequiredArgsConstructor
 public class CustomerService {
@@ -287,6 +295,216 @@ public class CustomerService {
             e.printStackTrace();
         }
         return false;
+    }
+
+    @Transactional
+    public KhaltiInitiateResponse initiateKhaltiBooking(Integer userId, KhaltiInitiateRequest request) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+        Event event = eventRepository.findById(request.getEventId()).orElseThrow(() -> new RuntimeException("Event not found"));
+
+        int bookedTickets = bookingRepository.findByEvent_EventId(event.getEventId()).stream()
+                .filter(b -> "CONFIRMED".equalsIgnoreCase(b.getStatus()) || "PENDING".equalsIgnoreCase(b.getStatus()))
+                .mapToInt(Booking::getTicketCount)
+                .sum();
+        com.example.eventbooking.entity.Ticket ticket = ticketRepository.findByEventEventId(event.getEventId()).stream().findFirst().orElse(null);
+
+        if (ticket == null) {
+            ticket = com.example.eventbooking.entity.Ticket.builder()
+                    .event(event)
+                    .ticketType("General Admission")
+                    .price(BigDecimal.valueOf(50.0))
+                    .quantityAvailable(event.getCapacity())
+                    .quantitySold(bookedTickets)
+                    .build();
+            ticket = ticketRepository.save(ticket);
+        }
+
+        int seatsLeft = ticket.getQuantityAvailable() - ticket.getQuantitySold();
+
+        if (seatsLeft < request.getQuantity()) {
+            throw new RuntimeException("Not enough seats available");
+        }
+
+        BigDecimal price = ticket.getPrice();
+        BigDecimal totalAmount = price.multiply(BigDecimal.valueOf(request.getQuantity()));
+        String transactionUuid = UUID.randomUUID().toString();
+
+        Booking booking = Booking.builder()
+                .user(user)
+                .event(event)
+                .ticket(ticket)
+                .ticketCount(request.getQuantity())
+                .amount(totalAmount)
+                .status("PENDING")
+                .bookingDate(LocalDateTime.now())
+                .transactionUuid(transactionUuid)
+                .paymentMethod("Khalti")
+                .build();
+
+        bookingRepository.save(booking);
+
+        // Khalti v2 ePayment Initiate API call
+        RestTemplate restTemplate = new RestTemplate();
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", KhaltiUtil.SECRET_KEY);
+        headers.set("Content-Type", "application/json");
+
+        // Note: Khalti accepts amount in paisa (Rs * 100)
+        long amountInPaisa = totalAmount.multiply(BigDecimal.valueOf(100)).longValue();
+
+        Map<String, Object> payload = new java.util.HashMap<>();
+        payload.put("return_url", KhaltiUtil.RETURN_URL);
+        payload.put("website_url", KhaltiUtil.WEBSITE_URL);
+        payload.put("amount", amountInPaisa);
+        payload.put("purchase_order_id", transactionUuid);
+        payload.put("purchase_order_name", KhaltiUtil.PRODUCT_NAME);
+        
+        Map<String, Object> customerInfo = new java.util.HashMap<>();
+        customerInfo.put("name", user.getFullName());
+        customerInfo.put("email", user.getEmail());
+        customerInfo.put("phone", user.getPhone() != null ? user.getPhone() : "9800000000");
+        payload.put("customer_info", customerInfo);
+
+        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(payload, headers);
+        
+        try {
+            ResponseEntity<Map> response = restTemplate.postForEntity(KhaltiUtil.INITIATE_URL, entity, Map.class);
+            Map<String, Object> responseBody = response.getBody();
+            
+            if (responseBody != null && responseBody.containsKey("pidx") && responseBody.containsKey("payment_url")) {
+                String pidx = (String) responseBody.get("pidx");
+                String paymentUrl = (String) responseBody.get("payment_url");
+                
+                // Update booking with pidx instead of random UUID for verification later
+                booking.setTransactionUuid(pidx);
+                bookingRepository.save(booking);
+                
+                return KhaltiInitiateResponse.builder()
+                        .pidx(pidx)
+                        .paymentUrl(paymentUrl)
+                        .build();
+            } else {
+                throw new RuntimeException("Invalid response from Khalti API");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("Failed to connect to Khalti API", e);
+        }
+    }
+
+    @Transactional
+    public boolean verifyKhaltiPayment(String pidx, String amount) {
+        try {
+            Optional<Booking> bookingOpt = bookingRepository.findByTransactionUuid(pidx);
+            if (bookingOpt.isPresent()) {
+                Booking booking = bookingOpt.get();
+                
+                // Call Khalti Lookup API
+                RestTemplate restTemplate = new RestTemplate();
+                HttpHeaders headers = new HttpHeaders();
+                headers.set("Authorization", KhaltiUtil.SECRET_KEY);
+                headers.set("Content-Type", "application/json");
+
+                Map<String, Object> payload = new java.util.HashMap<>();
+                payload.put("pidx", pidx);
+
+                HttpEntity<Map<String, Object>> entity = new HttpEntity<>(payload, headers);
+                ResponseEntity<Map> response = restTemplate.postForEntity(KhaltiUtil.LOOKUP_URL, entity, Map.class);
+                Map<String, Object> responseBody = response.getBody();
+
+                if (responseBody != null && "Completed".equalsIgnoreCase((String) responseBody.get("status"))) {
+                    booking.setStatus("CONFIRMED");
+                    bookingRepository.save(booking);
+                    
+                    try {
+                        User customer = booking.getUser();
+                        Event event = booking.getEvent();
+                        
+                        if (booking.getTicket() != null) {
+                            com.example.eventbooking.entity.Ticket ticket = booking.getTicket();
+                            ticket.setQuantitySold(ticket.getQuantitySold() + booking.getTicketCount());
+                            ticketRepository.save(ticket);
+                        }
+                        
+                        emailService.sendBookingConfirmation(customer, booking, event);
+                        userRepository.findAll().stream()
+                                .filter(u -> u.getRole() == com.example.eventbooking.entity.Role.administrator)
+                                .forEach(admin -> emailService.sendAdminBookingAlert(admin, customer, booking, event));
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
+                    return true;
+                } else {
+                    booking.setStatus("FAILED");
+                    bookingRepository.save(booking);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    @Transactional
+    public boolean processCashBooking(Integer userId, Integer eventId, Integer quantity) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+        Event event = eventRepository.findById(eventId).orElseThrow(() -> new RuntimeException("Event not found"));
+
+        int bookedTickets = bookingRepository.findByEvent_EventId(event.getEventId()).stream()
+                .filter(b -> "CONFIRMED".equalsIgnoreCase(b.getStatus()) || "PENDING".equalsIgnoreCase(b.getStatus()))
+                .mapToInt(Booking::getTicketCount)
+                .sum();
+        com.example.eventbooking.entity.Ticket ticket = ticketRepository.findByEventEventId(event.getEventId()).stream().findFirst().orElse(null);
+
+        if (ticket == null) {
+            ticket = com.example.eventbooking.entity.Ticket.builder()
+                    .event(event)
+                    .ticketType("General Admission")
+                    .price(BigDecimal.valueOf(50.0))
+                    .quantityAvailable(event.getCapacity())
+                    .quantitySold(bookedTickets)
+                    .build();
+            ticket = ticketRepository.save(ticket);
+        }
+
+        int seatsLeft = ticket.getQuantityAvailable() - ticket.getQuantitySold();
+
+        if (seatsLeft < quantity) {
+            throw new RuntimeException("Not enough seats available");
+        }
+
+        BigDecimal price = ticket.getPrice();
+        BigDecimal totalAmount = price.multiply(BigDecimal.valueOf(quantity));
+        String transactionUuid = UUID.randomUUID().toString();
+
+        Booking booking = Booking.builder()
+                .user(user)
+                .event(event)
+                .ticket(ticket)
+                .ticketCount(quantity)
+                .amount(totalAmount)
+                .status("PENDING") // Cash payments are pending until paid
+                .bookingDate(LocalDateTime.now())
+                .transactionUuid(transactionUuid)
+                .paymentMethod("Cash")
+                .build();
+
+        bookingRepository.save(booking);
+
+        // We can update the tickets sold right away to reserve the spot
+        try {
+            ticket.setQuantitySold(ticket.getQuantitySold() + quantity);
+            ticketRepository.save(ticket);
+
+            emailService.sendBookingConfirmation(user, booking, event);
+            userRepository.findAll().stream()
+                    .filter(u -> u.getRole() == com.example.eventbooking.entity.Role.administrator)
+                    .forEach(admin -> emailService.sendAdminBookingAlert(admin, user, booking, event));
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+
+        return true;
     }
 
     private String getTimeAgo(LocalDateTime dateTime) {

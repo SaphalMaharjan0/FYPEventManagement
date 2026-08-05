@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Check, ArrowLeft, Ticket } from "lucide-react";
 import { useSettings } from "../../contexts/SettingsContext";
-import { formatPrice, formatDate } from "../../utils/formatting";
+import { formatPrice, formatDate, formatShortAddress } from "../../utils/formatting";
 import { useFetch } from "../../hooks/useFetch";
 
 export default function BookingPage({ event, initialQuantity, onBookingSuccess, onNavigate }) {
@@ -88,6 +88,46 @@ export default function BookingPage({ event, initialQuantity, onBookingSuccess, 
         alert("Error connecting to server for payment");
         setIsProcessing(false);
       }
+    } else if (paymentMethod === "khalti") {
+      setIsProcessing(true);
+      try {
+        const response = await fetchWithAuth("/api/customer/bookings/initiate-khalti", {
+          method: "POST",
+          body: JSON.stringify({ eventId: event.id, quantity })
+        });
+        
+        if (response && response.paymentUrl) {
+          // Redirect the user directly to the Khalti Sandbox payment page
+          window.location.href = response.paymentUrl;
+        } else {
+          alert("Failed to initiate Khalti payment");
+          setIsProcessing(false);
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Error connecting to server for payment");
+        setIsProcessing(false);
+      }
+    } else if (paymentMethod === "cash") {
+      setIsProcessing(true);
+      try {
+        const response = await fetchWithAuth("/api/customer/bookings/cash", {
+          method: "POST",
+          body: JSON.stringify({ eventId: event.id, quantity })
+        });
+        
+        if (response && response.success) {
+          onBookingSuccess(event.id, quantity);
+          setIsSuccess(true);
+        } else {
+          alert("Failed to process cash booking");
+          setIsProcessing(false);
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Error connecting to server for booking");
+        setIsProcessing(false);
+      }
     } else {
       onBookingSuccess(event.id, quantity);
       setIsSuccess(true);
@@ -151,7 +191,7 @@ export default function BookingPage({ event, initialQuantity, onBookingSuccess, 
             <img src={event.image} alt={event.title} style={{ width: "100%", height: "200px", objectFit: "cover" }} />
             <div style={{ padding: "1.5rem" }}>
               <h2 style={{ fontSize: "1.25rem", fontWeight: "bold", color: "var(--color-slate-900)", marginBottom: "0.5rem" }}>{event.title}</h2>
-              <p style={{ color: "var(--color-slate-500)", fontSize: "0.9rem", marginBottom: "1.5rem" }}>{formatDate(event.date, region) || event.date} · {event.venue}</p>
+              <p style={{ color: "var(--color-slate-500)", fontSize: "0.9rem", marginBottom: "1.5rem" }}>{formatDate(event.date, region) || event.date} · {formatShortAddress(event.venue)}</p>
               
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderTop: "1px solid #e2e8f0", paddingTop: "1.5rem" }}>
                 <span style={{ fontWeight: "600", color: "var(--color-slate-900)" }}>General Admission</span>
@@ -194,6 +234,10 @@ export default function BookingPage({ event, initialQuantity, onBookingSuccess, 
                 <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", cursor: "pointer" }}>
                   <input type="radio" name="paymentMethod" value="esewa" checked={paymentMethod === "esewa"} onChange={() => setPaymentMethod("esewa")} />
                   <img src="https://esewa.com.np/common/images/esewa-logo.png" alt="eSewa" style={{ height: "24px", objectFit: "contain", marginLeft: "0.5rem" }} />
+                </label>
+                <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", cursor: "pointer" }}>
+                  <input type="radio" name="paymentMethod" value="khalti" checked={paymentMethod === "khalti"} onChange={() => setPaymentMethod("khalti")} />
+                  <img src="https://upload.wikimedia.org/wikipedia/commons/e/ee/Khalti_Digital_Wallet_Logo.png.jpg" alt="Khalti" style={{ height: "24px", objectFit: "contain", marginLeft: "0.5rem", borderRadius: "4px" }} />
                 </label>
                 <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", cursor: "pointer" }}>
                   <input type="radio" name="paymentMethod" value="cash" checked={paymentMethod === "cash"} onChange={() => setPaymentMethod("cash")} />

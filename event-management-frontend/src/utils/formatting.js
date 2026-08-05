@@ -1,4 +1,4 @@
-﻿const exchangeRates = {
+const exchangeRates = {
   USD: 1.0,
   EUR: 0.92,
   GBP: 0.79,
@@ -43,3 +43,21 @@ export const formatDate = (dateString, region = "US") => {
   }
 };
 
+export const formatShortAddress = (address) => {
+  if (!address) return "";
+  const parts = address.split(',').map(p => p.trim());
+  if (parts.length <= 3) return address;
+  return `${parts[0]}, ${parts[1]}, ${parts[2]}`;
+};
+
+export const extractCity = (address) => {
+  if (!address) return "";
+  const parts = address.split(',').map(p => p.trim());
+  if (parts.length <= 1) return address;
+  
+  const textParts = parts.filter(p => isNaN(p));
+  if (textParts.length >= 3) {
+    return textParts[textParts.length - 3];
+  }
+  return textParts[textParts.length - 1];
+};

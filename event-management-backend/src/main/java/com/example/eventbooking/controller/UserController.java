@@ -24,4 +24,12 @@ public class UserController {
         UserDto updatedUser = userService.updateProfile(currentUser.getUserId(), request);
         return ResponseEntity.ok(updatedUser);
     }
+
+    @PutMapping("/password")
+    public ResponseEntity<Void> changePassword(
+            @AuthenticationPrincipal User currentUser,
+            @RequestBody com.example.eventbooking.dto.request.ChangePasswordRequest request) {
+        userService.changePassword(currentUser.getUserId(), request);
+        return ResponseEntity.ok().build();
+    }
 }

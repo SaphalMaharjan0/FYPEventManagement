@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { X, QrCode, Download } from "lucide-react";
+import { X, QrCode, Download, Ticket, Calendar, Clock, MapPin } from "lucide-react";
 import { useFetch } from "../../hooks/useFetch";
+import { formatPrice, formatShortAddress } from "../../utils/formatting";
 
 export default function MyBookingsPage() {
   const [selectedTicket, setSelectedTicket] = useState(null);
@@ -161,7 +162,7 @@ export default function MyBookingsPage() {
                         marginTop: 0,
                       }}
                     >
-                      {booking.date} · {booking.venue}
+                      {booking.date} · {formatShortAddress(booking.venue)}
                     </p>
                   </div>
 
@@ -339,7 +340,7 @@ export default function MyBookingsPage() {
                     margin: 0,
                   }}
                 >
-                  {selectedTicket.venue}
+                  {formatShortAddress(selectedTicket.venue)}
                 </p>
               </div>
 
@@ -369,7 +370,7 @@ export default function MyBookingsPage() {
                 >
                   <img
                     src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(
-                      `Booking Ref: ${selectedTicket.bookingId}\nEvent: ${selectedTicket.title}\nTickets: ${selectedTicket.tickets}\nDate: ${selectedTicket.date}\nVenue: ${selectedTicket.venue}`
+                      `Booking Ref: ${selectedTicket.bookingId}\nEvent: ${selectedTicket.title}\nTickets: ${selectedTicket.tickets}\nDate: ${selectedTicket.date}\nVenue: ${formatShortAddress(selectedTicket.venue)}`
                     )}`}
                     alt="Ticket QR Code"
                     style={{

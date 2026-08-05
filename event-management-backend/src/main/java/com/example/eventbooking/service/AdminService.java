@@ -343,6 +343,7 @@ public class AdminService {
         }
         return vendorRepository.findAll().stream()
                 .map(vendor -> AdminVendorDto.builder()
+                        .dbId(vendor.getId())
                         .id("VND-" + String.format("%03d", vendor.getId()))
                         .name(vendor.getBusinessName())
                         .owner(vendor.getUser().getFullName())

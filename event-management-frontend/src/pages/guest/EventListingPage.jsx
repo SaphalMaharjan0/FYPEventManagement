@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   Search,
   Calendar as CalendarIcon,
@@ -6,8 +6,13 @@ import {
   DollarSign,
   MapPin,
   AlertCircle,
+  X
 } from "lucide-react";
 import EventCard from "../../components/event/EventCard";
+import { useFetch } from "../../hooks/useFetch";
+import { useAuth } from "../../hooks/useAuth";
+import MapLocationPicker from "../../components/admin/MapLocationPicker";
+import { formatShortAddress, extractCity } from "../../utils/formatting";
 
 export default function EventsPage({
   events = [],
@@ -28,6 +33,24 @@ export default function EventsPage({
   const [selectedPrice, setSelectedPrice] = useState("all");
   const [selectedLocation, setSelectedLocation] = useState("all");
   const [sortBy, setSortBy] = useState("date");
+  const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
+  const { user } = useAuth();
+  const [userCity, setUserCity] = useState(user?.location || "");
+
+  useEffect(() => {
+    if (!user?.location) {
+      fetch("https://ipapi.co/json/")
+        .then(res => res.json())
+        .then(data => {
+          if (data && data.city) {
+            setUserCity(data.city);
+          }
+        })
+        .catch(err => console.error(err));
+    } else {
+      setUserCity(user.location);
+    }
+  }, [user]);
 
   // Sync navigation triggers
   useEffect(() => {
@@ -42,15 +65,26 @@ export default function EventsPage({
     setLocationQuery(initialLocationQuery);
   }, [initialLocationQuery]);
 
-  const categoriesList = [
-    { label: "All Categories", value: "all" },
-    { label: "Technology", value: "technology" },
-    { label: "Music", value: "music" },
-    { label: "Business", value: "business" },
-    { label: "Food & Drink", value: "food & drink" },
-    { label: "Arts", value: "arts" },
-    { label: "Sports", value: "sports" },
-  ];
+  const fetchWithAuth = useFetch();
+  const [categoriesList, setCategoriesList] = useState([{ label: "All Categories", value: "all" }]);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const data = await fetchWithAuth("/api/public/categories");
+        if (data && Array.isArray(data)) {
+          const dynamicCategories = data.map((cat) => ({
+            label: cat.name,
+            value: cat.name.toLowerCase()
+          }));
+          setCategoriesList([{ label: "All Categories", value: "all" }, ...dynamicCategories]);
+        }
+      } catch (err) {
+        console.error("Failed to load categories:", err);
+      }
+    };
+    fetchCategories();
+  }, []);
 
   const priceRanges = [
     { label: "All Prices", value: "all" },
@@ -60,13 +94,17 @@ export default function EventsPage({
     { label: "$300+", value: "300plus" },
   ];
 
-  const locationsList = [
-    { label: "All Cities", value: "all" },
-    { label: "San Francisco, CA", value: "san francisco" },
-    { label: "New York, NY", value: "new york" },
-    { label: "Chicago, IL", value: "chicago" },
-    { label: "Los Angeles, CA", value: "los angeles" },
-  ];
+  const locationsList = useMemo(() => {
+    const venues = new Set(events.map(e => {
+      // Extract city or just use the whole venue string if it's short
+      return extractCity(e.venue);
+    }).filter(Boolean));
+    
+    return [
+      { label: "All Cities", value: "all" },
+      ...Array.from(venues).map(v => ({ label: v, value: v.toLowerCase() }))
+    ];
+  }, [events]);
 
   // Filtering Logic
   const filteredEvents = events.filter((evt) => {
@@ -114,6 +152,15 @@ export default function EventsPage({
 
   // Sorting Logic
   const sortedEvents = [...filteredEvents].sort((a, b) => {
+    // 1. Proximity Sort (User Area First)
+    if (userCity) {
+      const aNear = a.venue.toLowerCase().includes(userCity.toLowerCase());
+      const bNear = b.venue.toLowerCase().includes(userCity.toLowerCase());
+      if (aNear && !bNear) return -1;
+      if (!aNear && bNear) return 1;
+    }
+    
+    // 2. Standard Sort
     if (sortBy === "date") return new Date(a.date) - new Date(b.date);
     if (sortBy === "rating") return b.rating - a.rating;
     if (sortBy === "price_asc") return a.price - b.price;
@@ -456,41 +503,68 @@ export default function EventsPage({
                   </div>
                 </div>
 
-                {/* Location Navigation */}
+                {/* Location Navigation Dropdown */}
                 <div>
                   <span style={sectionHeadingStyle}>Location</span>
-                  <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: "0.25rem",
-                    }}
-                  >
-                    {locationsList.map((loc) => {
-                      const isActive = selectedLocation === loc.value;
-                      return (
-                        <button
-                          key={loc.value}
-                          onClick={() => setSelectedLocation(loc.value)}
-                          style={filterItemStyle(isActive)}
-                        >
-                          <MapPin
-                            size={13}
-                            color={
-                              isActive
-                                ? isDarkMode
-                                  ? "#60a5fa"
-                                  : "var(--primary)"
-                                : "var(--text-subtle)"
-                            }
-                          />
+                  <div style={{ position: "relative" }}>
+                    <MapPin 
+                      size={14} 
+                      color="var(--text-subtle)" 
+                      style={{ position: "absolute", left: "0.75rem", top: "50%", transform: "translateY(-50%)" }} 
+                    />
+                    <select
+                      value={selectedLocation}
+                      onChange={(e) => setSelectedLocation(e.target.value)}
+                      style={{
+                        width: "100%",
+                        padding: "0.75rem 0.75rem 0.75rem 2.25rem",
+                        borderRadius: "var(--radius-md)",
+                        border: "1px solid var(--border-main)",
+                        backgroundColor: isDarkMode ? "rgba(255, 255, 255, 0.05)" : "white",
+                        color: "var(--text-main)",
+                        fontSize: "0.9rem",
+                        outline: "none",
+                        cursor: "pointer",
+                        appearance: "none"
+                      }}
+                    >
+                      {locationsList.map((loc) => (
+                        <option key={loc.value} value={loc.value}>
                           {loc.label}
-                        </button>
-                      );
-                    })}
+                        </option>
+                      ))}
+                    </select>
+                    {/* Custom arrow for select */}
+                    <div style={{ position: "absolute", right: "0.75rem", top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }}>
+                      <svg width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M1 1L5 5L9 1" stroke="var(--text-subtle)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    </div>
                   </div>
                 </div>
-              </div>
+                  <button
+                    onClick={() => setIsLocationModalOpen(true)}
+                    style={{
+                      marginTop: "0.5rem",
+                      width: "100%",
+                      padding: "0.5rem",
+                      backgroundColor: "var(--bg-card)",
+                      color: "var(--primary)",
+                      border: "1px solid var(--primary)",
+                      borderRadius: "var(--radius-sm)",
+                      fontSize: "0.85rem",
+                      fontWeight: "600",
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: "0.25rem",
+                      transition: "var(--transition-fast)"
+                    }}
+                  >
+                    <MapPin size={14} /> Search on Map
+                  </button>
+                </div>
             </aside>
           )}
 
@@ -657,6 +731,17 @@ export default function EventsPage({
           </div>
         </div>
       </div>
+      
+      {/* Location Modal */}
+      {isLocationModalOpen && (
+        <MapLocationPicker 
+          onClose={() => setIsLocationModalOpen(false)}
+          onConfirm={(address) => {
+            setLocationQuery(address);
+            setIsLocationModalOpen(false);
+          }}
+        />
+      )}
     </section>
   );
 }
