@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.springframework.cache.annotation.Cacheable;
 
 import com.example.eventbooking.repository.BookingRepository;
 
@@ -27,10 +28,10 @@ public class EventService {
                 .collect(Collectors.toList());
     }
 
+    @Cacheable("events")
     public List<EventDto> getAllPublishedEvents() {
         // Log the count of all events in the database to see what's going on
         System.out.println("Total events in DB: " + eventRepository.count());
-        eventRepository.findAll().forEach(e -> System.out.println("Event ID: " + e.getEventId() + ", Title: " + e.getTitle() + ", Status: " + e.getStatus()));
         
         return eventRepository.findByStatus(EventStatus.published)
                 .stream()

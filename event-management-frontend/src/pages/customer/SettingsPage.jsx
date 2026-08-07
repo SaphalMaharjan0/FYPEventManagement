@@ -214,12 +214,14 @@ export default function SettingsPage() {
               <select 
                 value={currency} 
                 onChange={(e) => setCurrency(e.target.value)}
-                style={{ width: "100%", maxWidth: "300px", padding: "0.75rem", borderRadius: "8px", border: "1px solid var(--border-main)", fontSize: "0.95rem", outline: "none", backgroundColor: "var(--bg-card)", color: "var(--text-main)" }}
+                disabled
+                style={{ width: "100%", padding: "0.75rem", borderRadius: "8px", border: "1px solid var(--border-light)", backgroundColor: "var(--bg-secondary)", color: "var(--text-main)", fontSize: "0.95rem", cursor: "not-allowed", opacity: 0.7 }}
               >
                 <option value="USD">USD ($)</option>
                 <option value="EUR">EUR (€)</option>
                 <option value="GBP">GBP (£)</option>
-                <option value="NPR">NPR (रु)</option>
+                <option value="NPR">NPR (Rs)</option>
+                <option value="INR">INR (₹)</option>
               </select>
             </div>
             

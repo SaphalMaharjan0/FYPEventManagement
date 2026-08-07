@@ -152,6 +152,15 @@ export default function EventsPage({
 
   // Sorting Logic
   const sortedEvents = [...filteredEvents].sort((a, b) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const aIsPast = new Date(a.date) < today;
+    const bIsPast = new Date(b.date) < today;
+    
+    // 0. Past Events Last
+    if (aIsPast && !bIsPast) return 1;
+    if (!aIsPast && bIsPast) return -1;
+
     // 1. Proximity Sort (User Area First)
     if (userCity) {
       const aNear = a.venue.toLowerCase().includes(userCity.toLowerCase());
@@ -238,7 +247,7 @@ export default function EventsPage({
       }}
     >
       <div
-        style={{ maxWidth: "1400px", margin: "0 auto", padding: "0 1.5rem" }}
+        style={isDashboardContext ? { width: "100%" } : { maxWidth: "1400px", margin: "0 auto", padding: "0 1.5rem" }}
       >
         {/* Page Title & Toggle */}
         <div

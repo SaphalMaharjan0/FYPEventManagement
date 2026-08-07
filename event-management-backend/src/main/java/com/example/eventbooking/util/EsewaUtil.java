@@ -1,18 +1,25 @@
 package com.example.eventbooking.util;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import java.util.Base64;
 
+@Component
 public class EsewaUtil {
 
-    public static final String ESEWA_URL = "http://localhost:5173/customer/mock-esewa";
-    public static final String SECRET_KEY = "8gBm/:&EnhH.1/q";
-    public static final String PRODUCT_CODE = "EPAYTEST";
-    public static final String SUCCESS_URL = "http://localhost:5173/customer/esewa-success";
-    public static final String FAILURE_URL = "http://localhost:5173/customer/esewa-failure";
+    public final String ESEWA_URL = "http://localhost:5173/customer/mock-esewa";
+    
+    @Value("${payment.esewa.secret-key}")
+    public String SECRET_KEY;
+    
+    public final String PRODUCT_CODE = "EPAYTEST";
+    public final String SUCCESS_URL = "http://localhost:5173/customer/esewa-success";
+    public final String FAILURE_URL = "http://localhost:5173/customer/esewa-failure";
 
-    public static String generateSignature(String message, String secretKey) {
+    public String generateSignature(String message, String secretKey) {
         try {
             Mac sha256_HMAC = Mac.getInstance("HmacSHA256");
             SecretKeySpec secret_key = new SecretKeySpec(secretKey.getBytes(), "HmacSHA256");

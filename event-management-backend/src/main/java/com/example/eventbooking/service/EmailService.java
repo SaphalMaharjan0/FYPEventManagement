@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import com.example.eventbooking.entity.User;
 import com.example.eventbooking.entity.Booking;
 import com.example.eventbooking.entity.Event;
+import org.springframework.scheduling.annotation.Async;
 
 @Slf4j
 @Service
@@ -22,6 +23,7 @@ public class EmailService {
     @Value("${spring.mail.username:your-email@gmail.com}")
     private String fromEmail;
 
+    @Async("taskExecutor")
     public void sendPasswordResetEmail(String toEmail, String token) {
         String resetLink = "http://localhost:5173/reset-password?token=" + token;
         
@@ -69,6 +71,7 @@ public class EmailService {
         }
     }
 
+    @Async("taskExecutor")
     public void sendEmail(String toEmail, String subject, String htmlContent) {
         try {
             MimeMessage message = mailSender.createMimeMessage();
@@ -86,6 +89,7 @@ public class EmailService {
         }
     }
 
+    @Async("taskExecutor")
     public void sendBookingConfirmation(User customer, Booking booking, Event event) {
         String subject = "Booking Confirmed - " + event.getTitle();
         String htmlContent = "<div style=\"font-family: Arial, sans-serif; background-color: #f4f5f7; padding: 20px; color: #333;\">" +
@@ -114,6 +118,7 @@ public class EmailService {
         sendEmail(customer.getEmail(), subject, htmlContent);
     }
 
+    @Async("taskExecutor")
     public void sendAdminBookingAlert(User admin, User customer, Booking booking, Event event) {
         String subject = "New Booking Notification - EventPulse";
         String htmlContent = "<div style=\"font-family: Arial, sans-serif; background-color: #f4f5f7; padding: 20px; color: #333;\">" +

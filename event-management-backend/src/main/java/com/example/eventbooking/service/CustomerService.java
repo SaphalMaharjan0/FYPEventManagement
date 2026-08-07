@@ -40,9 +40,10 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.MediaType;
+import org.springframework.beans.factory.annotation.Autowired;
 
 @Service
-@RequiredArgsConstructor
 public class CustomerService {
 
     private final BookingRepository bookingRepository;
@@ -51,6 +52,27 @@ public class CustomerService {
     private final UserRepository userRepository;
     private final EmailService emailService;
     private final com.example.eventbooking.repository.TicketRepository ticketRepository;
+    private final EsewaUtil esewaUtil;
+    private final KhaltiUtil khaltiUtil;
+
+    @Autowired
+    public CustomerService(BookingRepository bookingRepository,
+                           FavoriteRepository favoriteRepository,
+                           EventRepository eventRepository,
+                           UserRepository userRepository,
+                           EmailService emailService,
+                           com.example.eventbooking.repository.TicketRepository ticketRepository,
+                           EsewaUtil esewaUtil,
+                           KhaltiUtil khaltiUtil) {
+        this.bookingRepository = bookingRepository;
+        this.favoriteRepository = favoriteRepository;
+        this.eventRepository = eventRepository;
+        this.userRepository = userRepository;
+        this.emailService = emailService;
+        this.ticketRepository = ticketRepository;
+        this.esewaUtil = esewaUtil;
+        this.khaltiUtil = khaltiUtil;
+    }
 
     @Transactional
     public boolean toggleFavorite(Integer userId, Integer eventId) {
@@ -182,17 +204,15 @@ public class CustomerService {
                 .filter(b -> "CONFIRMED".equalsIgnoreCase(b.getStatus()) || "PENDING".equalsIgnoreCase(b.getStatus()))
                 .mapToInt(Booking::getTicketCount)
                 .sum();
-        // Fetch the first available ticket for the event (assuming simple setup)
         com.example.eventbooking.entity.Ticket ticket = ticketRepository.findByEventEventId(event.getEventId()).stream().findFirst().orElse(null);
 
-        // Fallback for legacy events without tickets: dynamically create one
         if (ticket == null) {
             ticket = com.example.eventbooking.entity.Ticket.builder()
                     .event(event)
                     .ticketType("General Admission")
-                    .price(BigDecimal.valueOf(50.0)) // Fallback price
+                    .price(BigDecimal.valueOf(50.0))
                     .quantityAvailable(event.getCapacity())
-                    .quantitySold(bookedTickets) // Adjust for already booked legacy seats
+                    .quantitySold(bookedTickets)
                     .build();
             ticket = ticketRepository.save(ticket);
         }
@@ -224,22 +244,22 @@ public class CustomerService {
 
         String amountStr = totalAmount.toString();
         String signedFieldNames = "total_amount,transaction_uuid,product_code";
-        String message = "total_amount=" + amountStr + ",transaction_uuid=" + transactionUuid + ",product_code=" + EsewaUtil.PRODUCT_CODE;
-        String signature = EsewaUtil.generateSignature(message, EsewaUtil.SECRET_KEY);
+        String message = "total_amount=" + amountStr + ",transaction_uuid=" + transactionUuid + ",product_code=" + esewaUtil.PRODUCT_CODE;
+        String signature = esewaUtil.generateSignature(message, esewaUtil.SECRET_KEY);
 
         return EsewaInitiateResponse.builder()
-                .signature(signature)
-                .signedFieldNames(signedFieldNames)
-                .transactionUuid(transactionUuid)
                 .amount(amountStr)
                 .taxAmount("0")
                 .totalAmount(amountStr)
-                .productCode(EsewaUtil.PRODUCT_CODE)
+                .transactionUuid(transactionUuid)
+                .productCode(esewaUtil.PRODUCT_CODE)
                 .productDeliveryCharge("0")
                 .productServiceCharge("0")
-                .successUrl(EsewaUtil.SUCCESS_URL)
-                .failureUrl(EsewaUtil.FAILURE_URL)
-                .esewaUrl(EsewaUtil.ESEWA_URL)
+                .successUrl(esewaUtil.SUCCESS_URL)
+                .failureUrl(esewaUtil.FAILURE_URL)
+                .esewaUrl(esewaUtil.ESEWA_URL)
+                .signature(signature)
+                .signedFieldNames(signedFieldNames)
                 .build();
     }
 
@@ -270,10 +290,8 @@ public class CustomerService {
                             ticketRepository.save(ticket);
                         }
                         
-                        // Send confirmation to customer
                         emailService.sendBookingConfirmation(customer, booking, event);
                         
-                        // Send alert to admin users
                         userRepository.findAll().stream()
                                 .filter(u -> u.getRole() == com.example.eventbooking.entity.Role.administrator)
                                 .forEach(admin -> emailService.sendAdminBookingAlert(admin, customer, booking, event));
@@ -343,21 +361,18 @@ public class CustomerService {
 
         bookingRepository.save(booking);
 
-        // Khalti v2 ePayment Initiate API call
-        RestTemplate restTemplate = new RestTemplate();
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", KhaltiUtil.SECRET_KEY);
-        headers.set("Content-Type", "application/json");
-
-        // Note: Khalti accepts amount in paisa (Rs * 100)
         long amountInPaisa = totalAmount.multiply(BigDecimal.valueOf(100)).longValue();
 
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.set("Authorization", "Key " + khaltiUtil.SECRET_KEY);
+
         Map<String, Object> payload = new java.util.HashMap<>();
-        payload.put("return_url", KhaltiUtil.RETURN_URL);
-        payload.put("website_url", KhaltiUtil.WEBSITE_URL);
+        payload.put("return_url", khaltiUtil.RETURN_URL);
+        payload.put("website_url", khaltiUtil.WEBSITE_URL);
         payload.put("amount", amountInPaisa);
-        payload.put("purchase_order_id", transactionUuid);
-        payload.put("purchase_order_name", KhaltiUtil.PRODUCT_NAME);
+        payload.put("purchase_order_id", booking.getId().toString());
+        payload.put("purchase_order_name", khaltiUtil.PRODUCT_NAME);
         
         Map<String, Object> customerInfo = new java.util.HashMap<>();
         customerInfo.put("name", user.getFullName());
@@ -366,16 +381,14 @@ public class CustomerService {
         payload.put("customer_info", customerInfo);
 
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(payload, headers);
+        RestTemplate restTemplate = new RestTemplate();
         
         try {
-            ResponseEntity<Map> response = restTemplate.postForEntity(KhaltiUtil.INITIATE_URL, entity, Map.class);
-            Map<String, Object> responseBody = response.getBody();
-            
-            if (responseBody != null && responseBody.containsKey("pidx") && responseBody.containsKey("payment_url")) {
-                String pidx = (String) responseBody.get("pidx");
-                String paymentUrl = (String) responseBody.get("payment_url");
+            ResponseEntity<Map> response = restTemplate.postForEntity(khaltiUtil.INITIATE_URL, entity, Map.class);
+            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+                String pidx = (String) response.getBody().get("pidx");
+                String paymentUrl = (String) response.getBody().get("payment_url");
                 
-                // Update booking with pidx instead of random UUID for verification later
                 booking.setTransactionUuid(pidx);
                 bookingRepository.save(booking);
                 
@@ -386,6 +399,11 @@ public class CustomerService {
             } else {
                 throw new RuntimeException("Invalid response from Khalti API");
             }
+        } catch (org.springframework.web.client.HttpStatusCodeException e) {
+            System.err.println("Khalti API Error Status: " + e.getStatusCode());
+            System.err.println("Khalti API Error Body: " + e.getResponseBodyAsString());
+            e.printStackTrace();
+            throw new RuntimeException("Khalti API rejected request: " + e.getResponseBodyAsString(), e);
         } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException("Failed to connect to Khalti API", e);
@@ -399,17 +417,16 @@ public class CustomerService {
             if (bookingOpt.isPresent()) {
                 Booking booking = bookingOpt.get();
                 
-                // Call Khalti Lookup API
                 RestTemplate restTemplate = new RestTemplate();
                 HttpHeaders headers = new HttpHeaders();
-                headers.set("Authorization", KhaltiUtil.SECRET_KEY);
-                headers.set("Content-Type", "application/json");
-
+                headers.setContentType(MediaType.APPLICATION_JSON);
+                headers.set("Authorization", "Key " + khaltiUtil.SECRET_KEY);
+                
                 Map<String, Object> payload = new java.util.HashMap<>();
                 payload.put("pidx", pidx);
-
+                
                 HttpEntity<Map<String, Object>> entity = new HttpEntity<>(payload, headers);
-                ResponseEntity<Map> response = restTemplate.postForEntity(KhaltiUtil.LOOKUP_URL, entity, Map.class);
+                ResponseEntity<Map> response = restTemplate.postForEntity(khaltiUtil.LOOKUP_URL, entity, Map.class);
                 Map<String, Object> responseBody = response.getBody();
 
                 if (responseBody != null && "Completed".equalsIgnoreCase((String) responseBody.get("status"))) {

@@ -39,7 +39,7 @@ export default function ManageEventsPage() {
   });
 
   const [availableServices, setAvailableServices] = useState([]);
-  
+
   // Categories State
   const [categories, setCategories] = useState([]);
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
@@ -154,8 +154,8 @@ export default function ManageEventsPage() {
   };
 
   const filteredEvents = events.filter(event => {
-    const matchesSearch = (event.name && event.name.toLowerCase().includes(searchQuery.toLowerCase())) || 
-                          (event.venue && event.venue.toLowerCase().includes(searchQuery.toLowerCase()));
+    const matchesSearch = (event.name && event.name.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (event.venue && event.venue.toLowerCase().includes(searchQuery.toLowerCase()));
     const matchesStatus = statusFilter === "All" || (event.status && event.status.toLowerCase() === statusFilter.toLowerCase());
     const matchesCategory = categoryFilter === "All" || (event.category && event.category.toLowerCase() === categoryFilter.toLowerCase());
     return matchesSearch && matchesStatus && matchesCategory;
@@ -167,33 +167,33 @@ export default function ManageEventsPage() {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2rem" }}>
         <h1 style={{ fontSize: "1.75rem", fontWeight: "bold", color: "var(--color-slate-900)" }}>Event Management</h1>
         <div style={{ display: "flex", gap: "1rem" }}>
-          <button 
+          <button
             onClick={() => setIsCategoryModalOpen(true)}
-            style={{ 
-            display: "flex", alignItems: "center", gap: "0.5rem", 
-            padding: "0.6rem 1.25rem", backgroundColor: "white", color: "#3b82f6", 
-            border: "1px solid #3b82f6", borderRadius: "8px", fontWeight: "600", fontSize: "0.9rem",
-            cursor: "pointer", transition: "background-color 0.2s"
-          }}>
+            style={{
+              display: "flex", alignItems: "center", gap: "0.5rem",
+              padding: "0.6rem 1.25rem", backgroundColor: "white", color: "#3b82f6",
+              border: "1px solid #3b82f6", borderRadius: "8px", fontWeight: "600", fontSize: "0.9rem",
+              cursor: "pointer", transition: "background-color 0.2s"
+            }}>
             Manage Categories
           </button>
-          <button 
+          <button
             onClick={() => setIsAddModalOpen(true)}
-          style={{ 
-          display: "flex", alignItems: "center", gap: "0.5rem", 
-          padding: "0.6rem 1.25rem", backgroundColor: "#3b82f6", color: "white", 
-          border: "none", borderRadius: "8px", fontWeight: "600", fontSize: "0.9rem",
-          cursor: "pointer", transition: "background-color 0.2s"
-        }}>
-          <Plus size={16} />
-          Add Event
-        </button>
+            style={{
+              display: "flex", alignItems: "center", gap: "0.5rem",
+              padding: "0.6rem 1.25rem", backgroundColor: "#3b82f6", color: "white",
+              border: "none", borderRadius: "8px", fontWeight: "600", fontSize: "0.9rem",
+              cursor: "pointer", transition: "background-color 0.2s"
+            }}>
+            <Plus size={16} />
+            Add Event
+          </button>
         </div>
       </div>
 
       {/* Main Content Area */}
       <div style={{ backgroundColor: "var(--color-white)", borderRadius: "12px", border: "1px solid #e2e8f0", overflow: "hidden" }}>
-        
+
         {/* Search and Filter Bar */}
         <div style={{ padding: "1.5rem", borderBottom: "1px solid #e2e8f0", display: "flex", gap: "1rem" }}>
           <div style={{
@@ -206,9 +206,9 @@ export default function ManageEventsPage() {
             border: "1px solid #e2e8f0"
           }}>
             <Search size={18} color="var(--color-slate-400)" />
-            <input 
-              type="text" 
-              placeholder="Search events by title or venue..." 
+            <input
+              type="text"
+              placeholder="Search events by title or venue..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               style={{
@@ -222,9 +222,9 @@ export default function ManageEventsPage() {
               }}
             />
           </div>
-          
+
           <div style={{ position: "relative" }}>
-            <button 
+            <button
               onClick={() => setShowFilters(!showFilters)}
               style={{
                 display: "flex", alignItems: "center", justifyContent: "center",
@@ -237,15 +237,15 @@ export default function ManageEventsPage() {
 
             {showFilters && (
               <div style={{
-                position: "absolute", top: "110%", right: 0, 
-                backgroundColor: "white", borderRadius: "8px", 
+                position: "absolute", top: "110%", right: 0,
+                backgroundColor: "white", borderRadius: "8px",
                 boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)", border: "1px solid #e2e8f0",
                 padding: "1rem", zIndex: 10, minWidth: "200px"
               }}>
                 <div style={{ marginBottom: "0.75rem" }}>
                   <label style={{ display: "block", fontSize: "0.8rem", color: "var(--color-slate-500)", marginBottom: "0.25rem" }}>Status</label>
-                  <select 
-                    value={statusFilter} 
+                  <select
+                    value={statusFilter}
                     onChange={e => setStatusFilter(e.target.value)}
                     style={{ width: "100%", padding: "0.5rem", borderRadius: "6px", border: "1px solid #e2e8f0", fontSize: "0.9rem" }}
                   >
@@ -258,8 +258,8 @@ export default function ManageEventsPage() {
                 </div>
                 <div>
                   <label style={{ display: "block", fontSize: "0.8rem", color: "var(--color-slate-500)", marginBottom: "0.25rem" }}>Category</label>
-                  <select 
-                    value={categoryFilter} 
+                  <select
+                    value={categoryFilter}
                     onChange={e => setCategoryFilter(e.target.value)}
                     style={{ width: "100%", padding: "0.5rem", borderRadius: "6px", border: "1px solid #e2e8f0", fontSize: "0.9rem" }}
                   >
@@ -314,13 +314,13 @@ export default function ManageEventsPage() {
                       </div>
                     </td>
                     <td style={{ padding: "1rem 1.5rem" }}>
-                      <span style={{ 
-                        backgroundColor: "var(--color-slate-100)", 
-                        color: "var(--color-slate-600)", 
-                        padding: "0.25rem 0.75rem", 
-                        borderRadius: "1rem", 
-                        fontSize: "0.8rem", 
-                        fontWeight: "500" 
+                      <span style={{
+                        backgroundColor: "var(--color-slate-100)",
+                        color: "var(--color-slate-600)",
+                        padding: "0.25rem 0.75rem",
+                        borderRadius: "1rem",
+                        fontSize: "0.8rem",
+                        fontWeight: "500"
                       }}>
                         {event.category}
                       </span>
@@ -365,25 +365,25 @@ export default function ManageEventsPage() {
                 <X size={20} />
               </button>
             </div>
-            
+
             <form onSubmit={handleAddEvent} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
               <div>
                 <label style={{ display: "block", marginBottom: "0.5rem", fontSize: "0.9rem", fontWeight: "500" }}>Event Name</label>
-                <input 
-                  type="text" 
-                  value={newEvent.name} 
-                  onChange={(e) => setNewEvent({...newEvent, name: e.target.value})}
+                <input
+                  type="text"
+                  value={newEvent.name}
+                  onChange={(e) => setNewEvent({ ...newEvent, name: e.target.value })}
                   required
                   style={{ width: "100%", padding: "0.75rem", borderRadius: "6px", border: "1px solid #e2e8f0" }}
                 />
               </div>
-              
+
 
               <div>
                 <label style={{ display: "block", marginBottom: "0.5rem", fontSize: "0.9rem", fontWeight: "500" }}>Category</label>
-                <select 
-                  value={newEvent.category} 
-                  onChange={(e) => setNewEvent({...newEvent, category: e.target.value})}
+                <select
+                  value={newEvent.category}
+                  onChange={(e) => setNewEvent({ ...newEvent, category: e.target.value })}
                   required
                   style={{ width: "100%", padding: "0.75rem", borderRadius: "6px", border: "1px solid #e2e8f0", backgroundColor: "white" }}
                 >
@@ -396,10 +396,10 @@ export default function ManageEventsPage() {
 
               <div>
                 <label style={{ display: "block", marginBottom: "0.5rem", fontSize: "0.9rem", fontWeight: "500" }}>Date</label>
-                <input 
-                  type="date" 
-                  value={newEvent.date} 
-                  onChange={(e) => setNewEvent({...newEvent, date: e.target.value})}
+                <input
+                  type="date"
+                  value={newEvent.date}
+                  onChange={(e) => setNewEvent({ ...newEvent, date: e.target.value })}
                   required
                   style={{ width: "100%", padding: "0.75rem", borderRadius: "6px", border: "1px solid #e2e8f0" }}
                 />
@@ -407,8 +407,8 @@ export default function ManageEventsPage() {
 
               <div>
                 <label style={{ display: "block", marginBottom: "0.5rem", fontSize: "0.9rem", fontWeight: "500" }}>Event Poster</label>
-                <input 
-                  type="file" 
+                <input
+                  type="file"
                   accept="image/*"
                   onChange={async (e) => {
                     const file = e.target.files[0];
@@ -422,7 +422,7 @@ export default function ManageEventsPage() {
                         });
                         const data = await res.json();
                         if (data.url) {
-                          setNewEvent({...newEvent, imageUrl: "http://localhost:8080" + data.url});
+                          setNewEvent({ ...newEvent, imageUrl: "http://localhost:8080" + data.url });
                         }
                       } catch (err) {
                         console.error("Upload failed", err);
@@ -432,10 +432,10 @@ export default function ManageEventsPage() {
                   style={{ width: "100%", padding: "0.75rem", borderRadius: "6px", border: "1px solid #e2e8f0", marginBottom: "0.5rem" }}
                 />
                 <div style={{ textAlign: "center", color: "var(--color-slate-500)", fontSize: "0.85rem", marginBottom: "0.5rem" }}>OR enter URL</div>
-                <input 
-                  type="text" 
-                  value={newEvent.imageUrl} 
-                  onChange={(e) => setNewEvent({...newEvent, imageUrl: e.target.value})}
+                <input
+                  type="text"
+                  value={newEvent.imageUrl}
+                  onChange={(e) => setNewEvent({ ...newEvent, imageUrl: e.target.value })}
                   style={{ width: "100%", padding: "0.75rem", borderRadius: "6px", border: "1px solid #e2e8f0" }}
                   placeholder="https://example.com/poster.jpg"
                 />
@@ -449,10 +449,10 @@ export default function ManageEventsPage() {
               <div>
                 <label style={{ display: "block", marginBottom: "0.5rem", fontSize: "0.9rem", fontWeight: "500" }}>Venue</label>
                 <div style={{ display: "flex", gap: "0.5rem" }}>
-                  <input 
-                    type="text" 
-                    value={newEvent.venue} 
-                    onChange={(e) => setNewEvent({...newEvent, venue: e.target.value})}
+                  <input
+                    type="text"
+                    value={newEvent.venue}
+                    onChange={(e) => setNewEvent({ ...newEvent, venue: e.target.value })}
                     required
                     style={{ flex: 1, padding: "0.75rem", borderRadius: "6px", border: "1px solid #e2e8f0" }}
                   />
@@ -485,32 +485,32 @@ export default function ManageEventsPage() {
                 <label style={{ display: "block", marginBottom: "0.5rem", fontSize: "0.9rem", fontWeight: "500" }}>Price</label>
                 <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "0.5rem" }}>
                   <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.9rem", cursor: "pointer" }}>
-                    <input 
-                      type="radio" 
+                    <input
+                      type="radio"
                       name="priceTypeNew"
                       checked={newEvent.price === "Free" || newEvent.price === 0 || newEvent.price === "0"}
-                      onChange={() => setNewEvent({...newEvent, price: "Free"})}
+                      onChange={() => setNewEvent({ ...newEvent, price: "Free" })}
                     />
                     Free
                   </label>
                   <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.9rem", cursor: "pointer" }}>
-                    <input 
-                      type="radio" 
+                    <input
+                      type="radio"
                       name="priceTypeNew"
                       checked={newEvent.price !== "Free" && newEvent.price !== 0 && newEvent.price !== "0"}
-                      onChange={() => setNewEvent({...newEvent, price: ""})}
+                      onChange={() => setNewEvent({ ...newEvent, price: "" })}
                     />
                     Paid
                   </label>
                 </div>
                 {newEvent.price !== "Free" && newEvent.price !== 0 && newEvent.price !== "0" && (
-                  <input 
-                    type="number" 
+                  <input
+                    type="number"
                     min="0"
                     step="0.01"
                     placeholder="Enter price amount"
-                    value={newEvent.price} 
-                    onChange={(e) => setNewEvent({...newEvent, price: e.target.value})}
+                    value={newEvent.price}
+                    onChange={(e) => setNewEvent({ ...newEvent, price: e.target.value })}
                     required
                     style={{ width: "100%", padding: "0.75rem", borderRadius: "6px", border: "1px solid #e2e8f0" }}
                   />
@@ -519,9 +519,9 @@ export default function ManageEventsPage() {
 
               <div>
                 <label style={{ display: "block", marginBottom: "0.5rem", fontSize: "0.9rem", fontWeight: "500" }}>Description</label>
-                <textarea 
-                  value={newEvent.description} 
-                  onChange={(e) => setNewEvent({...newEvent, description: e.target.value})}
+                <textarea
+                  value={newEvent.description}
+                  onChange={(e) => setNewEvent({ ...newEvent, description: e.target.value })}
                   rows={3}
                   style={{ width: "100%", padding: "0.75rem", borderRadius: "6px", border: "1px solid #e2e8f0", resize: "vertical" }}
                 />
@@ -530,19 +530,19 @@ export default function ManageEventsPage() {
               <div style={{ display: "flex", gap: "1rem" }}>
                 <div style={{ flex: 1 }}>
                   <label style={{ display: "block", marginBottom: "0.5rem", fontSize: "0.9rem", fontWeight: "500" }}>Start Time</label>
-                  <input 
-                    type="time" 
-                    value={newEvent.startTime} 
-                    onChange={(e) => setNewEvent({...newEvent, startTime: e.target.value})}
+                  <input
+                    type="time"
+                    value={newEvent.startTime}
+                    onChange={(e) => setNewEvent({ ...newEvent, startTime: e.target.value })}
                     style={{ width: "100%", padding: "0.75rem", borderRadius: "6px", border: "1px solid #e2e8f0" }}
                   />
                 </div>
                 <div style={{ flex: 1 }}>
                   <label style={{ display: "block", marginBottom: "0.5rem", fontSize: "0.9rem", fontWeight: "500" }}>End Time</label>
-                  <input 
-                    type="time" 
-                    value={newEvent.endTime} 
-                    onChange={(e) => setNewEvent({...newEvent, endTime: e.target.value})}
+                  <input
+                    type="time"
+                    value={newEvent.endTime}
+                    onChange={(e) => setNewEvent({ ...newEvent, endTime: e.target.value })}
                     style={{ width: "100%", padding: "0.75rem", borderRadius: "6px", border: "1px solid #e2e8f0" }}
                   />
                 </div>
@@ -550,9 +550,9 @@ export default function ManageEventsPage() {
 
               <div>
                 <label style={{ display: "block", marginBottom: "0.5rem", fontSize: "0.9rem", fontWeight: "500" }}>Status</label>
-                <select 
-                  value={newEvent.status} 
-                  onChange={(e) => setNewEvent({...newEvent, status: e.target.value})}
+                <select
+                  value={newEvent.status}
+                  onChange={(e) => setNewEvent({ ...newEvent, status: e.target.value })}
                   style={{ width: "100%", padding: "0.75rem", borderRadius: "6px", border: "1px solid #e2e8f0" }}
                 >
                   <option value="draft">Draft</option>
@@ -564,10 +564,10 @@ export default function ManageEventsPage() {
 
               <div>
                 <label style={{ display: "block", marginBottom: "0.5rem", fontSize: "0.9rem", fontWeight: "500" }}>Capacity (Seats)</label>
-                <input 
-                  type="text" 
-                  value={newEvent.seats.split("/")[1] || newEvent.seats} 
-                  onChange={(e) => setNewEvent({...newEvent, seats: `0/${e.target.value}`})}
+                <input
+                  type="text"
+                  value={newEvent.seats.split("/")[1] || newEvent.seats}
+                  onChange={(e) => setNewEvent({ ...newEvent, seats: `0/${e.target.value}` })}
                   required
                   style={{ width: "100%", padding: "0.75rem", borderRadius: "6px", border: "1px solid #e2e8f0" }}
                 />
@@ -581,14 +581,14 @@ export default function ManageEventsPage() {
                   ) : (
                     availableServices.map(service => (
                       <label key={service.id} style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.85rem", color: "var(--color-slate-700)", cursor: "pointer" }}>
-                        <input 
-                          type="checkbox" 
+                        <input
+                          type="checkbox"
                           checked={newEvent.serviceIds?.includes(service.id) || false}
                           onChange={(e) => {
-                            const newIds = e.target.checked 
+                            const newIds = e.target.checked
                               ? [...(newEvent.serviceIds || []), service.id]
                               : (newEvent.serviceIds || []).filter(id => id !== service.id);
-                            setNewEvent({...newEvent, serviceIds: newIds});
+                            setNewEvent({ ...newEvent, serviceIds: newIds });
                           }}
                         />
                         {service.serviceName} - ${service.price}
@@ -626,24 +626,24 @@ export default function ManageEventsPage() {
                 <X size={20} />
               </button>
             </div>
-            
+
             <form onSubmit={handleUpdateEvent} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
               <div>
                 <label style={{ display: "block", marginBottom: "0.5rem", fontSize: "0.9rem", fontWeight: "500" }}>Event Name</label>
-                <input 
-                  type="text" 
-                  value={editingEvent.name} 
-                  onChange={(e) => setEditingEvent({...editingEvent, name: e.target.value})}
+                <input
+                  type="text"
+                  value={editingEvent.name}
+                  onChange={(e) => setEditingEvent({ ...editingEvent, name: e.target.value })}
                   required
                   style={{ width: "100%", padding: "0.75rem", borderRadius: "6px", border: "1px solid #e2e8f0" }}
                 />
               </div>
-              
+
               <div>
                 <label style={{ display: "block", marginBottom: "0.5rem", fontSize: "0.9rem", fontWeight: "500" }}>Category</label>
-                <select 
-                  value={editingEvent.category} 
-                  onChange={(e) => setEditingEvent({...editingEvent, category: e.target.value})}
+                <select
+                  value={editingEvent.category}
+                  onChange={(e) => setEditingEvent({ ...editingEvent, category: e.target.value })}
                   required
                   style={{ width: "100%", padding: "0.75rem", borderRadius: "6px", border: "1px solid #e2e8f0", backgroundColor: "white" }}
                 >
@@ -656,18 +656,18 @@ export default function ManageEventsPage() {
 
               <div>
                 <label style={{ display: "block", marginBottom: "0.5rem", fontSize: "0.9rem", fontWeight: "500" }}>Date</label>
-                <input 
-                  type="date" 
-                  value={editingEvent.date && editingEvent.date !== "N/A" ? editingEvent.date : ""} 
-                  onChange={(e) => setEditingEvent({...editingEvent, date: e.target.value})}
+                <input
+                  type="date"
+                  value={editingEvent.date && editingEvent.date !== "N/A" ? editingEvent.date : ""}
+                  onChange={(e) => setEditingEvent({ ...editingEvent, date: e.target.value })}
                   style={{ width: "100%", padding: "0.75rem", borderRadius: "6px", border: "1px solid #e2e8f0" }}
                 />
               </div>
 
               <div>
                 <label style={{ display: "block", marginBottom: "0.5rem", fontSize: "0.9rem", fontWeight: "500" }}>Event Poster</label>
-                <input 
-                  type="file" 
+                <input
+                  type="file"
                   accept="image/*"
                   onChange={async (e) => {
                     const file = e.target.files[0];
@@ -681,7 +681,7 @@ export default function ManageEventsPage() {
                         });
                         const data = await res.json();
                         if (data.url) {
-                          setEditingEvent({...editingEvent, imageUrl: "http://localhost:8080" + data.url});
+                          setEditingEvent({ ...editingEvent, imageUrl: "http://localhost:8080" + data.url });
                         }
                       } catch (err) {
                         console.error("Upload failed", err);
@@ -691,10 +691,10 @@ export default function ManageEventsPage() {
                   style={{ width: "100%", padding: "0.75rem", borderRadius: "6px", border: "1px solid #e2e8f0", marginBottom: "0.5rem" }}
                 />
                 <div style={{ textAlign: "center", color: "var(--color-slate-500)", fontSize: "0.85rem", marginBottom: "0.5rem" }}>OR enter URL</div>
-                <input 
-                  type="text" 
-                  value={editingEvent.imageUrl || ""} 
-                  onChange={(e) => setEditingEvent({...editingEvent, imageUrl: e.target.value})}
+                <input
+                  type="text"
+                  value={editingEvent.imageUrl || ""}
+                  onChange={(e) => setEditingEvent({ ...editingEvent, imageUrl: e.target.value })}
                   style={{ width: "100%", padding: "0.75rem", borderRadius: "6px", border: "1px solid #e2e8f0" }}
                   placeholder="https://example.com/poster.jpg"
                 />
@@ -708,10 +708,10 @@ export default function ManageEventsPage() {
               <div>
                 <label style={{ display: "block", marginBottom: "0.5rem", fontSize: "0.9rem", fontWeight: "500" }}>Venue</label>
                 <div style={{ display: "flex", gap: "0.5rem" }}>
-                  <input 
-                    type="text" 
-                    value={editingEvent.venue} 
-                    onChange={(e) => setEditingEvent({...editingEvent, venue: e.target.value})}
+                  <input
+                    type="text"
+                    value={editingEvent.venue}
+                    onChange={(e) => setEditingEvent({ ...editingEvent, venue: e.target.value })}
                     required
                     style={{ flex: 1, padding: "0.75rem", borderRadius: "6px", border: "1px solid #e2e8f0" }}
                   />
@@ -744,32 +744,32 @@ export default function ManageEventsPage() {
                 <label style={{ display: "block", marginBottom: "0.5rem", fontSize: "0.9rem", fontWeight: "500" }}>Price</label>
                 <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "0.5rem" }}>
                   <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.9rem", cursor: "pointer" }}>
-                    <input 
-                      type="radio" 
+                    <input
+                      type="radio"
                       name="priceTypeEdit"
                       checked={editingEvent.price === "Free" || editingEvent.price === 0 || editingEvent.price === "0"}
-                      onChange={() => setEditingEvent({...editingEvent, price: "Free"})}
+                      onChange={() => setEditingEvent({ ...editingEvent, price: "Free" })}
                     />
                     Free
                   </label>
                   <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.9rem", cursor: "pointer" }}>
-                    <input 
-                      type="radio" 
+                    <input
+                      type="radio"
                       name="priceTypeEdit"
                       checked={editingEvent.price !== "Free" && editingEvent.price !== 0 && editingEvent.price !== "0"}
-                      onChange={() => setEditingEvent({...editingEvent, price: ""})}
+                      onChange={() => setEditingEvent({ ...editingEvent, price: "" })}
                     />
                     Paid
                   </label>
                 </div>
                 {editingEvent.price !== "Free" && editingEvent.price !== 0 && editingEvent.price !== "0" && (
-                  <input 
-                    type="number" 
+                  <input
+                    type="number"
                     min="0"
                     step="0.01"
                     placeholder="Enter price amount"
-                    value={editingEvent.price} 
-                    onChange={(e) => setEditingEvent({...editingEvent, price: e.target.value})}
+                    value={editingEvent.price}
+                    onChange={(e) => setEditingEvent({ ...editingEvent, price: e.target.value })}
                     required
                     style={{ width: "100%", padding: "0.75rem", borderRadius: "6px", border: "1px solid #e2e8f0" }}
                   />
@@ -778,9 +778,9 @@ export default function ManageEventsPage() {
 
               <div>
                 <label style={{ display: "block", marginBottom: "0.5rem", fontSize: "0.9rem", fontWeight: "500" }}>Description</label>
-                <textarea 
-                  value={editingEvent.description || ""} 
-                  onChange={(e) => setEditingEvent({...editingEvent, description: e.target.value})}
+                <textarea
+                  value={editingEvent.description || ""}
+                  onChange={(e) => setEditingEvent({ ...editingEvent, description: e.target.value })}
                   rows={3}
                   style={{ width: "100%", padding: "0.75rem", borderRadius: "6px", border: "1px solid #e2e8f0", resize: "vertical" }}
                 />
@@ -789,19 +789,19 @@ export default function ManageEventsPage() {
               <div style={{ display: "flex", gap: "1rem" }}>
                 <div style={{ flex: 1 }}>
                   <label style={{ display: "block", marginBottom: "0.5rem", fontSize: "0.9rem", fontWeight: "500" }}>Start Time</label>
-                  <input 
-                    type="time" 
-                    value={editingEvent.startTime || ""} 
-                    onChange={(e) => setEditingEvent({...editingEvent, startTime: e.target.value})}
+                  <input
+                    type="time"
+                    value={editingEvent.startTime || ""}
+                    onChange={(e) => setEditingEvent({ ...editingEvent, startTime: e.target.value })}
                     style={{ width: "100%", padding: "0.75rem", borderRadius: "6px", border: "1px solid #e2e8f0" }}
                   />
                 </div>
                 <div style={{ flex: 1 }}>
                   <label style={{ display: "block", marginBottom: "0.5rem", fontSize: "0.9rem", fontWeight: "500" }}>End Time</label>
-                  <input 
-                    type="time" 
-                    value={editingEvent.endTime || ""} 
-                    onChange={(e) => setEditingEvent({...editingEvent, endTime: e.target.value})}
+                  <input
+                    type="time"
+                    value={editingEvent.endTime || ""}
+                    onChange={(e) => setEditingEvent({ ...editingEvent, endTime: e.target.value })}
                     style={{ width: "100%", padding: "0.75rem", borderRadius: "6px", border: "1px solid #e2e8f0" }}
                   />
                 </div>
@@ -809,9 +809,9 @@ export default function ManageEventsPage() {
 
               <div>
                 <label style={{ display: "block", marginBottom: "0.5rem", fontSize: "0.9rem", fontWeight: "500" }}>Status</label>
-                <select 
-                  value={editingEvent.status || "draft"} 
-                  onChange={(e) => setEditingEvent({...editingEvent, status: e.target.value})}
+                <select
+                  value={editingEvent.status || "draft"}
+                  onChange={(e) => setEditingEvent({ ...editingEvent, status: e.target.value })}
                   style={{ width: "100%", padding: "0.75rem", borderRadius: "6px", border: "1px solid #e2e8f0" }}
                 >
                   <option value="draft">Draft</option>
@@ -823,10 +823,10 @@ export default function ManageEventsPage() {
 
               <div>
                 <label style={{ display: "block", marginBottom: "0.5rem", fontSize: "0.9rem", fontWeight: "500" }}>Capacity (Seats)</label>
-                <input 
-                  type="text" 
-                  value={editingEvent.seats ? editingEvent.seats.split("/")[1] || editingEvent.seats : ""} 
-                  onChange={(e) => setEditingEvent({...editingEvent, seats: `0/${e.target.value}`})}
+                <input
+                  type="text"
+                  value={editingEvent.seats ? editingEvent.seats.split("/")[1] || editingEvent.seats : ""}
+                  onChange={(e) => setEditingEvent({ ...editingEvent, seats: `0/${e.target.value}` })}
                   required
                   style={{ width: "100%", padding: "0.75rem", borderRadius: "6px", border: "1px solid #e2e8f0" }}
                 />
@@ -840,27 +840,27 @@ export default function ManageEventsPage() {
                   ) : (
                     availableServices.map(service => (
                       <label key={service.id} style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.85rem", color: "var(--color-slate-700)", cursor: "pointer" }}>
-                        <input 
-                          type="checkbox" 
+                        <input
+                          type="checkbox"
                           disabled={editingEvent.lockedServiceIds?.includes(service.id)}
                           checked={editingEvent.serviceIds?.includes(service.id) || false}
                           onChange={(e) => {
-                            const newIds = e.target.checked 
+                            const newIds = e.target.checked
                               ? [...(editingEvent.serviceIds || []), service.id]
                               : (editingEvent.serviceIds || []).filter(id => id !== service.id);
-                            setEditingEvent({...editingEvent, serviceIds: newIds});
+                            setEditingEvent({ ...editingEvent, serviceIds: newIds });
                           }}
                         />
                         {service.serviceName} - ${service.price}
                         {editingEvent.rejectedServiceIds?.includes(service.id) && (
-                          <span style={{ 
-                            marginLeft: "auto", 
-                            backgroundColor: "#fee2e2", 
-                            color: "#ef4444", 
-                            padding: "0.15rem 0.5rem", 
-                            borderRadius: "1rem", 
-                            fontSize: "0.7rem", 
-                            fontWeight: "600" 
+                          <span style={{
+                            marginLeft: "auto",
+                            backgroundColor: "#fee2e2",
+                            color: "#ef4444",
+                            padding: "0.15rem 0.5rem",
+                            borderRadius: "1rem",
+                            fontSize: "0.7rem",
+                            fontWeight: "600"
                           }}>
                             Rejected by Vendor
                           </span>
@@ -894,23 +894,23 @@ export default function ManageEventsPage() {
             backgroundColor: "white", padding: "2rem", borderRadius: "12px", width: "90%", maxWidth: "500px",
             maxHeight: "90vh", overflowY: "auto", position: "relative"
           }}>
-            <button 
+            <button
               onClick={() => setIsCategoryModalOpen(false)}
               style={{ position: "absolute", top: "1rem", right: "1rem", background: "none", border: "none", cursor: "pointer", color: "var(--color-slate-500)" }}
             >
               <X size={24} />
             </button>
             <h2 style={{ fontSize: "1.5rem", fontWeight: "bold", marginBottom: "1.5rem", color: "var(--color-slate-900)" }}>Manage Categories</h2>
-            
+
             <div style={{ display: "flex", gap: "0.5rem", marginBottom: "1.5rem" }}>
-              <input 
-                type="text" 
-                placeholder="New Category Name" 
+              <input
+                type="text"
+                placeholder="New Category Name"
                 value={newCategoryName}
                 onChange={(e) => setNewCategoryName(e.target.value)}
                 style={{ flex: 1, padding: "0.75rem", borderRadius: "6px", border: "1px solid #e2e8f0" }}
               />
-              <button 
+              <button
                 onClick={handleAddCategory}
                 style={{ padding: "0.75rem 1.25rem", backgroundColor: "#3b82f6", color: "white", border: "none", borderRadius: "6px", fontWeight: "600", cursor: "pointer" }}
               >
@@ -922,7 +922,7 @@ export default function ManageEventsPage() {
               {categories.map(cat => (
                 <div key={cat.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "0.75rem", border: "1px solid #e2e8f0", borderRadius: "6px" }}>
                   <span style={{ fontWeight: "500" }}>{cat.name}</span>
-                  <button 
+                  <button
                     onClick={() => handleDeleteCategory(cat.id)}
                     style={{ background: "none", border: "none", color: "#ef4444", cursor: "pointer", padding: "0.25rem" }}
                   >
@@ -944,9 +944,9 @@ export default function ManageEventsPage() {
           onClose={() => setIsMapModalOpen(false)}
           onConfirm={(address) => {
             if (mapTarget === 'new') {
-              setNewEvent({...newEvent, venue: address});
+              setNewEvent({ ...newEvent, venue: address });
             } else if (mapTarget === 'edit') {
-              setEditingEvent({...editingEvent, venue: address});
+              setEditingEvent({ ...editingEvent, venue: address });
             }
             setIsMapModalOpen(false);
           }}

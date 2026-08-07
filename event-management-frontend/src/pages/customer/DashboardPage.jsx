@@ -18,13 +18,18 @@ export default function DashboardPage({
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [userBookings, setUserBookings] = useState([]);
 
   useEffect(() => {
-    const fetchDashboardStats = async () => {
+    const fetchDashboardData = async () => {
       try {
         setLoading(true);
-        const data = await fetchWithAuth('/api/customer/dashboard-stats');
-        setStats(data);
+        const [statsData, bookingsData] = await Promise.all([
+          fetchWithAuth('/api/customer/dashboard-stats'),
+          fetchWithAuth('/api/customer/bookings')
+        ]);
+        setStats(statsData);
+        setUserBookings(bookingsData);
       } catch (err) {
         setError("Failed to load dashboard data.");
         console.error(err);
@@ -32,11 +37,52 @@ export default function DashboardPage({
         setLoading(false);
       }
     };
-    fetchDashboardStats();
+    fetchDashboardData();
   }, [fetchWithAuth]);
 
-  // Fallback recommended events (filtered from global events)
-  const recommendedEvents = events.filter((e) => !e.featured).slice(0, 3);
+  // Compute Recommended Events based on past bookings
+  const getRecommendedEvents = () => {
+    if (!events || events.length === 0) return [];
+    
+    // Find titles of all booked events
+    const bookedEventTitles = userBookings.map(b => b.title);
+    
+    // Find categories of booked events
+    const bookedCategories = new Set(
+      events
+        .filter(e => bookedEventTitles.includes(e.title))
+        .map(e => e.category)
+    );
+    
+    let recommended = [];
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    if (bookedCategories.size > 0) {
+      // Filter events that match the booked categories but haven't been booked yet, and are in the future
+      recommended = events.filter(e => 
+        bookedCategories.has(e.category) && 
+        !bookedEventTitles.includes(e.title) &&
+        new Date(e.date) >= today
+      );
+    }
+    
+    // If not enough recommended events from history, fallback to standard logic
+    if (recommended.length < 3) {
+      const fallback = events.filter(e => 
+        !e.featured && 
+        !bookedEventTitles.includes(e.title) &&
+        new Date(e.date) >= today &&
+        !recommended.find(r => r.id === e.id)
+      );
+      recommended = [...recommended, ...fallback];
+    }
+    
+    return recommended.slice(0, 3);
+  };
+
+  const recommendedEvents = getRecommendedEvents();
 
   const StatCard = ({
     icon: Icon,

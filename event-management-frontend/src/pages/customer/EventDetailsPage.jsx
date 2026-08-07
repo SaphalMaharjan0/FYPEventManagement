@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { ArrowLeft, Calendar, Clock, MapPin, Star, User, ShieldAlert, Award, Heart } from "lucide-react";
+import { ArrowLeft, Calendar, Clock, MapPin, Star, User, ShieldAlert, Award, Heart, X, LogIn } from "lucide-react";
 import { useSettings } from "../../contexts/SettingsContext";
 import { formatPrice, formatDate, formatShortAddress } from "../../utils/formatting";
 import EventCard from "../../components/event/EventCard";
@@ -16,6 +16,7 @@ export default function EventDetailsPage({
   const { currency, region } = useSettings();
   const { favoriteIds, toggleFavorite } = useFavorites();
   const [quantity, setQuantity] = useState(1);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
   // Scroll to top on page load/change
   useEffect(() => {
@@ -47,11 +48,23 @@ export default function EventDetailsPage({
     }
   };
 
+  const handleBookTicketsClick = () => {
+    if (!currentUser) {
+      setIsLoginModalOpen(true);
+    } else {
+      onInitiateBooking(event, quantity);
+    }
+  };
+
   const handleDecrement = () => {
     if (quantity > 1) {
       setQuantity(quantity - 1);
     }
   };
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const isPastEvent = new Date(event.date) < today;
 
   const totalPrice = event.price * quantity;
 
@@ -62,7 +75,7 @@ export default function EventDetailsPage({
 
   return (
     <div className="details-page" style={isDashboardContext ? { paddingTop: '1rem', marginTop: 0 } : {}}>
-      <div className="container">
+      <div className={isDashboardContext ? "" : "container"}>
         {/* Breadcrumb Navigation */}
         <div className="details-breadcrumbs">
           <span onClick={() => onNavigate("landing")}>Home</span>
@@ -74,7 +87,7 @@ export default function EventDetailsPage({
 
         {/* 2-Column Details Grid */}
         <div className="details-grid">
-          
+
           {/* Main Left Details column */}
           <div className="details-main-content">
             {/* Event Hero Cover Image */}
@@ -185,8 +198,8 @@ export default function EventDetailsPage({
                   <span className="details-seats-pct">{event.percentAvailable}% available</span>
                 </div>
                 <div className="progress-bar-container" style={{ margin: "0.25rem 0 0 0" }}>
-                  <div 
-                    className="progress-bar-fill" 
+                  <div
+                    className="progress-bar-fill"
                     style={{ width: `${event.percentAvailable}%` }}
                   ></div>
                 </div>
@@ -196,18 +209,18 @@ export default function EventDetailsPage({
               <div className="details-qty-row">
                 <span className="details-qty-label">Quantity</span>
                 <div className="modal-counter" style={{ margin: 0 }}>
-                  <button 
-                    type="button" 
-                    className="btn-counter" 
+                  <button
+                    type="button"
+                    className="btn-counter"
                     onClick={handleDecrement}
                     disabled={quantity <= 1}
                   >
                     -
                   </button>
                   <span className="counter-val">{quantity}</span>
-                  <button 
-                    type="button" 
-                    className="btn-counter" 
+                  <button
+                    type="button"
+                    className="btn-counter"
                     onClick={handleIncrement}
                     disabled={quantity >= event.seatsLeft}
                   >
@@ -225,13 +238,13 @@ export default function EventDetailsPage({
               {/* Book tickets guard button */}
               <button
                 className="btn-book"
-                onClick={() => onInitiateBooking(event, quantity)}
-                style={{ width: "100%", padding: "1rem", fontSize: "0.95rem", fontWeight: 700 }}
-                disabled={event.seatsLeft <= 0}
+                onClick={handleBookTicketsClick}
+                style={{ width: "100%", padding: "1rem", fontSize: "0.95rem", fontWeight: 700, opacity: isPastEvent ? 0.6 : 1, cursor: isPastEvent ? "not-allowed" : "pointer" }}
+                disabled={event.seatsLeft <= 0 || isPastEvent}
               >
-                {event.seatsLeft > 0 ? "Book Tickets" : "Sold Out"}
+                {isPastEvent ? "Event Ended" : (event.seatsLeft > 0 ? "Book Tickets" : "Sold Out")}
               </button>
-              
+
               {!currentUser && (
                 <div style={{ display: "flex", gap: "0.5rem", alignItems: "center", backgroundColor: "var(--color-amber-50)", padding: "0.75rem", borderRadius: "8px", border: "1px solid #fef3c7", fontSize: "0.75rem", color: "var(--color-amber-700)" }}>
                   <ShieldAlert size={16} style={{ flexShrink: 0 }} />
@@ -248,16 +261,61 @@ export default function EventDetailsPage({
             <h3 className="section-title" style={{ marginBottom: "1.5rem" }}>Similar Events You Might Like</h3>
             <div className="cards-grid">
               {similarEvents.map((evt) => (
-                <EventCard 
-                  key={evt.id} 
-                  event={evt} 
-                  onBookClick={() => onNavigate("event-details", evt)} 
+                <EventCard
+                  key={evt.id}
+                  event={evt}
+                  onBookClick={() => onNavigate("event-details", evt)}
                 />
               ))}
             </div>
           </div>
         )}
       </div>
+
+      {/* Login Prompt Modal */}
+      {isLoginModalOpen && (
+        <div style={{
+          position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: "rgba(0,0,0,0.5)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 1000
+        }}>
+          <div style={{
+            backgroundColor: "white", padding: "2rem", borderRadius: "12px", width: "100%", maxWidth: "400px",
+            boxShadow: "0 10px 25px rgba(0,0,0,0.1)"
+          }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                <LogIn size={20} color="var(--primary)" />
+                <h3 style={{ fontSize: "1.1rem", fontWeight: "bold", margin: 0 }}>Login Required</h3>
+              </div>
+              <button onClick={() => setIsLoginModalOpen(false)} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--color-slate-400)" }}>
+                <X size={20} />
+              </button>
+            </div>
+            
+            <p style={{ color: "var(--color-slate-600)", fontSize: "0.95rem", marginBottom: "1.5rem", lineHeight: "1.5" }}>
+              You need to log in or create an account to book tickets for <strong>{event.title}</strong>.
+            </p>
+            
+            <div style={{ display: "flex", gap: "1rem" }}>
+              <button 
+                onClick={() => setIsLoginModalOpen(false)}
+                style={{ flex: 1, padding: "0.75rem", backgroundColor: "white", border: "1px solid #e2e8f0", borderRadius: "6px", fontWeight: "500", cursor: "pointer" }}
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={() => {
+                  setIsLoginModalOpen(false);
+                  onInitiateBooking(event, quantity);
+                }}
+                style={{ flex: 1, padding: "0.75rem", backgroundColor: "var(--primary)", color: "white", border: "none", borderRadius: "6px", fontWeight: "500", cursor: "pointer" }}
+              >
+                Go to Login
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

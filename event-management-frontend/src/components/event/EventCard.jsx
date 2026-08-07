@@ -26,6 +26,10 @@ export default function EventCard({ event, onBookClick, initialIsFavorite = fals
   const actualId = id || eventId;
   const isFavorite = favoriteIds ? favoriteIds.has(actualId) : initialIsFavorite;
 
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const isPastEvent = new Date(date) < today;
+
   // Calculate percentage of seats filled/booked or percentage remaining
   const percentageAvailable = Math.round((seatsLeft / totalSeats) * 100) || 0;
   const isSoldOut = seatsLeft <= 0;
@@ -121,10 +125,10 @@ export default function EventCard({ event, onBookClick, initialIsFavorite = fals
               e.stopPropagation();
               onBookClick(event);
             }}
-            disabled={isSoldOut}
-            style={isSoldOut ? { opacity: 0.5, cursor: "not-allowed", backgroundColor: "var(--color-slate-100)", color: "var(--color-slate-400)" } : {}}
+            disabled={isSoldOut || isPastEvent}
+            style={(isSoldOut || isPastEvent) ? { opacity: 0.5, cursor: "not-allowed", backgroundColor: "var(--color-slate-100)", color: "var(--color-slate-400)" } : {}}
           >
-            {isSoldOut ? "Sold Out" : "Book Now"}
+            {isPastEvent ? "Ended" : (isSoldOut ? "Sold Out" : "Book Now")}
           </button>
         </div>
       </div>

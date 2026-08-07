@@ -96,7 +96,8 @@ export default function SettingsPage() {
             <select 
               value={currency} 
               onChange={(e) => setCurrency(e.target.value)}
-              style={{ width: "100%", maxWidth: "300px", padding: "0.75rem", borderRadius: "8px", border: "1px solid #e2e8f0", fontSize: "0.95rem", outline: "none", backgroundColor: "white", color: "var(--color-slate-900)" }}
+              disabled
+              style={{ width: "100%", maxWidth: "300px", padding: "0.75rem", borderRadius: "8px", border: "1px solid #e2e8f0", fontSize: "0.95rem", outline: "none", backgroundColor: "#f8fafc", color: "var(--color-slate-500)", cursor: "not-allowed" }}
             >
               <option value="USD">USD ($)</option>
               <option value="EUR">EUR (€)</option>
