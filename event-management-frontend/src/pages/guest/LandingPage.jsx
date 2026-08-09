@@ -6,6 +6,7 @@ import EventCard from "../../components/event/EventCard";
 import HostBanner from "../../components/common/HostBanner";
 import Testimonials from "../../components/common/Testimonials";
 import { X } from "lucide-react";
+import { motion } from "framer-motion";
 
 export default function LandingPage({
   categories,
@@ -24,23 +25,54 @@ export default function LandingPage({
   onResetFilters,
   onNavigateToRegister,
 }) {
+  const fadeUp = {
+    hidden: { opacity: 0, y: 30 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } }
+  };
+
+  const staggerContainer = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.15
+      }
+    }
+  };
+
+  const itemFade = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.5 } }
+  };
+
   return (
     <>
-      <Hero
-        searchQuery={searchQuery}
-        setSearchQuery={setSearchQuery}
-        locationQuery={locationQuery}
-        setLocationQuery={setLocationQuery}
-        activeCategory={activeCategory}
-        setActiveCategory={setActiveCategory}
-        onSearchSubmit={onSearchSubmit}
-      />
+      <motion.div initial="hidden" animate="visible" variants={fadeUp}>
+        <Hero
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          locationQuery={locationQuery}
+          setLocationQuery={setLocationQuery}
+          activeCategory={activeCategory}
+          setActiveCategory={setActiveCategory}
+          onSearchSubmit={onSearchSubmit}
+        />
+      </motion.div>
 
-      <StatCard />
+      <motion.div
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, margin: "-50px" }}
+        variants={fadeUp}
+      >
+        <StatCard />
+      </motion.div>
 
       <main className="container" id="featured" style={{ minHeight: "20rem" }}>
         {activeCategory !== "all" && (
-          <div
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
             style={{
               marginBottom: "2rem",
               display: "flex",
@@ -71,10 +103,16 @@ export default function LandingPage({
                 onClick={onResetFilters}
               />
             </span>
-          </div>
+          </motion.div>
         )}
 
-        <div className="section-header">
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-100px" }}
+          variants={fadeUp}
+          className="section-header"
+        >
           <div className="section-title-area">
             <h2 className="section-title">Featured Events</h2>
             <p className="section-subtitle">
@@ -89,14 +127,22 @@ export default function LandingPage({
             <span>View all</span>
             <span>&rarr;</span>
           </span>
-        </div>
+        </motion.div>
 
         {featuredEvents.length > 0 ? (
-          <div className="cards-grid">
+          <motion.div 
+            className="cards-grid"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-50px" }}
+            variants={staggerContainer}
+          >
             {featuredEvents.map((evt) => (
-              <EventCard key={evt.id} event={evt} onBookClick={onBookClick} />
+              <motion.div key={evt.id} variants={itemFade}>
+                <EventCard event={evt} onBookClick={onBookClick} />
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         ) : (
           <p
             style={{
@@ -109,13 +155,27 @@ export default function LandingPage({
           </p>
         )}
 
-        <BrowseCategories
-          activeCategory={activeCategory}
-          setActiveCategory={onCategorySelect}
-          categories={categories}
-        />
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-100px" }}
+          variants={fadeUp}
+        >
+          <BrowseCategories
+            activeCategory={activeCategory}
+            setActiveCategory={onCategorySelect}
+            categories={categories}
+          />
+        </motion.div>
 
-        <div className="section-header" style={{ marginTop: "4rem" }}>
+        <motion.div 
+          className="section-header" 
+          style={{ marginTop: "4rem" }}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-100px" }}
+          variants={fadeUp}
+        >
           <div className="section-title-area">
             <h2 className="section-title">Upcoming This Month</h2>
             <p className="section-subtitle">
@@ -130,14 +190,22 @@ export default function LandingPage({
             <span>See more</span>
             <span>&rsaquo;</span>
           </span>
-        </div>
+        </motion.div>
 
         {upcomingEvents.length > 0 ? (
-          <div className="cards-grid">
+          <motion.div 
+            className="cards-grid"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-50px" }}
+            variants={staggerContainer}
+          >
             {upcomingEvents.map((evt) => (
-              <EventCard key={evt.id} event={evt} onBookClick={onBookClick} />
+              <motion.div key={evt.id} variants={itemFade}>
+                <EventCard event={evt} onBookClick={onBookClick} />
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         ) : (
           <p
             style={{
@@ -150,13 +218,17 @@ export default function LandingPage({
           </p>
         )}
 
-        <div
+        <motion.div
           id="host"
           style={{ paddingTop: "2rem" }}
           onClick={onNavigateToRegister}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-100px" }}
+          variants={fadeUp}
         >
           <HostBanner />
-        </div>
+        </motion.div>
 
         {/* <Testimonials testimonials={testimonials} /> */}
       </main>

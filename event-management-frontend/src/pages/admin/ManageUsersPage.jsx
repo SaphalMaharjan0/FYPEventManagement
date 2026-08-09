@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Plus, Search, Eye, EyeOff, Edit2, Trash2, Filter, X } from "lucide-react";
 import { useFetch } from "../../hooks/useFetch";
+import ConfirmModal from "../../components/common/ConfirmModal";
 
 export default function ManageUsersPage() {
   const fetchWithAuth = useFetch();
@@ -12,6 +13,8 @@ export default function ManageUsersPage() {
   const [editingUser, setEditingUser] = useState(null);
   const [newUser, setNewUser] = useState({ name: "", email: "", password: "", role: "customer", status: "Active" });
   const [showPassword, setShowPassword] = useState(false);
+  const [confirmModal, setConfirmModal] = useState(null);
+  const [confirmLoading, setConfirmLoading] = useState(false);
 
   // Filter State
   const [searchQuery, setSearchQuery] = useState("");
@@ -81,20 +84,34 @@ export default function ManageUsersPage() {
     }
   };
 
-  const handleDeleteUser = async (userId, dbId) => {
-    if (!window.confirm(`Are you sure you want to delete user ${userId}?`)) return;
-    try {
-      const response = await fetchWithAuth(`/api/admin/users/${dbId}`, {
-        method: "DELETE"
-      });
-      if (response !== null) { // fetchWithAuth returns null on error
-        setUsers(users.filter(u => u.dbId !== dbId));
-      } else {
-        alert("Failed to delete user.");
+  const handleDeleteUser = (userId, dbId) => {
+    setConfirmModal({
+      message: `Are you sure you want to delete user ${userId}?`,
+      actionText: "Delete",
+      actionColor: "var(--color-red-500)",
+      action: async () => {
+        const response = await fetchWithAuth(`/api/admin/users/${dbId}`, {
+          method: "DELETE"
+        });
+        if (response !== null) {
+          setUsers(users.filter(u => u.dbId !== dbId));
+        } else {
+          throw new Error("Failed to delete user.");
+        }
       }
+    });
+  };
+
+  const executeConfirmAction = async () => {
+    if (!confirmModal || !confirmModal.action) return;
+    setConfirmLoading(true);
+    try {
+      await confirmModal.action();
+      setConfirmModal(null);
     } catch (err) {
-      console.error("Failed to delete user", err);
-      alert("Failed to delete user.");
+      alert("Action failed: " + err.message);
+    } finally {
+      setConfirmLoading(false);
     }
   };
 
@@ -567,6 +584,18 @@ export default function ManageUsersPage() {
           </div>
         </div>
       )}
+
+      {/* Confirm Modal Component */}
+      <ConfirmModal 
+        isOpen={!!confirmModal}
+        title="Confirm Action"
+        message={confirmModal?.message}
+        onConfirm={executeConfirmAction}
+        onCancel={() => setConfirmModal(null)}
+        confirmText={confirmModal?.actionText || "Confirm"}
+        confirmColor={confirmModal?.actionColor || "#ef4444"} // red-500 default
+        isLoading={confirmLoading}
+      />
 
     </div>
   );

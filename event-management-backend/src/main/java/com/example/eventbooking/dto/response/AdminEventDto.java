@@ -19,6 +19,7 @@ public class AdminEventDto {
     private String venue;
     private String imageUrl;
     private String price;
+    private String currency;
     private String seats; // e.g. "124/500"
     private Double rating;
     private String description;

@@ -19,6 +19,11 @@ export const formatPrice = (priceInUSD, targetCurrency = "USD") => {
   return `${symbol}${converted.toFixed(2).replace(/\.00$/, "")}`;
 };
 
+export const convertToUSD = (priceInTargetCurrency, targetCurrency = "USD") => {
+  const rate = exchangeRates[targetCurrency] || 1.0;
+  return priceInTargetCurrency / rate;
+};
+
 export const formatDate = (dateString, region = "US") => {
   if (!dateString) return "";
   

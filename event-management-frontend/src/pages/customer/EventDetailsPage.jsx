@@ -4,6 +4,8 @@ import { useSettings } from "../../contexts/SettingsContext";
 import { formatPrice, formatDate, formatShortAddress } from "../../utils/formatting";
 import EventCard from "../../components/event/EventCard";
 import { useFavorites } from "../../contexts/FavoritesContext";
+import FeedbackList from "../../components/event/FeedbackList";
+import FeedbackForm from "../../components/event/FeedbackForm";
 
 export default function EventDetailsPage({
   event,
@@ -17,6 +19,7 @@ export default function EventDetailsPage({
   const { favoriteIds, toggleFavorite } = useFavorites();
   const [quantity, setQuantity] = useState(1);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [feedbackRefresh, setFeedbackRefresh] = useState(0);
 
   // Scroll to top on page load/change
   useEffect(() => {
@@ -181,6 +184,21 @@ export default function EventDetailsPage({
               <h3 className="details-section-title">About the Event</h3>
               <p className="details-text">{event.description || "No description provided for this event."}</p>
             </div>
+
+            <FeedbackList eventId={actualId} refreshTrigger={feedbackRefresh} />
+            
+            {currentUser && isPastEvent && (
+              <FeedbackForm 
+                eventId={actualId} 
+                onSubmitSuccess={() => setFeedbackRefresh(prev => prev + 1)} 
+              />
+            )}
+            
+            {currentUser && !isPastEvent && (
+              <div style={{ marginTop: '2rem', padding: '1rem', backgroundColor: '#f3f4f6', borderRadius: '8px', color: '#4b5563', fontSize: '0.875rem' }}>
+                You can leave feedback after the event has taken place.
+              </div>
+            )}
           </div>
 
           {/* Sticky Checkout Sidebar Card */}
@@ -231,8 +249,8 @@ export default function EventDetailsPage({
 
               {/* Total display */}
               <div className="details-total-row">
-                <span>Total Cost</span>
-                <span className="details-total-price">{formatPrice(totalPrice, currency)}</span>
+                <span>Total Amount</span>
+                <span>{formatPrice(totalPrice, currency)}</span>
               </div>
 
               {/* Book tickets guard button */}

@@ -1,5 +1,7 @@
 package com.example.eventbooking.service;
 
+import com.example.eventbooking.exception.*;
+
 import com.example.eventbooking.dto.response.VendorAvailabilityDto;
 import com.example.eventbooking.dto.response.VendorBlockedDateDto;
 import com.example.eventbooking.dto.response.VendorScheduleDto;
@@ -44,7 +46,7 @@ public class VendorAvailabilityService {
     @Transactional
     public Vendor getOrCreateVendor(String email) {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         return vendorRepository.findByUserId(user.getUserId())
                 .orElseGet(() -> {
                     Vendor newVendor = new Vendor();

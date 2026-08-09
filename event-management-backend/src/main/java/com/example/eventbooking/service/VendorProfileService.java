@@ -1,5 +1,7 @@
 package com.example.eventbooking.service;
 
+import com.example.eventbooking.exception.*;
+
 import com.example.eventbooking.dto.response.VendorDto;
 import com.example.eventbooking.entity.User;
 import com.example.eventbooking.entity.Vendor;
@@ -23,7 +25,7 @@ public class VendorProfileService {
         Vendor vendor = vendorRepository.findByUserId(userId)
                 .orElseGet(() -> {
                     User user = userRepository.findById(userId)
-                            .orElseThrow(() -> new RuntimeException("User not found"));
+                            .orElseThrow(() -> new ResourceNotFoundException("User not found"));
                     Vendor newVendor = new Vendor();
                     newVendor.setUser(user);
                     newVendor.setBusinessName(user.getFullName() + "'s Business");
@@ -35,7 +37,7 @@ public class VendorProfileService {
     @Transactional
     public VendorDto updateVendorProfile(Integer userId, VendorDto dto) {
         Vendor vendor = vendorRepository.findByUserId(userId)
-                .orElseThrow(() -> new RuntimeException("Vendor profile not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Vendor profile not found"));
         
         if (dto.getBusinessName() != null) vendor.setBusinessName(dto.getBusinessName());
         if (dto.getBusinessDesc() != null) vendor.setBusinessDesc(dto.getBusinessDesc());

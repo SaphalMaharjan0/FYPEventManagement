@@ -1,5 +1,7 @@
 package com.example.eventbooking.service;
 
+import com.example.eventbooking.exception.*;
+
 import com.example.eventbooking.dto.response.AuthResponse;
 import com.example.eventbooking.dto.request.LoginRequest;
 import com.example.eventbooking.dto.request.RegisterRequest;
@@ -26,7 +28,7 @@ public class AuthService {
 
     public AuthResponse register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("Email already exists");
+            throw new BadRequestException("Email already exists");
         }
 
         Role userRole = request.getRole() != null ? request.getRole() : Role.customer;

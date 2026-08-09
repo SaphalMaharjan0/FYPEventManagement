@@ -14,6 +14,10 @@ export const SettingsProvider = ({ children }) => {
 
   useEffect(() => {
     localStorage.setItem("eventpulse_region", region);
+    if (region === "NP") setCurrency("NPR");
+    else if (region === "US") setCurrency("USD");
+    else if (region === "EU") setCurrency("EUR");
+    else if (region === "UK") setCurrency("GBP");
   }, [region]);
 
   return (

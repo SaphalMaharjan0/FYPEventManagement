@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { Plus, Search, Eye, Edit2, Trash2, Filter, ShieldCheck, Clock, X } from "lucide-react";
+import { Plus, Search, Eye, Edit2, Trash2, Filter, ShieldCheck, Clock, X, CheckCircle, XCircle } from "lucide-react";
 import { useFetch } from "../../hooks/useFetch";
+import ConfirmModal from "../../components/common/ConfirmModal";
 
 export default function ManageVendorsPage() {
   const fetchWithAuth = useFetch();
@@ -22,6 +23,10 @@ export default function ManageVendorsPage() {
   // View Modal State
   const [showViewModal, setShowViewModal] = useState(false);
   const [viewData, setViewData] = useState(null);
+
+  // Confirm Modal State
+  const [confirmModal, setConfirmModal] = useState(null);
+  const [confirmLoading, setConfirmLoading] = useState(false);
 
   // Filter State
   const [searchQuery, setSearchQuery] = useState("");
@@ -75,6 +80,45 @@ export default function ManageVendorsPage() {
     setShowViewModal(true);
   };
 
+  const handleStatusChange = (vendor, newStatus) => {
+    let confirmMsg = `Are you sure you want to ${newStatus.toLowerCase()} this vendor application?`;
+    let actionColor = "var(--color-red-500)";
+    if (newStatus === "Verified") {
+      confirmMsg = "Are you sure you want to APPROVE this vendor application? They will gain full access to the platform.";
+      actionColor = "var(--color-emerald-500)";
+    }
+    
+    setConfirmModal({
+      message: confirmMsg,
+      actionText: "Confirm",
+      actionColor: actionColor,
+      action: async () => {
+        const vendorIdNum = vendor.id.replace('VND-', '');
+        const updatedVendor = await fetchWithAuth(`/api/admin/vendors/${parseInt(vendorIdNum)}`, {
+          method: "PUT",
+          body: JSON.stringify({ ...vendor, status: newStatus }),
+        });
+        setVendors(vendors.map(v => v.id === updatedVendor.id ? updatedVendor : v));
+        if (viewData && viewData.id === vendor.id) {
+           setViewData(updatedVendor);
+        }
+      }
+    });
+  };
+
+  const executeConfirmAction = async () => {
+    if (!confirmModal || !confirmModal.action) return;
+    setConfirmLoading(true);
+    try {
+      await confirmModal.action();
+      setConfirmModal(null);
+    } catch (err) {
+      alert("Action failed: " + err.message);
+    } finally {
+      setConfirmLoading(false);
+    }
+  };
+
   const handleEditSubmit = async (e) => {
     e.preventDefault();
     setEditError(null);
@@ -95,18 +139,19 @@ export default function ManageVendorsPage() {
     }
   };
 
-  const handleDelete = async (vendorId) => {
-    if (window.confirm("Are you sure you want to delete this vendor? This action cannot be undone and will delete all their data and services.")) {
-      try {
+  const handleDelete = (vendorId) => {
+    setConfirmModal({
+      message: "Are you sure you want to delete this vendor? This action cannot be undone and will delete all their data and services.",
+      actionText: "Delete",
+      actionColor: "var(--color-red-500)",
+      action: async () => {
         const vendorIdNum = vendorId.replace('VND-', '');
         await fetchWithAuth(`/api/admin/vendors/${parseInt(vendorIdNum)}`, {
           method: "DELETE"
         });
         setVendors(vendors.filter(v => v.id !== vendorId));
-      } catch (err) {
-        alert(err.message || "Failed to delete vendor");
       }
-    }
+    });
   };
 
   const getStatusStyle = (status) => {
@@ -269,9 +314,9 @@ export default function ManageVendorsPage() {
                     <td style={{ padding: "1rem 1.5rem", fontSize: "0.9rem", color: "var(--color-slate-600)" }}>{vendor.joined}</td>
                     <td style={{ padding: "1rem 1.5rem", textAlign: "right" }}>
                       <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: "0.75rem" }}>
-                        <button onClick={() => handleViewClick(vendor)} style={{ background: "none", border: "none", color: "var(--color-slate-400)", cursor: "pointer" }}><Eye size={16} /></button>
-                        <button onClick={() => handleEditClick(vendor)} style={{ background: "none", border: "none", color: "var(--color-slate-400)", cursor: "pointer" }}><Edit2 size={16} /></button>
-                        <button onClick={() => handleDelete(vendor.id)} style={{ background: "none", border: "none", color: "var(--color-slate-400)", cursor: "pointer" }}><Trash2 size={16} /></button>
+                        <button onClick={() => handleViewClick(vendor)} style={{ background: "none", border: "none", color: "var(--color-slate-400)", cursor: "pointer" }} title="View Details"><Eye size={16} /></button>
+                        <button onClick={() => handleEditClick(vendor)} style={{ background: "none", border: "none", color: "var(--color-slate-400)", cursor: "pointer" }} title="Edit"><Edit2 size={16} /></button>
+                        <button onClick={() => handleDelete(vendor.id)} style={{ background: "none", border: "none", color: "var(--color-slate-400)", cursor: "pointer" }} title="Delete"><Trash2 size={16} /></button>
                       </div>
                     </td>
                   </tr>
@@ -480,7 +525,25 @@ export default function ManageVendorsPage() {
               </p>
             </div>
 
-            <div style={{ display: "flex", justifyContent: "flex-end" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div style={{ display: "flex", gap: "1rem" }}>
+                {viewData.status === "Pending" && (
+                  <>
+                    <button 
+                      onClick={() => handleStatusChange(viewData, "Verified")}
+                      style={{ padding: "0.6rem 1.25rem", backgroundColor: "var(--color-emerald-50)", color: "var(--color-emerald-600)", border: "1px solid var(--color-emerald-200)", borderRadius: "8px", fontWeight: "600", cursor: "pointer", display: "flex", alignItems: "center", gap: "0.5rem" }}
+                    >
+                      <CheckCircle size={18} /> Accept
+                    </button>
+                    <button 
+                      onClick={() => handleStatusChange(viewData, "Rejected")}
+                      style={{ padding: "0.6rem 1.25rem", backgroundColor: "var(--color-red-50)", color: "var(--color-red-600)", border: "1px solid var(--color-red-200)", borderRadius: "8px", fontWeight: "600", cursor: "pointer", display: "flex", alignItems: "center", gap: "0.5rem" }}
+                    >
+                      <XCircle size={18} /> Reject
+                    </button>
+                  </>
+                )}
+              </div>
               <button 
                 onClick={() => setShowViewModal(false)}
                 style={{ padding: "0.6rem 1.25rem", backgroundColor: "var(--color-slate-100)", color: "var(--color-slate-600)", border: "none", borderRadius: "8px", fontWeight: "600", cursor: "pointer" }}
@@ -491,6 +554,19 @@ export default function ManageVendorsPage() {
           </div>
         </div>
       )}
+
+      {/* Confirm Modal Component */}
+      <ConfirmModal 
+        isOpen={!!confirmModal}
+        title="Confirm Action"
+        message={confirmModal?.message}
+        onConfirm={executeConfirmAction}
+        onCancel={() => setConfirmModal(null)}
+        confirmText={confirmModal?.actionText || "Confirm"}
+        confirmColor={confirmModal?.actionColor || "#ef4444"} // red-500 default
+        isLoading={confirmLoading}
+      />
+
     </div>
   );
 }

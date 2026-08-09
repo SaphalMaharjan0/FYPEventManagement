@@ -17,6 +17,7 @@ const pageToUrl = (page) => {
   return `/${page}`;
 };
 import { FavoritesProvider } from "./contexts/FavoritesContext";
+import ConfirmModal from "./components/common/ConfirmModal";
 
 export default function App() {
   const navigate = useNavigate();
@@ -54,6 +55,8 @@ export default function App() {
   const [bookingQuantity, setBookingQuantity] = useState(1);
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
   const [redirectAfterLogin, setRedirectAfterLogin] = useState(null);
+  
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   const [currentUser, setCurrentUser] = useState(() => {
     try {
@@ -197,13 +200,16 @@ export default function App() {
   };
 
   const handleLogout = () => {
-    if (window.confirm("Are you sure you want to log out?")) {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      setCurrentUser(null);
-      onNavigate("landing");
-      showToast("Logged out successfully.");
-    }
+    setShowLogoutModal(true);
+  };
+
+  const confirmLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    setCurrentUser(null);
+    onNavigate("landing");
+    showToast("Logged out successfully.");
+    setShowLogoutModal(false);
   };
 
   const handleRegisterSuccess = (userData) => {
@@ -301,6 +307,16 @@ export default function App() {
           <span>{toast}</span>
         </div>
       )}
+      
+      <ConfirmModal 
+        isOpen={showLogoutModal}
+        title="Confirm Logout"
+        message="Are you sure you want to log out of your account?"
+        onConfirm={confirmLogout}
+        onCancel={() => setShowLogoutModal(false)}
+        confirmText="Log Out"
+        confirmColor="#ef4444"
+      />
     </FavoritesProvider>
   );
 }

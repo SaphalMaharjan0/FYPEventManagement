@@ -1,5 +1,7 @@
 package com.example.eventbooking.service;
 
+import com.example.eventbooking.exception.*;
+
 import com.example.eventbooking.dto.response.ServiceDto;
 import com.example.eventbooking.entity.Service;
 import com.example.eventbooking.entity.Vendor;
@@ -29,7 +31,7 @@ public class VendorServiceListingService {
         Vendor vendor = vendorRepository.findByUserId(userId)
                 .orElseGet(() -> {
                     com.example.eventbooking.entity.User user = userRepository.findById(userId)
-                            .orElseThrow(() -> new RuntimeException("User not found"));
+                            .orElseThrow(() -> new ResourceNotFoundException("User not found"));
                     Vendor newVendor = new Vendor();
                     newVendor.setUser(user);
                     newVendor.setBusinessName(user.getFullName() + "'s Business");
@@ -44,7 +46,7 @@ public class VendorServiceListingService {
     @Transactional
     public ServiceDto createService(Integer userId, ServiceDto dto) {
         Vendor vendor = vendorRepository.findByUserId(userId)
-                .orElseThrow(() -> new RuntimeException("Vendor profile not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Vendor profile not found"));
         
         Service service = new Service();
         service.setVendor(vendor);
@@ -66,12 +68,12 @@ public class VendorServiceListingService {
     @Transactional
     public void deleteService(Integer userId, Integer serviceId) {
         Vendor vendor = vendorRepository.findByUserId(userId)
-                .orElseThrow(() -> new RuntimeException("Vendor profile not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Vendor profile not found"));
         Service service = serviceRepository.findById(serviceId)
-                .orElseThrow(() -> new RuntimeException("Service not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Service not found"));
         
         if (!service.getVendor().getId().equals(vendor.getId())) {
-            throw new RuntimeException("Unauthorized to delete this service");
+            throw new UnauthorizedException("Unauthorized to delete this service");
         }
         
         serviceRepository.delete(service);
@@ -80,12 +82,12 @@ public class VendorServiceListingService {
     @Transactional
     public ServiceDto updateService(Integer userId, Integer serviceId, ServiceDto dto) {
         Vendor vendor = vendorRepository.findByUserId(userId)
-                .orElseThrow(() -> new RuntimeException("Vendor profile not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Vendor profile not found"));
         Service service = serviceRepository.findById(serviceId)
-                .orElseThrow(() -> new RuntimeException("Service not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Service not found"));
         
         if (!service.getVendor().getId().equals(vendor.getId())) {
-            throw new RuntimeException("Unauthorized to update this service");
+            throw new UnauthorizedException("Unauthorized to update this service");
         }
 
         if (dto.getServiceName() != null) service.setServiceName(dto.getServiceName());

@@ -1,5 +1,7 @@
 package com.example.eventbooking.service;
 
+import com.example.eventbooking.exception.*;
+
 import com.example.eventbooking.entity.Notification;
 import com.example.eventbooking.entity.User;
 import com.example.eventbooking.repository.NotificationRepository;
@@ -57,7 +59,7 @@ public class NotificationService {
     public void notifyAllAdmins(String title, String message, String type,
             Integer relatedEventId, Integer relatedRequestId, User excludeUser) {
         List<User> admins = userRepository.findAll().stream()
-                .filter(u -> "administrator".equalsIgnoreCase(u.getRole().name()))
+                .filter(u -> u.getRole() != null && "administrator".equalsIgnoreCase(u.getRole().name()))
                 .toList();
         for (User admin : admins) {
             if (excludeUser != null && admin.getUserId().equals(excludeUser.getUserId())) {
@@ -72,7 +74,7 @@ public class NotificationService {
      */
     public List<Notification> getNotifications(String userEmail) {
         User user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         return notificationRepository.findByRecipientUserUserIdOrderByCreatedAtDesc(user.getUserId());
     }
 
@@ -81,7 +83,7 @@ public class NotificationService {
      */
     public long getUnreadCount(String userEmail) {
         User user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         return notificationRepository.countByRecipientUserUserIdAndIsReadFalse(user.getUserId());
     }
 
@@ -90,11 +92,11 @@ public class NotificationService {
      */
     public void markAsRead(Integer notificationId, String userEmail) {
         User user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         Notification n = notificationRepository.findById(notificationId)
-                .orElseThrow(() -> new RuntimeException("Notification not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Notification not found"));
         if (!n.getRecipientUser().getUserId().equals(user.getUserId())) {
-            throw new RuntimeException("Unauthorized");
+            throw new UnauthorizedException("Unauthorized");
         }
         n.setRead(true);
         notificationRepository.save(n);
@@ -106,7 +108,7 @@ public class NotificationService {
     @Transactional
     public void markAllAsRead(String userEmail) {
         User user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         notificationRepository.markAllAsReadByUserId(user.getUserId());
     }
 }

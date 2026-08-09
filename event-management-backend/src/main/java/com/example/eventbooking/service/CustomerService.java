@@ -1,5 +1,7 @@
 package com.example.eventbooking.service;
 
+import com.example.eventbooking.exception.*;
+
 import com.example.eventbooking.dto.response.CustomerDashboardStatsDto;
 import com.example.eventbooking.entity.Booking;
 import com.example.eventbooking.entity.Event;
@@ -82,8 +84,8 @@ public class CustomerService {
             favoriteRepository.delete(existingFavorite.get());
             return false; // returned false means un-favorited
         } else {
-            User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
-            Event event = eventRepository.findById(eventId).orElseThrow(() -> new RuntimeException("Event not found"));
+            User user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User not found"));
+            Event event = eventRepository.findById(eventId).orElseThrow(() -> new ResourceNotFoundException("Event not found"));
             
             Favorite favorite = Favorite.builder()
                     .user(user)
@@ -197,8 +199,8 @@ public class CustomerService {
 
     @Transactional
     public EsewaInitiateResponse initiateEsewaBooking(Integer userId, EsewaInitiateRequest request) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
-        Event event = eventRepository.findById(request.getEventId()).orElseThrow(() -> new RuntimeException("Event not found"));
+        User user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        Event event = eventRepository.findById(request.getEventId()).orElseThrow(() -> new ResourceNotFoundException("Event not found"));
 
         int bookedTickets = bookingRepository.findByEvent_EventId(event.getEventId()).stream()
                 .filter(b -> "CONFIRMED".equalsIgnoreCase(b.getStatus()) || "PENDING".equalsIgnoreCase(b.getStatus()))
@@ -220,7 +222,7 @@ public class CustomerService {
         int seatsLeft = ticket.getQuantityAvailable() - ticket.getQuantitySold();
 
         if (seatsLeft < request.getQuantity()) {
-            throw new RuntimeException("Not enough seats available");
+            throw new BadRequestException("Not enough seats available");
         }
 
         BigDecimal price = ticket.getPrice();
@@ -317,8 +319,8 @@ public class CustomerService {
 
     @Transactional
     public KhaltiInitiateResponse initiateKhaltiBooking(Integer userId, KhaltiInitiateRequest request) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
-        Event event = eventRepository.findById(request.getEventId()).orElseThrow(() -> new RuntimeException("Event not found"));
+        User user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        Event event = eventRepository.findById(request.getEventId()).orElseThrow(() -> new ResourceNotFoundException("Event not found"));
 
         int bookedTickets = bookingRepository.findByEvent_EventId(event.getEventId()).stream()
                 .filter(b -> "CONFIRMED".equalsIgnoreCase(b.getStatus()) || "PENDING".equalsIgnoreCase(b.getStatus()))
@@ -340,7 +342,7 @@ public class CustomerService {
         int seatsLeft = ticket.getQuantityAvailable() - ticket.getQuantitySold();
 
         if (seatsLeft < request.getQuantity()) {
-            throw new RuntimeException("Not enough seats available");
+            throw new BadRequestException("Not enough seats available");
         }
 
         BigDecimal price = ticket.getPrice();
@@ -464,8 +466,8 @@ public class CustomerService {
 
     @Transactional
     public boolean processCashBooking(Integer userId, Integer eventId, Integer quantity) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
-        Event event = eventRepository.findById(eventId).orElseThrow(() -> new RuntimeException("Event not found"));
+        User user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        Event event = eventRepository.findById(eventId).orElseThrow(() -> new ResourceNotFoundException("Event not found"));
 
         int bookedTickets = bookingRepository.findByEvent_EventId(event.getEventId()).stream()
                 .filter(b -> "CONFIRMED".equalsIgnoreCase(b.getStatus()) || "PENDING".equalsIgnoreCase(b.getStatus()))
@@ -487,7 +489,7 @@ public class CustomerService {
         int seatsLeft = ticket.getQuantityAvailable() - ticket.getQuantitySold();
 
         if (seatsLeft < quantity) {
-            throw new RuntimeException("Not enough seats available");
+            throw new BadRequestException("Not enough seats available");
         }
 
         BigDecimal price = ticket.getPrice();
@@ -546,10 +548,10 @@ public class CustomerService {
     @Transactional
     public void cancelBooking(Integer userId, Long bookingId) {
         Booking booking = bookingRepository.findById(bookingId)
-                .orElseThrow(() -> new RuntimeException("Booking not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Booking not found"));
 
         if (!booking.getUser().getUserId().equals(userId)) {
-            throw new RuntimeException("Unauthorized: You do not own this booking");
+            throw new UnauthorizedException("Unauthorized: You do not own this booking");
         }
 
         String currentStatus = booking.getStatus().toUpperCase();

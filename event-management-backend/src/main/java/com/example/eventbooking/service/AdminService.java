@@ -1,5 +1,7 @@
 package com.example.eventbooking.service;
 
+import com.example.eventbooking.exception.*;
+
 import com.example.eventbooking.dto.request.*;
 import com.example.eventbooking.dto.response.*;
 import com.example.eventbooking.entity.Booking;
@@ -15,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import com.example.eventbooking.entity.enums.EventStatus;
+import org.springframework.cache.annotation.CacheEvict;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -348,7 +351,9 @@ public class AdminService {
                         .name(vendor.getBusinessName())
                         .owner(vendor.getUser().getFullName())
                         .email(vendor.getUser().getEmail())
-                        .status(vendor.getIsVerified() != null && vendor.getIsVerified() ? "Verified" : "Pending")
+                        .status(vendor.getApplicationStatus() != null ? 
+                                vendor.getApplicationStatus().substring(0, 1).toUpperCase() + vendor.getApplicationStatus().substring(1).toLowerCase() : 
+                                (vendor.getIsVerified() != null && vendor.getIsVerified() ? "Verified" : "Pending"))
                         .properties(0)
                         .joined(vendor.getCreatedAt() != null ? vendor.getCreatedAt().format(FORMATTER) : "N/A")
                         .businessDesc(vendor.getBusinessDesc())
@@ -382,7 +387,7 @@ public class AdminService {
             throw new org.springframework.security.access.AccessDeniedException("Access denied: only super admins can manage users");
         }
         try {
-            User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
+            User user = userRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("User not found"));
             user.setFullName(dto.getName());
             user.setEmail(dto.getEmail());
             if (dto.getRole() != null) {
@@ -478,8 +483,9 @@ public class AdminService {
     }
 
     @org.springframework.transaction.annotation.Transactional
+    @CacheEvict(value = "events", allEntries = true)
     public AdminEventDto updateEvent(User currentUser, Integer id, AdminEventDto dto) {
-        Event event = eventRepository.findById(id).orElseThrow(() -> new RuntimeException("Event not found"));
+        Event event = eventRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Event not found"));
         if (!currentUser.isSuperAdmin() && !event.getOrganizer().getUserId().equals(currentUser.getUserId())) {
             throw new org.springframework.security.access.AccessDeniedException("Access denied: you can only update your own events");
         }
@@ -489,14 +495,21 @@ public class AdminService {
         if (dto.getImageUrl() != null) {
             event.setImageUrl(dto.getImageUrl());
         }
+        if (dto.getCurrency() != null && !dto.getCurrency().isEmpty()) {
+            event.setCurrency(dto.getCurrency());
+        }
         if (dto.getDescription() != null) {
             event.setDescription(dto.getDescription());
         }
         if (dto.getDate() != null && !dto.getDate().equals("N/A")) {
             try {
-                event.setEventDate(LocalDate.parse(dto.getDate()));
-            } catch (Exception e) {
-                // Ignore invalid date
+                LocalDate parsedDate = LocalDate.parse(dto.getDate());
+                if (parsedDate.isBefore(LocalDate.now())) {
+                    throw new IllegalArgumentException("Event date cannot be in the past");
+                }
+                event.setEventDate(parsedDate);
+            } catch (java.time.format.DateTimeParseException e) {
+                // Ignore invalid date format
             }
         }
         if (dto.getStartTime() != null && !dto.getStartTime().isEmpty()) {
@@ -543,6 +556,7 @@ public class AdminService {
                 .venue(event.getVenue())
                 .imageUrl(event.getImageUrl())
                 .price(dto.getPrice() != null ? dto.getPrice() : "Free")
+                .currency(event.getCurrency())
                 .seats(formatSeats(event))
                 .rating(4.5)
                 .description(event.getDescription())
@@ -553,8 +567,9 @@ public class AdminService {
                 .build();
     }
 
+    @CacheEvict(value = "events", allEntries = true)
     public void deleteEvent(User currentUser, Integer id) {
-        Event event = eventRepository.findById(id).orElseThrow(() -> new RuntimeException("Event not found"));
+        Event event = eventRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Event not found"));
         if (!currentUser.isSuperAdmin() && !event.getOrganizer().getUserId().equals(currentUser.getUserId())) {
             throw new org.springframework.security.access.AccessDeniedException("Access denied: you can only delete your own events");
         }
@@ -562,7 +577,14 @@ public class AdminService {
     }
 
     @org.springframework.transaction.annotation.Transactional
+    @CacheEvict(value = "events", allEntries = true)
     public AdminEventDto createEvent(User currentUser, AdminEventDto dto) {
+        EventStatus status = EventStatus.draft;
+        if (dto.getStatus() != null && !dto.getStatus().isEmpty()) {
+            try {
+                status = EventStatus.valueOf(dto.getStatus());
+            } catch (Exception e) {}
+        }
         Event event = Event.builder()
                 .organizer(currentUser)
                 .title(dto.getName() != null ? dto.getName() : "Untitled Event")
@@ -570,16 +592,23 @@ public class AdminService {
                 .category(dto.getCategory() != null ? dto.getCategory() : "General")
                 .venue(dto.getVenue() != null ? dto.getVenue() : "TBD")
                 .imageUrl(dto.getImageUrl())
-                .status(EventStatus.published)
+                .currency(dto.getCurrency() != null && !dto.getCurrency().isEmpty() ? dto.getCurrency() : "USD")
+                .status(status)
                 .capacity(100)
                 .eventDate(LocalDate.now())
                 .startTime(LocalTime.of(9, 0))
                 .build();
         if (dto.getDate() != null && !dto.getDate().equals("N/A") && !dto.getDate().isEmpty()) {
             try {
-                event.setEventDate(LocalDate.parse(dto.getDate()));
-            } catch (Exception e) {
+                LocalDate parsedDate = LocalDate.parse(dto.getDate());
+                if (parsedDate.isBefore(LocalDate.now())) {
+                    throw new IllegalArgumentException("Event date cannot be in the past");
+                }
+                event.setEventDate(parsedDate);
+            } catch (java.time.format.DateTimeParseException e) {
             }
+        } else if (event.getEventDate().isBefore(LocalDate.now())) {
+            throw new IllegalArgumentException("Event date cannot be in the past");
         }
         event = eventRepository.save(event);
 
@@ -611,6 +640,7 @@ public class AdminService {
                 .date(event.getEventDate() != null ? event.getEventDate().toString() : "N/A")
                 .venue(event.getVenue())
                 .price(dto.getPrice() != null ? dto.getPrice() : "Free")
+                .currency(event.getCurrency())
                 .seats(formatSeats(event))
                 .rating(0.0)
                 .description(event.getDescription())
@@ -640,7 +670,7 @@ public class AdminService {
         }
         
         Vendor vendor = vendorRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Vendor not found"));
+            .orElseThrow(() -> new ResourceNotFoundException("Vendor not found"));
             
         User user = vendor.getUser();
         
@@ -654,8 +684,25 @@ public class AdminService {
             user.setEmail(dto.getEmail());
         }
         if (dto.getStatus() != null) {
-            vendor.setIsVerified("Verified".equalsIgnoreCase(dto.getStatus()));
-            user.setActive("Verified".equalsIgnoreCase(dto.getStatus()));
+            String newStatus = dto.getStatus();
+            
+            // Only send notification if status is actually changing from Pending
+            boolean statusChanging = vendor.getApplicationStatus() == null || "PENDING".equalsIgnoreCase(vendor.getApplicationStatus());
+            
+            vendor.setApplicationStatus(newStatus.toUpperCase());
+            if ("Verified".equalsIgnoreCase(newStatus)) {
+                vendor.setIsVerified(true);
+                user.setActive(true);
+                if (statusChanging) {
+                    notificationService.createNotification(user, "Vendor Application Approved", "Congratulations! Your vendor application has been approved. You can now list your services.", "success", null, null);
+                }
+            } else if ("Rejected".equalsIgnoreCase(newStatus)) {
+                vendor.setIsVerified(false);
+                user.setActive(false);
+                if (statusChanging) {
+                    notificationService.createNotification(user, "Vendor Application Rejected", "We regret to inform you that your vendor application has been rejected.", "error", null, null);
+                }
+            }
         }
         if (dto.getBusinessDesc() != null) {
             vendor.setBusinessDesc(dto.getBusinessDesc());
@@ -678,7 +725,9 @@ public class AdminService {
                 .name(vendor.getBusinessName())
                 .owner(user.getFullName())
                 .email(user.getEmail())
-                .status(vendor.getIsVerified() != null && vendor.getIsVerified() ? "Verified" : "Pending")
+                .status(vendor.getApplicationStatus() != null ? 
+                        vendor.getApplicationStatus().substring(0, 1).toUpperCase() + vendor.getApplicationStatus().substring(1).toLowerCase() : 
+                        (vendor.getIsVerified() != null && vendor.getIsVerified() ? "Verified" : "Pending"))
                 .properties(serviceRepository.findByVendorId(vendor.getId()).size())
                 .joined(vendor.getCreatedAt() != null ? vendor.getCreatedAt().format(FORMATTER) : "N/A")
                 .businessDesc(vendor.getBusinessDesc())
@@ -693,7 +742,7 @@ public class AdminService {
             throw new org.springframework.security.access.AccessDeniedException("Access denied: only super admins can manage vendors");
         }
         Vendor vendor = vendorRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Vendor not found"));
+            .orElseThrow(() -> new ResourceNotFoundException("Vendor not found"));
             
         User user = vendor.getUser();
         
@@ -760,7 +809,7 @@ public class AdminService {
         if (!currentUser.isSuperAdmin()) {
             throw new org.springframework.security.access.AccessDeniedException("Access denied: only super admins can manage users");
         }
-        User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
+        User user = userRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         // 1. Delete favorites made by this user
         jdbcTemplate.update("DELETE FROM favorites WHERE user_id = ?", id);

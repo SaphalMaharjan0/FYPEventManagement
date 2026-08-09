@@ -1,5 +1,7 @@
 package com.example.eventbooking.service;
 
+import com.example.eventbooking.exception.*;
+
 import com.example.eventbooking.dto.response.ServiceRequestDto;
 import com.example.eventbooking.entity.Event;
 import com.example.eventbooking.entity.ServiceRequest;
@@ -25,7 +27,7 @@ public class VendorServiceRequestService {
 
     public List<ServiceRequestDto> getVendorRequests(String userEmail) {
         User user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         // Auto-create vendor profile if it doesn't exist yet (first login)
         Vendor vendor = vendorRepository.findByUserId(user.getUserId())
@@ -43,17 +45,17 @@ public class VendorServiceRequestService {
 
     public ServiceRequestDto updateRequestStatus(Integer requestId, String status, String userEmail) {
         User user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         
         Vendor vendor = vendorRepository.findByUserId(user.getUserId())
-                .orElseThrow(() -> new RuntimeException("Vendor profile not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Vendor profile not found"));
 
         ServiceRequest request = serviceRequestRepository.findById(requestId)
-                .orElseThrow(() -> new RuntimeException("Service request not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Service request not found"));
 
         // Ensure the request belongs to a service owned by this vendor
         if (!request.getService().getVendor().getId().equals(vendor.getId())) {
-            throw new RuntimeException("Unauthorized: You do not own this service request.");
+            throw new UnauthorizedException("Unauthorized: You do not own this service request.");
         }
 
         String dbStatus = status;

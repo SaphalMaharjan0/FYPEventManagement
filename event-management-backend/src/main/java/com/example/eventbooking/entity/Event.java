@@ -43,6 +43,9 @@ public class Event {
     @Column(name = "image_url")
     private String imageUrl;
 
+    @Column(length = 10)
+    private String currency = "USD";
+
     @Column(name = "event_date", nullable = false)
     private LocalDate eventDate;
 

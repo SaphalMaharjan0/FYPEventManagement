@@ -16,6 +16,7 @@ public class EventDto {
     private String venue;
     private String imageUrl;
     private Double price;
+    private String currency;
     private String image;
     private String organizer;
     private Integer totalSeats;

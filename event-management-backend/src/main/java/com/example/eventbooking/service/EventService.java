@@ -13,6 +13,8 @@ import java.util.stream.Collectors;
 import org.springframework.cache.annotation.Cacheable;
 
 import com.example.eventbooking.repository.BookingRepository;
+import com.example.eventbooking.repository.TicketRepository;
+import com.example.eventbooking.entity.Ticket;
 
 @Service
 @RequiredArgsConstructor
@@ -20,6 +22,7 @@ public class EventService {
 
     private final EventRepository eventRepository;
     private final BookingRepository bookingRepository;
+    private final TicketRepository ticketRepository;
 
     public List<EventDto> getAllEventsDebug() {
         return eventRepository.findAll()
@@ -43,7 +46,8 @@ public class EventService {
         DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("hh:mm a");
         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-        double dummyPrice = 50.0;
+        List<Ticket> tickets = ticketRepository.findByEventEventId(event.getEventId());
+        double actualPrice = tickets.isEmpty() ? 50.0 : tickets.get(0).getPrice().doubleValue();
         String dummyImage = "https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&q=80&w=1000";
         String actualImage = (event.getImageUrl() != null && !event.getImageUrl().trim().isEmpty()) 
                                 ? event.getImageUrl() : dummyImage;
@@ -63,7 +67,8 @@ public class EventService {
                 .date(event.getEventDate().format(dateFormatter))
                 .time(event.getStartTime().format(timeFormatter))
                 .venue(event.getVenue())
-                .price(dummyPrice)
+                .price(actualPrice)
+                .currency(event.getCurrency() != null ? event.getCurrency() : "USD")
                 .image(actualImage)
                 .imageUrl(actualImage)
                 .organizer(event.getOrganizer().getFullName())

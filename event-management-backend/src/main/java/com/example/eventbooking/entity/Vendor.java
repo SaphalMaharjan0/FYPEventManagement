@@ -44,6 +44,9 @@ public class Vendor {
     @Column(name = "is_verified", nullable = false)
     private Boolean isVerified = false;
 
+    @Column(name = "application_status", length = 20)
+    private String applicationStatus = "PENDING";
+
     @Column(name = "latitude")
     private Double latitude;
 

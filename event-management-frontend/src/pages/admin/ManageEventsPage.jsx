@@ -1,9 +1,20 @@
 import React, { useState, useEffect } from "react";
-import { Plus, Search, Eye, Edit2, Trash2, Filter, Star, X, MapPin } from "lucide-react";
+import { Plus, Search, Eye, Edit2, Trash2, Filter, Star, X, MapPin, MessageSquare } from "lucide-react";
 import { useFetch } from "../../hooks/useFetch";
-import { formatPrice, formatDate, formatShortAddress } from "../../utils/formatting";
+import { formatPrice, formatDate, formatShortAddress, convertToUSD } from "../../utils/formatting";
 import { useSettings } from "../../contexts/SettingsContext";
 import MapLocationPicker from "../../components/admin/MapLocationPicker";
+import FeedbackList from "../../components/event/FeedbackList";
+import ConfirmModal from "../../components/common/ConfirmModal";
+
+const autoDetectCurrency = (venueStr) => {
+  if (!venueStr) return "USD";
+  const str = venueStr.toLowerCase();
+  if (str.includes("nepal") || str.includes("kathmandu") || str.includes("pokhara")) return "NPR";
+  if (str.includes("uk") || str.includes("london") || str.includes("england")) return "GBP";
+  if (str.includes("europe") || str.includes("france") || str.includes("germany") || str.includes("spain") || str.includes("italy")) return "EUR";
+  return "USD";
+};
 
 export default function ManageEventsPage() {
   const fetchWithAuth = useFetch();
@@ -12,6 +23,9 @@ export default function ManageEventsPage() {
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState(null);
+  const [feedbackModalEventId, setFeedbackModalEventId] = useState(null);
+  const [confirmModal, setConfirmModal] = useState(null);
+  const [confirmLoading, setConfirmLoading] = useState(false);
 
   // Filter State
   const [searchQuery, setSearchQuery] = useState("");
@@ -34,6 +48,7 @@ export default function ManageEventsPage() {
     status: "draft",
     seats: "0/100",
     price: "Free",
+    currency: "USD",
     imageUrl: "",
     serviceIds: []
   });
@@ -88,39 +103,49 @@ export default function ManageEventsPage() {
     }
   };
 
-  const handleAddEvent = async (e) => {
+  const handleAddEvent = (e) => {
     e.preventDefault();
-    try {
-      const created = await fetchWithAuth("/api/admin/events", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newEvent),
-      });
-      if (created) {
-        setEvents([created, ...events]);
-        setIsAddModalOpen(false);
-        setNewEvent({
-          name: "", category: "", date: "", venue: "", description: "", startTime: "", endTime: "", status: "draft", seats: "0/100", price: "Free", imageUrl: "", serviceIds: []
+    setConfirmModal({
+      message: "Are you sure you want to create this new event? Please verify all details before confirming.",
+      actionText: "Create Event",
+      actionColor: "#10b981", // emerald-500
+      action: async () => {
+        // Convert price to USD if it's paid
+        let finalPrice = newEvent.price;
+        if (newEvent.price !== "Free" && newEvent.price !== 0 && newEvent.price !== "0") {
+          finalPrice = convertToUSD(parseFloat(newEvent.price), newEvent.currency).toFixed(2);
+        }
+
+        const payload = { ...newEvent, price: finalPrice };
+        
+        const created = await fetchWithAuth("/api/admin/events", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
         });
+        if (created) {
+          setEvents([created, ...events]);
+          setIsAddModalOpen(false);
+          setNewEvent({
+            name: "", category: "", date: "", venue: "", description: "", startTime: "", endTime: "", status: "draft", seats: "0/100", price: "Free", currency: "USD", imageUrl: "", serviceIds: []
+          });
+        }
       }
-    } catch (err) {
-      console.error("Failed to add event", err);
-      alert("Failed to add event.");
-    }
+    });
   };
 
-  const handleDeleteEvent = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this event?")) return;
-    try {
-      const res = await fetchWithAuth(`/api/admin/events/${id}`, {
-        method: "DELETE",
-      });
-      // fetchWithAuth returns the parsed JSON or null if 204 No Content
-      setEvents(events.filter(ev => ev.dbId !== id));
-    } catch (err) {
-      console.error("Failed to delete event", err);
-      alert("Failed to delete event.");
-    }
+  const handleDeleteEvent = (id) => {
+    setConfirmModal({
+      message: "Are you sure you want to delete this event?",
+      actionText: "Delete",
+      actionColor: "var(--color-red-500)",
+      action: async () => {
+        const res = await fetchWithAuth(`/api/admin/events/${id}`, {
+          method: "DELETE",
+        });
+        setEvents(events.filter(ev => ev.dbId !== id));
+      }
+    });
   };
 
   const handleAddCategory = async () => {
@@ -140,16 +165,30 @@ export default function ManageEventsPage() {
     }
   };
 
-  const handleDeleteCategory = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this category?")) return;
+  const handleDeleteCategory = (id) => {
+    setConfirmModal({
+      message: "Are you sure you want to delete this category?",
+      actionText: "Delete",
+      actionColor: "var(--color-red-500)",
+      action: async () => {
+        await fetchWithAuth(`/api/admin/categories/${id}`, {
+          method: "DELETE"
+        });
+        setCategories(categories.filter(c => c.id !== id));
+      }
+    });
+  };
+
+  const executeConfirmAction = async () => {
+    if (!confirmModal || !confirmModal.action) return;
+    setConfirmLoading(true);
     try {
-      await fetchWithAuth(`/api/admin/categories/${id}`, {
-        method: "DELETE"
-      });
-      setCategories(categories.filter(c => c.id !== id));
+      await confirmModal.action();
+      setConfirmModal(null);
     } catch (err) {
-      console.error("Failed to delete category", err);
-      alert("Failed to delete category.");
+      alert("Action failed: " + err.message);
+    } finally {
+      setConfirmLoading(false);
     }
   };
 
@@ -159,6 +198,14 @@ export default function ManageEventsPage() {
     const matchesStatus = statusFilter === "All" || (event.status && event.status.toLowerCase() === statusFilter.toLowerCase());
     const matchesCategory = categoryFilter === "All" || (event.category && event.category.toLowerCase() === categoryFilter.toLowerCase());
     return matchesSearch && matchesStatus && matchesCategory;
+  }).sort((a, b) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const aIsPast = new Date(a.date) < today;
+    const bIsPast = new Date(b.date) < today;
+    if (aIsPast && !bIsPast) return 1;
+    if (!aIsPast && bIsPast) return -1;
+    return 0;
   });
 
   return (
@@ -299,7 +346,12 @@ export default function ManageEventsPage() {
                   <td colSpan="8" style={{ padding: "1.5rem", textAlign: "center", color: "var(--color-slate-500)" }}>No events found.</td>
                 </tr>
               ) : (
-                filteredEvents.map((event, idx) => (
+                filteredEvents.map((event, idx) => {
+                  const today = new Date();
+                  today.setHours(0, 0, 0, 0);
+                  const isPastEvent = new Date(event.date) < today;
+                  
+                  return (
                   <tr key={event.id} style={{ borderBottom: idx !== filteredEvents.length - 1 ? "1px solid #e2e8f0" : "none" }}>
                     <td style={{ padding: "1rem 1.5rem" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
@@ -310,7 +362,10 @@ export default function ManageEventsPage() {
                             <div style={{ width: "100%", height: "100%", background: `linear-gradient(135deg, #1e293b, #334155)` }}></div>
                           )}
                         </div>
-                        <span style={{ fontWeight: "500", color: "var(--color-slate-900)", fontSize: "0.95rem" }}>{event.name}</span>
+                        <div style={{ display: "flex", flexDirection: "column" }}>
+                          <span style={{ fontWeight: "500", color: "var(--color-slate-900)", fontSize: "0.95rem" }}>{event.name}</span>
+                          {isPastEvent && <span style={{ fontSize: "0.75rem", color: "var(--color-red-600)", fontWeight: "600", marginTop: "2px", backgroundColor: "var(--color-red-50)", padding: "2px 6px", borderRadius: "4px", alignSelf: "flex-start" }}>Ended</span>}
+                        </div>
                       </div>
                     </td>
                     <td style={{ padding: "1rem 1.5rem" }}>
@@ -337,18 +392,43 @@ export default function ManageEventsPage() {
                     </td>
                     <td style={{ padding: "1rem 1.5rem", textAlign: "right" }}>
                       <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: "0.75rem" }}>
-                        <button style={{ background: "none", border: "none", color: "var(--color-slate-400)", cursor: "pointer" }}><Eye size={16} /></button>
-                        <button onClick={() => handleEditClick(event)} style={{ background: "none", border: "none", color: "var(--color-blue-500)", cursor: "pointer" }}><Edit2 size={16} /></button>
-                        <button onClick={() => handleDeleteEvent(event.dbId)} style={{ background: "none", border: "none", color: "var(--color-slate-400)", cursor: "pointer" }}><Trash2 size={16} /></button>
+                        <button onClick={() => setFeedbackModalEventId(event.dbId)} style={{ background: "none", border: "none", color: "var(--color-slate-500)", cursor: "pointer" }} title="View Feedback"><MessageSquare size={16} /></button>
+                        <button onClick={() => handleEditClick(event)} style={{ background: "none", border: "none", color: "var(--color-blue-500)", cursor: "pointer" }} title="Edit Event"><Edit2 size={16} /></button>
+                        <button onClick={() => handleDeleteEvent(event.dbId)} style={{ background: "none", border: "none", color: "var(--color-slate-400)", cursor: "pointer" }} title="Delete Event"><Trash2 size={16} /></button>
                       </div>
                     </td>
                   </tr>
-                ))
+                  );
+                })
               )}
             </tbody>
           </table>
         </div>
       </div>
+
+      {/* Feedback Modal */}
+      {feedbackModalEventId && (
+        <div style={{
+          position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: "rgba(0,0,0,0.5)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 1000,
+          padding: "1rem"
+        }}>
+          <div style={{
+            backgroundColor: "white", borderRadius: "12px", width: "100%", maxWidth: "600px", maxHeight: "80vh",
+            boxShadow: "0 10px 25px rgba(0,0,0,0.1)", display: "flex", flexDirection: "column", overflow: "hidden"
+          }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "1.5rem", borderBottom: "1px solid #e2e8f0" }}>
+              <h3 style={{ fontSize: "1.25rem", fontWeight: "bold", margin: 0, color: "var(--color-slate-900)" }}>Event Feedback</h3>
+              <button onClick={() => setFeedbackModalEventId(null)} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--color-slate-400)" }}>
+                <X size={20} />
+              </button>
+            </div>
+            <div style={{ padding: "1.5rem", overflowY: "auto", flex: 1, backgroundColor: "var(--bg-default, #f8fafc)" }}>
+              <FeedbackList eventId={feedbackModalEventId} />
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Add Event Modal */}
       {isAddModalOpen && (
@@ -357,16 +437,19 @@ export default function ManageEventsPage() {
           backgroundColor: "rgba(0,0,0,0.5)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 1000
         }}>
           <div style={{
-            backgroundColor: "white", padding: "2rem", borderRadius: "12px", width: "100%", maxWidth: "500px", maxHeight: "90vh", overflowY: "auto"
+            backgroundColor: "white", borderRadius: "12px", width: "100%", maxWidth: "700px", maxHeight: "90vh", display: "flex", flexDirection: "column", overflow: "hidden", boxShadow: "0 20px 25px -5px rgba(0,0,0,0.1)"
           }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
-              <h2 style={{ fontSize: "1.25rem", fontWeight: "bold" }}>Add New Event</h2>
-              <button onClick={() => setIsAddModalOpen(false)} style={{ background: "none", border: "none", cursor: "pointer" }}>
+            {/* Modal Header */}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "1.5rem 2rem", borderBottom: "1px solid #e2e8f0", backgroundColor: "white", zIndex: 10 }}>
+              <h2 style={{ fontSize: "1.25rem", fontWeight: "bold", margin: 0 }}>Add New Event</h2>
+              <button onClick={() => setIsAddModalOpen(false)} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--color-slate-400)" }}>
                 <X size={20} />
               </button>
             </div>
 
-            <form onSubmit={handleAddEvent} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+            {/* Modal Body */}
+            <div style={{ padding: "2rem", overflowY: "auto", flex: 1 }}>
+              <form onSubmit={handleAddEvent} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
               <div>
                 <label style={{ display: "block", marginBottom: "0.5rem", fontSize: "0.9rem", fontWeight: "500" }}>Event Name</label>
                 <input
@@ -398,6 +481,7 @@ export default function ManageEventsPage() {
                 <label style={{ display: "block", marginBottom: "0.5rem", fontSize: "0.9rem", fontWeight: "500" }}>Date</label>
                 <input
                   type="date"
+                  min={new Date().toISOString().split("T")[0]}
                   value={newEvent.date}
                   onChange={(e) => setNewEvent({ ...newEvent, date: e.target.value })}
                   required
@@ -452,7 +536,15 @@ export default function ManageEventsPage() {
                   <input
                     type="text"
                     value={newEvent.venue}
-                    onChange={(e) => setNewEvent({ ...newEvent, venue: e.target.value })}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      const detectedCurrency = autoDetectCurrency(val);
+                      setNewEvent({ 
+                        ...newEvent, 
+                        venue: val,
+                        currency: detectedCurrency !== "USD" ? detectedCurrency : newEvent.currency // Only auto-switch if a specific match is found, or default to their current
+                      });
+                    }}
                     required
                     style={{ flex: 1, padding: "0.75rem", borderRadius: "6px", border: "1px solid #e2e8f0" }}
                   />
@@ -504,16 +596,28 @@ export default function ManageEventsPage() {
                   </label>
                 </div>
                 {newEvent.price !== "Free" && newEvent.price !== 0 && newEvent.price !== "0" && (
-                  <input
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    placeholder="Enter price amount"
-                    value={newEvent.price}
-                    onChange={(e) => setNewEvent({ ...newEvent, price: e.target.value })}
-                    required
-                    style={{ width: "100%", padding: "0.75rem", borderRadius: "6px", border: "1px solid #e2e8f0" }}
-                  />
+                  <div style={{ display: "flex", gap: "0.5rem" }}>
+                    <select
+                      value={newEvent.currency || "USD"}
+                      onChange={(e) => setNewEvent({ ...newEvent, currency: e.target.value })}
+                      style={{ padding: "0.75rem", borderRadius: "6px", border: "1px solid #e2e8f0", backgroundColor: "white", width: "110px" }}
+                    >
+                      <option value="USD">USD ($)</option>
+                      <option value="EUR">EUR (€)</option>
+                      <option value="GBP">GBP (£)</option>
+                      <option value="NPR">NPR (Rs)</option>
+                    </select>
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      placeholder="Enter price amount"
+                      value={newEvent.price}
+                      onChange={(e) => setNewEvent({ ...newEvent, price: e.target.value })}
+                      required
+                      style={{ flex: 1, padding: "0.75rem", borderRadius: "6px", border: "1px solid #e2e8f0" }}
+                    />
+                  </div>
                 )}
               </div>
 
@@ -607,6 +711,7 @@ export default function ManageEventsPage() {
                 </button>
               </div>
             </form>
+            </div>
           </div>
         </div>
       )}
@@ -618,16 +723,19 @@ export default function ManageEventsPage() {
           backgroundColor: "rgba(0,0,0,0.5)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 1000
         }}>
           <div style={{
-            backgroundColor: "white", padding: "2rem", borderRadius: "12px", width: "100%", maxWidth: "500px", maxHeight: "90vh", overflowY: "auto"
+            backgroundColor: "white", borderRadius: "12px", width: "100%", maxWidth: "700px", maxHeight: "90vh", display: "flex", flexDirection: "column", overflow: "hidden", boxShadow: "0 20px 25px -5px rgba(0,0,0,0.1)"
           }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
-              <h2 style={{ fontSize: "1.25rem", fontWeight: "bold" }}>Edit Event</h2>
-              <button onClick={() => setIsEditModalOpen(false)} style={{ background: "none", border: "none", cursor: "pointer" }}>
+            {/* Modal Header */}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "1.5rem 2rem", borderBottom: "1px solid #e2e8f0", backgroundColor: "white", zIndex: 10 }}>
+              <h2 style={{ fontSize: "1.25rem", fontWeight: "bold", margin: 0 }}>Edit Event</h2>
+              <button onClick={() => setIsEditModalOpen(false)} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--color-slate-400)" }}>
                 <X size={20} />
               </button>
             </div>
 
-            <form onSubmit={handleUpdateEvent} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+            {/* Modal Body */}
+            <div style={{ padding: "2rem", overflowY: "auto", flex: 1 }}>
+              <form onSubmit={handleUpdateEvent} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
               <div>
                 <label style={{ display: "block", marginBottom: "0.5rem", fontSize: "0.9rem", fontWeight: "500" }}>Event Name</label>
                 <input
@@ -658,6 +766,7 @@ export default function ManageEventsPage() {
                 <label style={{ display: "block", marginBottom: "0.5rem", fontSize: "0.9rem", fontWeight: "500" }}>Date</label>
                 <input
                   type="date"
+                  min={new Date().toISOString().split("T")[0]}
                   value={editingEvent.date && editingEvent.date !== "N/A" ? editingEvent.date : ""}
                   onChange={(e) => setEditingEvent({ ...editingEvent, date: e.target.value })}
                   style={{ width: "100%", padding: "0.75rem", borderRadius: "6px", border: "1px solid #e2e8f0" }}
@@ -880,6 +989,7 @@ export default function ManageEventsPage() {
                 </button>
               </div>
             </form>
+            </div>
           </div>
         </div>
       )}
@@ -952,6 +1062,18 @@ export default function ManageEventsPage() {
           }}
         />
       )}
+
+      {/* Confirm Modal Component */}
+      <ConfirmModal 
+        isOpen={!!confirmModal}
+        title="Confirm Action"
+        message={confirmModal?.message}
+        onConfirm={executeConfirmAction}
+        onCancel={() => setConfirmModal(null)}
+        confirmText={confirmModal?.actionText || "Confirm"}
+        confirmColor={confirmModal?.actionColor || "#ef4444"} // red-500 default
+        isLoading={confirmLoading}
+      />
 
     </div>
   );
