@@ -22,4 +22,5 @@ public class CustomerBookingDto {
     private Integer tickets;
     private BigDecimal pricePaid;
     private String status;
+    private Integer eventId;
 }

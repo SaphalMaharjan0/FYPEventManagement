@@ -222,24 +222,55 @@ public class AdminService {
 
         // 6. Top Events (for Reports)
         java.util.Map<Event, BigDecimal> eventRevenue = new java.util.HashMap<>();
-        for (Booking b : bookings) {
+        for (Booking b : activeBookings) {
             if (b.getEvent() != null) {
                 eventRevenue.put(b.getEvent(),
                         eventRevenue.getOrDefault(b.getEvent(), BigDecimal.ZERO).add(b.getAmount()));
             }
         }
         BigDecimal totalPlatformRevenue = totalRevenue.compareTo(BigDecimal.ZERO) == 0 ? BigDecimal.ONE : totalRevenue; // avoid division by zero
-        List<AdminDashboardStatsDto.TopEventDto> topEvents = eventRevenue.entrySet().stream()
+        List<java.util.Map.Entry<Event, BigDecimal>> sortedEvents = eventRevenue.entrySet().stream()
                 .sorted((a, b) -> b.getValue().compareTo(a.getValue()))
-                .limit(5)
-                .map(e -> AdminDashboardStatsDto.TopEventDto.builder()
-                        .id(e.getKey().getEventId())
-                        .name(e.getKey().getTitle())
-                        .revenue(e.getValue())
-                        .percentage(e.getValue().multiply(new BigDecimal("100"))
-                                .divide(totalPlatformRevenue, 2, java.math.RoundingMode.HALF_UP).doubleValue())
-                        .build())
                 .collect(Collectors.toList());
+
+        List<AdminDashboardStatsDto.TopEventDto> topEvents = new java.util.ArrayList<>();
+        BigDecimal top5Revenue = BigDecimal.ZERO;
+        
+        double top5PercentageSum = 0;
+        for (int i = 0; i < Math.min(5, sortedEvents.size()); i++) {
+            var e = sortedEvents.get(i);
+            top5Revenue = top5Revenue.add(e.getValue());
+            double percentage = e.getValue().multiply(new BigDecimal("100"))
+                    .divide(totalPlatformRevenue, 2, java.math.RoundingMode.HALF_UP).doubleValue();
+            top5PercentageSum += percentage;
+            topEvents.add(AdminDashboardStatsDto.TopEventDto.builder()
+                    .id(e.getKey().getEventId())
+                    .name(e.getKey().getTitle())
+                    .revenue(e.getValue())
+                    .percentage(percentage)
+                    .build());
+        }
+
+        System.out.println("DEBUG - totalRevenue: " + totalRevenue);
+        System.out.println("DEBUG - top5Revenue: " + top5Revenue);
+        System.out.println("DEBUG - totalPlatformRevenue: " + totalPlatformRevenue);
+        System.out.println("DEBUG - activeBookings size: " + activeBookings.size());
+
+        if (sortedEvents.size() > 5 || top5Revenue.compareTo(totalRevenue) < 0) {
+            BigDecimal otherRevenue = totalRevenue.subtract(top5Revenue);
+            if (otherRevenue.compareTo(BigDecimal.ZERO) > 0) {
+                double otherPercentage = Math.max(0.0, 100.0 - top5PercentageSum);
+                // Round to 2 decimal places in case of floating point precision issues
+                otherPercentage = Math.round(otherPercentage * 100.0) / 100.0;
+                
+                topEvents.add(AdminDashboardStatsDto.TopEventDto.builder()
+                        .id(-1)
+                        .name("Other Events")
+                        .revenue(otherRevenue)
+                        .percentage(otherPercentage)
+                        .build());
+            }
+        }
 
         return AdminDashboardStatsDto.builder()
                 .totalUsers(totalUsers)

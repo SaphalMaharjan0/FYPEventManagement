@@ -53,7 +53,7 @@ export default function CustomerPages({
   }
 
   if (currentPage === "customer-bookings") {
-    return <MyBookingsPage events={events} />;
+    return <MyBookingsPage events={events} onBookClick={onBookClick} onContinuePurchase={onInitiateBooking} />;
   }
 
   if (currentPage === "customer-history") {

@@ -30,10 +30,11 @@ export default function VendorSidebar({ currentPage, onNavigate, currentUser, on
 
   return (
     <aside className={`dashboard-sidebar ${isOpen ? 'mobile-open' : ''}`} style={{
-      backgroundColor: "#111827", // Dark blue-gray
-      color: "var(--color-white)",
+      backgroundColor: "var(--bg-card)",
+      color: "var(--text-subtle)",
       display: "flex",
       flexDirection: "column",
+      borderRight: "1px solid var(--border-main)",
     }}>
       {/* Brand */}
       <div style={{
@@ -53,12 +54,12 @@ export default function VendorSidebar({ currentPage, onNavigate, currentUser, on
         }}>
           <Hexagon size={20} color="var(--color-white)" fill="var(--color-white)" />
         </div>
-        <span style={{ fontSize: "1.25rem", fontWeight: "bold", letterSpacing: "-0.5px" }}>EventPulse</span>
+        <span style={{ color: "var(--text-main)", fontSize: "1.25rem", fontWeight: "bold", letterSpacing: "-0.5px" }}>EventPulse</span>
       </div>
 
       {/* Navigation Menu */}
       <div style={{ flex: 1, overflowY: "auto", padding: "1rem 0" }}>
-        <div style={{ padding: "0 1.5rem", marginBottom: "1rem", fontSize: "0.75rem", fontWeight: "600", color: "#6b7280", letterSpacing: "1px", textTransform: "uppercase" }}>
+        <div style={{ padding: "0 1.5rem", marginBottom: "1rem", fontSize: "0.75rem", fontWeight: "600", color: "var(--text-subtle)", letterSpacing: "1px", textTransform: "uppercase" }}>
           VENDOR
         </div>
         
@@ -78,8 +79,8 @@ export default function VendorSidebar({ currentPage, onNavigate, currentUser, on
                   marginLeft: "0.75rem",
                   marginRight: "0.75rem",
                   padding: "0.85rem 1rem",
-                  backgroundColor: isActive ? "var(--color-blue-500)" : "transparent",
-                  color: isActive ? "var(--color-white)" : "#9ca3af",
+                  backgroundColor: isActive ? "var(--primary)" : "transparent",
+                  color: isActive ? "white" : "var(--text-subtle)",
                   border: "none",
                   borderRadius: "0.5rem",
                   cursor: "pointer",
@@ -90,14 +91,14 @@ export default function VendorSidebar({ currentPage, onNavigate, currentUser, on
                 }}
                 onMouseEnter={(e) => {
                   if (!isActive) {
-                    e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.05)";
-                    e.currentTarget.style.color = "var(--color-white)";
+                    e.currentTarget.style.backgroundColor = "var(--hover-bg)";
+                    e.currentTarget.style.color = "var(--text-main)";
                   }
                 }}
                 onMouseLeave={(e) => {
                   if (!isActive) {
                     e.currentTarget.style.backgroundColor = "transparent";
-                    e.currentTarget.style.color = "#9ca3af";
+                    e.currentTarget.style.color = "var(--text-subtle)";
                   }
                 }}
               >
@@ -112,7 +113,7 @@ export default function VendorSidebar({ currentPage, onNavigate, currentUser, on
       {/* User Profile Footer */}
       <div style={{ 
         padding: "1.5rem", 
-        borderTop: "1px solid rgba(255, 255, 255, 0.1)",
+        borderTop: "1px solid var(--border-main)",
         display: "flex",
         flexDirection: "column",
         gap: "1rem"
@@ -135,14 +136,14 @@ export default function VendorSidebar({ currentPage, onNavigate, currentUser, on
             {currentUser?.fullName ? currentUser.fullName.split(' ').map(n => n[0]).join('') : 'MC'}
           </div>
           <div style={{ flex: 1, overflow: "hidden" }}>
-            <div style={{ fontWeight: "600", fontSize: "0.9rem", whiteSpace: "nowrap", textOverflow: "ellipsis", overflow: "hidden" }}>
+            <div style={{ color: "var(--text-main)", fontWeight: "600", fontSize: "0.9rem", whiteSpace: "nowrap", textOverflow: "ellipsis", overflow: "hidden" }}>
               {currentUser?.fullName || "Marcus Chen"}
             </div>
-            <div style={{ color: "#9ca3af", fontSize: "0.75rem", whiteSpace: "nowrap", textOverflow: "ellipsis", overflow: "hidden" }}>
+            <div style={{ color: "var(--text-subtle)", fontSize: "0.75rem", whiteSpace: "nowrap", textOverflow: "ellipsis", overflow: "hidden" }}>
               {currentUser?.email || "alex@example.com"}
             </div>
           </div>
-          <ChevronRight size={16} color="#9ca3af" />
+          <ChevronRight size={16} color="var(--text-subtle)" />
         </div>
         
         <button 
@@ -153,7 +154,7 @@ export default function VendorSidebar({ currentPage, onNavigate, currentUser, on
             gap: "0.75rem", 
             background: "none", 
             border: "none", 
-            color: "#9ca3af", 
+            color: "var(--text-subtle)", 
             cursor: "pointer",
             padding: "0.5rem 0",
             fontSize: "0.9rem",
@@ -161,8 +162,8 @@ export default function VendorSidebar({ currentPage, onNavigate, currentUser, on
             width: "100%",
             textAlign: "left"
           }}
-          onMouseEnter={(e) => e.currentTarget.style.color = "var(--color-white)"}
-          onMouseLeave={(e) => e.currentTarget.style.color = "#9ca3af"}
+          onMouseEnter={(e) => e.currentTarget.style.color = "var(--text-main)"}
+          onMouseLeave={(e) => e.currentTarget.style.color = "var(--text-subtle)"}
         >
           <LogOut size={16} />
           Sign Out

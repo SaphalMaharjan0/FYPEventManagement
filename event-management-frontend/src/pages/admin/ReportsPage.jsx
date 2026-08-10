@@ -4,6 +4,8 @@ import { useFetch } from "../../hooks/useFetch";
 import { 
   BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer 
 } from "recharts";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 export default function ReportsPage() {
   const fetchWithAuth = useFetch();
@@ -30,6 +32,128 @@ export default function ReportsPage() {
   const bookingsByMonth = stats?.bookingsByDate || [];
   const topEvents = stats?.topEvents || [];
 
+  const exportToCSV = () => {
+    if (!stats) return;
+    
+    let csvContent = "";
+    
+    csvContent += "--- REPORT SUMMARY ---\n";
+    csvContent += `Total Revenue,${stats.totalRevenue}\n`;
+    csvContent += `Total Bookings,${stats.totalBookings}\n`;
+    csvContent += `Total Events,${stats.totalEvents}\n`;
+    csvContent += `Total Users,${stats.totalUsers}\n\n`;
+    
+    csvContent += "--- MONTHLY REVENUE ---\n";
+    csvContent += "Month,Revenue\n";
+    monthlyRevenue.forEach(item => {
+      csvContent += `${item.name},${item.value}\n`;
+    });
+    
+    csvContent += "\n--- TOP EVENTS (REVENUE) ---\n";
+    csvContent += "Event Name,Revenue,Percentage\n";
+    topEvents.forEach(item => {
+      csvContent += `"${item.name}",${item.revenue},${item.percentage}%\n`;
+    });
+    
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `eventpulse_report_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  const exportToPDF = () => {
+    if (!stats) return;
+
+    const doc = new jsPDF();
+    
+    // Header
+    doc.setFontSize(22);
+    doc.setTextColor(15, 23, 42); // slate-900
+    doc.text("EventPulse Official Analytics Report", 14, 22);
+    
+    doc.setFontSize(11);
+    doc.setTextColor(100, 116, 139); // slate-500
+    doc.text(`Generated on: ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}`, 14, 30);
+    
+    // Summary Metrics
+    doc.setFontSize(14);
+    doc.setTextColor(15, 23, 42);
+    doc.text("Performance Summary", 14, 45);
+    
+    autoTable(doc, {
+      startY: 50,
+      head: [['Metric', 'Value']],
+      body: [
+        ['Total Revenue', `$${stats.totalRevenue?.toLocaleString() || "0"}`],
+        ['Total Bookings', stats.totalBookings?.toLocaleString() || "0"],
+        ['Total Events', stats.totalEvents?.toLocaleString() || "0"],
+        ['Total Users', stats.totalUsers?.toLocaleString() || "0"]
+      ],
+      theme: 'grid',
+      headStyles: { fillColor: [59, 130, 246] },
+      styles: { fontSize: 11, cellPadding: 5 }
+    });
+    
+    // Monthly Revenue
+    doc.setFontSize(14);
+    doc.setTextColor(15, 23, 42);
+    doc.text("Monthly Revenue Trend", 14, doc.lastAutoTable.finalY + 15);
+    
+    const revenueBody = monthlyRevenue.map(item => [item.name, `$${item.value?.toLocaleString() || "0"}`]);
+    
+    autoTable(doc, {
+      startY: doc.lastAutoTable.finalY + 20,
+      head: [['Month', 'Revenue']],
+      body: revenueBody,
+      theme: 'striped',
+      headStyles: { fillColor: [16, 185, 129] },
+      styles: { fontSize: 11, cellPadding: 5 }
+    });
+    
+    // Top Events
+    let nextY = doc.lastAutoTable.finalY;
+    if (nextY > 200) {
+      doc.addPage();
+      nextY = 15;
+    } else {
+      nextY += 15;
+    }
+    
+    doc.setFontSize(14);
+    doc.setTextColor(15, 23, 42);
+    doc.text("Top Performing Events", 14, nextY);
+    
+    autoTable(doc, {
+      startY: nextY + 5,
+      head: [['Event Name', 'Revenue', 'Percentage']],
+      body: topEvents.map(item => [item.name, `$${item.revenue?.toLocaleString() || "0"}`, `${item.percentage?.toFixed(2) || "0.00"}%`]),
+      theme: 'striped',
+      headStyles: { fillColor: [139, 92, 246] },
+      styles: { fontSize: 11, cellPadding: 5 }
+    });
+    
+    // Footer
+    const pageCount = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setFontSize(9);
+      doc.setTextColor(148, 163, 184);
+      doc.text(
+        `Page ${i} of ${pageCount} - EventPulse Confidential`, 
+        doc.internal.pageSize.width / 2, 
+        doc.internal.pageSize.height - 10, 
+        { align: 'center' }
+      );
+    }
+
+    doc.save(`eventpulse_official_report_${new Date().toISOString().split('T')[0]}.pdf`);
+  };
+
   const StatCard = ({ icon: Icon, title, value, subtitle, iconColor, iconBg }) => (
     <div style={{ backgroundColor: "var(--color-white)", padding: "1.5rem", borderRadius: "12px", border: "1px solid #e2e8f0", display: "flex", alignItems: "flex-start", gap: "1.25rem" }}>
       <div style={{ backgroundColor: iconBg, color: iconColor, padding: "0.75rem", borderRadius: "8px", marginTop: "0.25rem" }}>
@@ -49,7 +173,9 @@ export default function ReportsPage() {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2rem" }}>
         <h1 style={{ fontSize: "1.75rem", fontWeight: "bold", color: "var(--color-slate-900)" }}>Reports & Analytics</h1>
         <div style={{ display: "flex", gap: "1rem" }}>
-          <button style={{ 
+          <button 
+            onClick={exportToCSV}
+            style={{ 
             display: "flex", alignItems: "center", gap: "0.5rem", 
             padding: "0.6rem 1.25rem", backgroundColor: "white", color: "var(--color-slate-700)", 
             border: "1px solid #e2e8f0", borderRadius: "8px", fontWeight: "600", fontSize: "0.9rem",
@@ -58,7 +184,9 @@ export default function ReportsPage() {
             <Download size={16} />
             Export CSV
           </button>
-          <button style={{ 
+          <button 
+            onClick={exportToPDF}
+            style={{ 
             display: "flex", alignItems: "center", gap: "0.5rem", 
             padding: "0.6rem 1.25rem", backgroundColor: "#3b82f6", color: "white", 
             border: "none", borderRadius: "8px", fontWeight: "600", fontSize: "0.9rem",

@@ -322,7 +322,7 @@ export default function AppRoutes({
         }>
           <Route path="dashboard" element={<DashboardPage currentUser={currentUser} events={events} onBookClick={handleBookClick} onNavigate={onNavigate} />} />
           <Route path="events" element={<EventListingPage events={events} onBookClick={handleBookClick} initialCategory={eventsPageCategory} initialSearchQuery={eventsPageSearch} initialLocationQuery={eventsPageLocation} isDashboardContext={true} />} />
-          <Route path="bookings" element={<MyBookingsPage events={events} />} />
+          <Route path="bookings" element={<MyBookingsPage events={events} onBookClick={handleBookClick} onContinuePurchase={handleInitiateBooking} />} />
           <Route path="history" element={<BookingHistoryPage events={events} />} />
           <Route path="favorites" element={<FavoritesPage events={events} onBookClick={handleBookClick} />} />
           <Route path="settings" element={<SettingsPage />} />

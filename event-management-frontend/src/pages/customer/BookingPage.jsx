@@ -97,7 +97,7 @@ export default function BookingPage({ event, initialQuantity, onBookingSuccess, 
         });
         
         if (response && response.paymentUrl) {
-          // Redirect the user directly to the Khalti Sandbox payment page
+          // Redirect the user directly to the Khalti payment page
           window.location.href = response.paymentUrl;
         } else {
           alert("Failed to initiate Khalti payment");

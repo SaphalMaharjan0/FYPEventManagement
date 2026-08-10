@@ -49,7 +49,7 @@ public class CustomerController {
     }
 
     @GetMapping("/favorites")
-    public ResponseEntity<java.util.List<CustomerDashboardStatsDto.EventDto>> getFavorites(@AuthenticationPrincipal User currentUser) {
+    public ResponseEntity<java.util.List<com.example.eventbooking.dto.response.EventDto>> getFavorites(@AuthenticationPrincipal User currentUser) {
         return ResponseEntity.ok(customerService.getFavoriteEvents(currentUser.getUserId()));
     }
 

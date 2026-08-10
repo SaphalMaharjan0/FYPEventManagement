@@ -2,13 +2,21 @@ import React, { useState, useEffect } from "react";
 import { X, QrCode, Download, Ticket, Calendar, Clock, MapPin } from "lucide-react";
 import { useFetch } from "../../hooks/useFetch";
 import { formatPrice, formatShortAddress } from "../../utils/formatting";
+import ConfirmModal from "../../components/common/ConfirmModal";
 
-export default function MyBookingsPage() {
+export default function MyBookingsPage({ events = [], onBookClick, onContinuePurchase }) {
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [confirmModal, setConfirmModal] = useState(null);
+  const [toast, setToast] = useState(null);
   const fetchWithAuth = useFetch();
+
+  const showToast = (message) => {
+    setToast(message);
+    setTimeout(() => setToast(null), 3000);
+  };
 
   const fetchBookings = async () => {
     try {
@@ -36,21 +44,24 @@ export default function MyBookingsPage() {
     fetchBookings();
   }, [fetchWithAuth]);
 
-  const handleCancelBooking = async (bookingId) => {
-    if (!window.confirm("Are you sure you want to cancel this booking?")) {
-      return;
-    }
-    
-    try {
-      await fetchWithAuth(`/api/customer/bookings/${bookingId}/cancel`, {
-        method: "POST"
-      });
-      alert("Booking cancelled successfully!");
-      fetchBookings(); // Refresh bookings list
-    } catch (err) {
-      console.error("Cancellation failed:", err);
-      alert(err.message || "Failed to cancel booking. Please try again.");
-    }
+  const triggerCancelBooking = (booking) => {
+    setConfirmModal({
+      message: `Are you sure you want to cancel the booking for "${booking.title}"?`,
+      actionText: "Cancel Booking",
+      actionColor: "#ef4444",
+      action: async () => {
+        try {
+          await fetchWithAuth(`/api/customer/bookings/${booking.id}/cancel`, {
+            method: "POST"
+          });
+          showToast("Booking cancelled successfully!");
+          fetchBookings(); // Refresh bookings list
+        } catch (err) {
+          console.error("Cancellation failed:", err);
+          showToast(err.message || "Failed to cancel booking. Please try again.");
+        }
+      }
+    });
   };
 
   const handleDownloadPDF = () => {
@@ -215,26 +226,56 @@ export default function MyBookingsPage() {
                 </div>
 
                 <div style={{ display: "flex", gap: "1rem" }}>
-                  <button
-                    type="button"
-                    onClick={() => setSelectedTicket(booking)}
-                    style={{
-                      padding: "0.45rem 1rem",
-                      backgroundColor: "rgba(59, 130, 246, 0.12)",
-                      color: "var(--primary, #3b82f6)",
-                      border: "none",
-                      borderRadius: "var(--radius-sm, 0.5rem)",
-                      fontSize: "0.85rem",
-                      fontWeight: "600",
-                      cursor: "pointer",
-                      transition: "var(--transition-fast)",
-                    }}
-                  >
-                    View Ticket
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleCancelBooking(booking.id)}
+                  {booking.status?.toUpperCase() === "CONFIRMED" ? (
+                    <button
+                      type="button"
+                      onClick={() => setSelectedTicket(booking)}
+                      style={{
+                        padding: "0.45rem 1rem",
+                        backgroundColor: "rgba(59, 130, 246, 0.12)",
+                        color: "var(--primary, #3b82f6)",
+                        border: "none",
+                        borderRadius: "var(--radius-sm, 0.5rem)",
+                        fontSize: "0.85rem",
+                        fontWeight: "600",
+                        cursor: "pointer",
+                        transition: "var(--transition-fast)",
+                      }}
+                    >
+                      View Ticket
+                    </button>
+                  ) : booking.status?.toUpperCase() === "PENDING" ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const evt = events.find(e => e.id === booking.eventId || e.title === booking.title);
+                        if (evt && onContinuePurchase) {
+                          onContinuePurchase(evt, booking.tickets || 1);
+                        } else if (evt && onBookClick) {
+                          onBookClick(evt);
+                        } else {
+                          window.location.href = '/customer/events';
+                        }
+                      }}
+                      style={{
+                        padding: "0.45rem 1rem",
+                        backgroundColor: "rgba(245, 158, 11, 0.12)",
+                        color: "#f59e0b",
+                        border: "none",
+                        borderRadius: "var(--radius-sm, 0.5rem)",
+                        fontSize: "0.85rem",
+                        fontWeight: "600",
+                        cursor: "pointer",
+                        transition: "var(--transition-fast)",
+                      }}
+                    >
+                      Continue Purchase
+                    </button>
+                  ) : null}
+                  {new Date(booking.date) >= new Date(new Date().setHours(0,0,0,0)) && (
+                    <button
+                      type="button"
+                      onClick={() => triggerCancelBooking(booking)}
                     style={{
                       padding: "0.45rem 1rem",
                       backgroundColor: "transparent",
@@ -249,6 +290,7 @@ export default function MyBookingsPage() {
                   >
                     Cancel Booking
                   </button>
+                  )}
                 </div>
               </div>
             </div>
@@ -469,6 +511,27 @@ export default function MyBookingsPage() {
           </div>
         </div>
       )}
+
+      {toast && (
+        <div className="toast-notif">
+          <span>{toast}</span>
+        </div>
+      )}
+
+      <ConfirmModal 
+        isOpen={!!confirmModal}
+        title="Confirm Cancellation"
+        message={confirmModal?.message}
+        onConfirm={async () => {
+          if (confirmModal?.action) {
+            await confirmModal.action();
+          }
+          setConfirmModal(null);
+        }}
+        onCancel={() => setConfirmModal(null)}
+        confirmText={confirmModal?.actionText || "Confirm"}
+        confirmColor={confirmModal?.actionColor || "#ef4444"}
+      />
     </div>
   );
 }

@@ -1,6 +1,5 @@
 package com.example.eventbooking.service;
 
-import com.example.eventbooking.dto.response.EventDto;
 import com.example.eventbooking.entity.Event;
 import com.example.eventbooking.entity.enums.EventStatus;
 import com.example.eventbooking.repository.EventRepository;
@@ -24,7 +23,7 @@ public class EventService {
     private final BookingRepository bookingRepository;
     private final TicketRepository ticketRepository;
 
-    public List<EventDto> getAllEventsDebug() {
+    public List<com.example.eventbooking.dto.response.EventDto> getAllEventsDebug() {
         return eventRepository.findAll()
                 .stream()
                 .map(this::mapToDto)
@@ -32,7 +31,7 @@ public class EventService {
     }
 
     @Cacheable("events")
-    public List<EventDto> getAllPublishedEvents() {
+    public List<com.example.eventbooking.dto.response.EventDto> getAllPublishedEvents() {
         // Log the count of all events in the database to see what's going on
         System.out.println("Total events in DB: " + eventRepository.count());
         
@@ -42,7 +41,7 @@ public class EventService {
                 .collect(Collectors.toList());
     }
 
-    private EventDto mapToDto(Event event) {
+    public com.example.eventbooking.dto.response.EventDto mapToDto(Event event) {
         DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("hh:mm a");
         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
@@ -60,7 +59,7 @@ public class EventService {
         int percentAvailable = (totalSeats > 0) ? (seatsLeft * 100 / totalSeats) : 0;
         boolean featured = event.getEventId() % 2 != 0; 
 
-        return EventDto.builder()
+        return com.example.eventbooking.dto.response.EventDto.builder()
                 .id(event.getEventId())
                 .title(event.getTitle())
                 .category(event.getCategory())
