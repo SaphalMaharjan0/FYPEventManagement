@@ -6,6 +6,7 @@ import RequestsPage from "./RequestsPage";
 import AvailabilityPage from "./AvailabilityPage";
 import SettingsPage from "./SettingsPage";
 import ProfilePage from "./ProfilePage";
+import VendorEventsPage from "./VendorEventsPage";
 
 export default function VendorPages({
   currentPage,
@@ -19,6 +20,10 @@ export default function VendorPages({
 
   if (currentPage === "vendor-services") {
     return <ServiceListingsPage onNavigate={onNavigate} />;
+  }
+
+  if (currentPage === "vendor-events") {
+    return <VendorEventsPage currentUser={currentUser} />;
   }
 
   if (currentPage === "vendor-add-service") {

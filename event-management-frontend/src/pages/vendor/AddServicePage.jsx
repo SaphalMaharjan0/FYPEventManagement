@@ -1,21 +1,38 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Package, Image as ImageIcon } from "lucide-react";
 import { useFetch } from "../../hooks/useFetch";
 import { useNavigate } from "react-router-dom";
+import { useSettings } from "../../contexts/SettingsContext";
 
 export default function AddServicePage() {
   const fetchWithAuth = useFetch();
   const navigate = useNavigate();
+  const { currency } = useSettings();
   
   const [formData, setFormData] = useState({
     serviceName: "",
     category: "",
     price: "",
+    region: "",
     description: "",
     imageUrl: "" // Will hold the Base64 string
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
+
+  const [isVerified, setIsVerified] = useState(null);
+
+  useEffect(() => {
+    const checkVerification = async () => {
+      try {
+        const vendorData = await fetchWithAuth("/api/vendor/profile");
+        setIsVerified(vendorData?.isVerified || false);
+      } catch (err) {
+        setIsVerified(false);
+      }
+    };
+    checkVerification();
+  }, [fetchWithAuth]);
 
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
@@ -67,6 +84,27 @@ export default function AddServicePage() {
     }
   };
 
+  if (isVerified === null) {
+    return <div style={{ padding: "2rem", textAlign: "center" }}>Checking verification status...</div>;
+  }
+
+  if (isVerified === false) {
+    return (
+      <div style={{ maxWidth: "800px", margin: "0 auto", padding: "3rem 2rem", textAlign: "center", backgroundColor: "var(--color-white)", borderRadius: "12px", border: "1px solid #e2e8f0", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)" }}>
+        <h2 style={{ fontSize: "1.5rem", fontWeight: "bold", color: "var(--color-slate-900)", marginBottom: "1rem" }}>Action Required</h2>
+        <p style={{ color: "var(--color-slate-600)", marginBottom: "1.5rem", lineHeight: "1.6", maxWidth: "500px", margin: "0 auto 2rem" }}>
+          You must be approved by an administrator before you can add services. Please complete your profile and upload the necessary business documents for verification.
+        </p>
+        <button 
+          onClick={() => navigate("/vendor/profile")}
+          style={{ padding: "0.75rem 1.5rem", backgroundColor: "#3b82f6", color: "white", border: "none", borderRadius: "8px", fontWeight: "600", cursor: "pointer" }}
+        >
+          Go to Profile
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div style={{ maxWidth: "800px", margin: "0 auto" }}>
       <h1 style={{ fontSize: "1.75rem", fontWeight: "bold", color: "var(--color-slate-900)", marginBottom: "2rem" }}>Add New Service</h1>
@@ -106,7 +144,18 @@ export default function AddServicePage() {
           </div>
 
           <div>
-            <label style={{ display: "block", fontSize: "0.9rem", fontWeight: "600", color: "var(--color-slate-900)", marginBottom: "0.5rem" }}>Price (USD)</label>
+            <label style={{ display: "block", fontSize: "0.9rem", fontWeight: "600", color: "var(--color-slate-900)", marginBottom: "0.5rem" }}>Region / City (Optional)</label>
+            <input 
+              type="text" 
+              placeholder="e.g. New York, Kathmandu (Defaults to your business address)"
+              value={formData.region}
+              onChange={(e) => setFormData({...formData, region: e.target.value})}
+              style={{ width: "100%", padding: "0.75rem 1rem", backgroundColor: "var(--color-slate-50)", border: "1px solid #e2e8f0", borderRadius: "0.5rem", fontSize: "0.95rem", outline: "none", color: "var(--color-slate-900)" }}
+            />
+          </div>
+
+          <div>
+            <label style={{ display: "block", fontSize: "0.9rem", fontWeight: "600", color: "var(--color-slate-900)", marginBottom: "0.5rem" }}>Price ({currency})</label>
             <input 
               type="number" 
               step="0.01"

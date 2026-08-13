@@ -17,4 +17,8 @@ public class VendorDto {
     private String loginEmail;
     private Double latitude;
     private Double longitude;
+    private String profilePicture;
+    private String citizenshipImage;
+    private String passportPhoto;
+    private String panVatImage;
 }

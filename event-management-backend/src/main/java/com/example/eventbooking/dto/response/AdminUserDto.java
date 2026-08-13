@@ -18,6 +18,7 @@ public class AdminUserDto {
     private String status; // e.g. "Active", "Inactive"
     private String joinedDate;
     private String password; // optional for updating
+    private String profilePicture;
     @com.fasterxml.jackson.annotation.JsonProperty("isSuperAdmin")
     private Boolean isSuperAdmin;
 }

@@ -24,6 +24,10 @@ export default function ProfilePage({ currentUser, onUpdateUser }) {
     payoutMethod: "bank",
     payoutAccount: "",
     loginEmail: "",
+    profilePicture: "",
+    citizenshipImage: "",
+    passportPhoto: "",
+    panVatImage: "",
   });
 
   useEffect(() => {
@@ -52,6 +56,10 @@ export default function ProfilePage({ currentUser, onUpdateUser }) {
             payoutMethod: vendorData.payoutMethod || "bank",
             payoutAccount: vendorData.payoutAccount || "",
             loginEmail: vendorData.loginEmail || currentUser?.email || "",
+            profilePicture: vendorData.profilePicture || currentUser?.profilePicture || "",
+            citizenshipImage: vendorData.citizenshipImage || "",
+            passportPhoto: vendorData.passportPhoto || "",
+            panVatImage: vendorData.panVatImage || "",
           }));
         }
       } catch (err) {
@@ -104,6 +112,10 @@ export default function ProfilePage({ currentUser, onUpdateUser }) {
           payoutMethod: formData.payoutMethod,
           payoutAccount: formData.payoutAccount,
           loginEmail: formData.loginEmail,
+          profilePicture: formData.profilePicture,
+          citizenshipImage: formData.citizenshipImage,
+          passportPhoto: formData.passportPhoto,
+          panVatImage: formData.panVatImage,
         }),
       });
 
@@ -127,6 +139,17 @@ export default function ProfilePage({ currentUser, onUpdateUser }) {
     .join("")
     .toUpperCase() || "??";
 
+  const handleImageUpload = (e, field) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData({ ...formData, [field || "profilePicture"]: reader.result });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const inputStyle = {
     width: "100%",
     padding: "0.75rem 1rem",
@@ -148,6 +171,7 @@ export default function ProfilePage({ currentUser, onUpdateUser }) {
   }
 
   return (
+    <>
     <div style={{ maxWidth: "1000px", margin: "0 auto" }}>
       {/* Header */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2rem" }}>
@@ -202,15 +226,6 @@ export default function ProfilePage({ currentUser, onUpdateUser }) {
       <div style={{ backgroundColor: "white", borderRadius: "0.75rem", border: "1px solid #e2e8f0", overflow: "hidden", boxShadow: "0 1px 3px rgba(0,0,0,0.05)", marginBottom: "1.5rem" }}>
         {/* Cover */}
         <div style={{ height: "140px", background: "linear-gradient(135deg, #1e3a5f, #3b82f6)", position: "relative" }}>
-          <button style={{
-            position: "absolute", bottom: "1rem", right: "1rem",
-            padding: "0.4rem 0.9rem", backgroundColor: "rgba(255,255,255,0.2)",
-            backdropFilter: "blur(4px)", color: "white", border: "none",
-            borderRadius: "0.5rem", display: "flex", alignItems: "center", gap: "0.5rem",
-            cursor: "pointer", fontSize: "0.8rem", fontWeight: "500",
-          }}>
-            <Camera size={14} /> Edit Cover
-          </button>
         </div>
 
         {/* Avatar + name */}
@@ -222,17 +237,22 @@ export default function ProfilePage({ currentUser, onUpdateUser }) {
             display: "flex", alignItems: "center", justifyContent: "center",
             fontSize: "2.2rem", fontWeight: "bold", color: "white", position: "relative",
           }}>
-            {initials}
+            {formData.profilePicture ? (
+              <img src={formData.profilePicture} alt="Profile" style={{ width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover" }} />
+            ) : (
+              initials
+            )}
             {isEditing && (
-              <button style={{
+              <div style={{
                 position: "absolute", bottom: 0, right: 0,
                 width: "28px", height: "28px", borderRadius: "50%",
                 backgroundColor: "white", border: "1px solid #e2e8f0",
                 display: "flex", alignItems: "center", justifyContent: "center",
-                cursor: "pointer", color: "#64748b",
+                cursor: "pointer", color: "#64748b", zIndex: 10, overflow: "hidden"
               }}>
+                <input type="file" accept="image/*" style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", opacity: 0, cursor: "pointer" }} onChange={(e) => handleImageUpload(e, "profilePicture")} />
                 <Camera size={14} />
-              </button>
+              </div>
             )}
           </div>
 
@@ -281,6 +301,90 @@ export default function ProfilePage({ currentUser, onUpdateUser }) {
               </div>
             </div>
           )}
+        </div>
+      </div>
+
+        {/* Business Verification Documents Section */}
+        <div style={{ backgroundColor: "white", borderRadius: "0.75rem", border: "1px solid #e2e8f0", padding: "2rem", boxShadow: "0 1px 3px rgba(0,0,0,0.05)", marginBottom: "1.5rem" }}>
+          <h3 style={{ fontSize: "1.1rem", fontWeight: "bold", color: "#0f172a", marginBottom: "0.5rem" }}>
+            Business Verification Documents (Required for Nepal)
+          </h3>
+          <p style={{ fontSize: "0.85rem", color: "#64748b", marginBottom: "1.5rem" }}>
+            Upload the following documents to verify your business identity and start accepting bookings.
+          </p>
+          
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: "1.5rem" }}>
+            
+            {/* Citizenship */}
+            <div>
+              <label style={{ fontSize: "0.85rem", fontWeight: "600", color: "#64748b", display: "block", marginBottom: "0.5rem" }}>Citizenship Certificate</label>
+              <div style={{
+                position: "relative", height: "150px", backgroundColor: "#f8fafc",
+                border: "2px dashed #cbd5e1", borderRadius: "0.5rem",
+                display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+                overflow: "hidden", cursor: isEditing ? "pointer" : "default"
+              }}>
+                {formData.citizenshipImage ? (
+                  <img src={formData.citizenshipImage} alt="Citizenship" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                ) : (
+                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", color: "#94a3b8" }}>
+                    <Camera size={24} style={{ marginBottom: "0.5rem" }} />
+                    <span style={{ fontSize: "0.85rem", fontWeight: "500" }}>Upload Image</span>
+                  </div>
+                )}
+                {isEditing && (
+                  <input type="file" accept="image/*" style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", opacity: 0, cursor: "pointer" }} onChange={(e) => handleImageUpload(e, "citizenshipImage")} />
+                )}
+              </div>
+            </div>
+
+            {/* Passport Photo */}
+            <div>
+              <label style={{ fontSize: "0.85rem", fontWeight: "600", color: "#64748b", display: "block", marginBottom: "0.5rem" }}>Passport-sized Photo</label>
+              <div style={{
+                position: "relative", height: "150px", backgroundColor: "#f8fafc",
+                border: "2px dashed #cbd5e1", borderRadius: "0.5rem",
+                display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+                overflow: "hidden", cursor: isEditing ? "pointer" : "default"
+              }}>
+                {formData.passportPhoto ? (
+                  <img src={formData.passportPhoto} alt="Passport Photo" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+                ) : (
+                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", color: "#94a3b8" }}>
+                    <Camera size={24} style={{ marginBottom: "0.5rem" }} />
+                    <span style={{ fontSize: "0.85rem", fontWeight: "500" }}>Upload Photo</span>
+                  </div>
+                )}
+                {isEditing && (
+                  <input type="file" accept="image/*" style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", opacity: 0, cursor: "pointer" }} onChange={(e) => handleImageUpload(e, "passportPhoto")} />
+                )}
+              </div>
+            </div>
+
+            {/* PAN/VAT Card */}
+            <div>
+              <label style={{ fontSize: "0.85rem", fontWeight: "600", color: "#64748b", display: "block", marginBottom: "0.5rem" }}>PAN/VAT Certificate</label>
+              <div style={{
+                position: "relative", height: "150px", backgroundColor: "#f8fafc",
+                border: "2px dashed #cbd5e1", borderRadius: "0.5rem",
+                display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+                overflow: "hidden", cursor: isEditing ? "pointer" : "default"
+              }}>
+                {formData.panVatImage ? (
+                  <img src={formData.panVatImage} alt="PAN/VAT Card" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                ) : (
+                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", color: "#94a3b8" }}>
+                    <Camera size={24} style={{ marginBottom: "0.5rem" }} />
+                    <span style={{ fontSize: "0.85rem", fontWeight: "500" }}>Upload Document</span>
+                  </div>
+                )}
+                {isEditing && (
+                  <input type="file" accept="image/*" style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", opacity: 0, cursor: "pointer" }} onChange={(e) => handleImageUpload(e, "panVatImage")} />
+                )}
+              </div>
+            </div>
+            
+          </div>
 
           {/* Business Information */}
           <div style={{ borderTop: "1px solid #e2e8f0", paddingTop: "1.5rem", marginTop: "2rem" }}>
@@ -471,6 +575,6 @@ export default function ProfilePage({ currentUser, onUpdateUser }) {
         initialLocation={formData.businessAddress}
         onSelectLocation={(loc, coords) => setFormData({ ...formData, businessAddress: loc, latitude: coords?.lat, longitude: coords?.lng })}
       />
-    </div>
+    </>
   );
 }

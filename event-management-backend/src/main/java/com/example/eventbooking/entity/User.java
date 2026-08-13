@@ -41,6 +41,9 @@ public class User implements UserDetails {
     @Column(length = 200)
     private String location;
 
+    @Column(name = "profile_picture", columnDefinition = "TEXT")
+    private String profilePicture;
+
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(nullable = false)

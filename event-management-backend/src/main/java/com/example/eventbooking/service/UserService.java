@@ -38,6 +38,10 @@ public class UserService {
             user.setLocation(request.getLocation().trim());
         }
 
+        if (request.getProfilePicture() != null) {
+            user.setProfilePicture(request.getProfilePicture());
+        }
+
         userRepository.save(user);
 
         return UserDto.builder()
@@ -46,6 +50,7 @@ public class UserService {
                 .email(user.getEmail())
                 .phone(user.getPhone())
                 .location(user.getLocation())
+                .profilePicture(user.getProfilePicture())
                 .role(user.getRole())
                 .build();
     }

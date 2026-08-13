@@ -1,5 +1,5 @@
 import React from "react";
-import { Save, Bell, Shield, Globe, MapPin, X, User } from "lucide-react";
+import { Save, Bell, Shield, Globe, MapPin, X, User, Camera } from "lucide-react";
 import { useSettings } from "../../contexts/SettingsContext";
 import { useFetch } from "../../hooks/useFetch";
 import MapLocationPicker from "../../components/admin/MapLocationPicker";
@@ -12,6 +12,19 @@ export default function SettingsPage() {
   const [profile, setProfile] = useState(null);
   const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
   const [businessAddress, setBusinessAddress] = useState("");
+  const [successMsg, setSuccessMsg] = useState("");
+  const [errorMsg, setErrorMsg] = useState("");
+
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setProfile({ ...profile, profilePicture: reader.result });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -36,14 +49,39 @@ export default function SettingsPage() {
         method: "PUT",
         body: JSON.stringify(updatedProfile)
       });
-      alert("Business address updated successfully!");
+      setSuccessMsg("Business address updated successfully!");
+      setTimeout(() => setSuccessMsg(""), 3000);
       if (res) {
         setProfile(res);
         setBusinessAddress(res.businessAddress || "");
       }
       setIsLocationModalOpen(false);
     } catch (err) {
-      alert("Failed to update business address.");
+      setErrorMsg("Failed to update business address.");
+      setTimeout(() => setErrorMsg(""), 3000);
+    }
+  };
+
+  const handleSaveSettings = async () => {
+    if (!profile) {
+      setSuccessMsg("Settings saved successfully!");
+      setTimeout(() => setSuccessMsg(""), 3000);
+      return;
+    }
+    try {
+      const res = await fetchWithAuth("/api/vendor/profile", {
+        method: "PUT",
+        body: JSON.stringify(profile)
+      });
+      setSuccessMsg("Settings saved successfully!");
+      setTimeout(() => setSuccessMsg(""), 3000);
+      if (res) {
+        setProfile(res);
+        setBusinessAddress(res.businessAddress || "");
+      }
+    } catch (err) {
+      setErrorMsg("Failed to save settings.");
+      setTimeout(() => setErrorMsg(""), 3000);
     }
   };
 
@@ -54,18 +92,53 @@ export default function SettingsPage() {
           <h1 style={{ fontSize: "1.75rem", fontWeight: "bold", color: "var(--color-slate-900)", marginBottom: "0.25rem" }}>Settings</h1>
           <p style={{ color: "var(--color-slate-500)", fontSize: "0.95rem" }}>Manage your account preferences and security.</p>
         </div>
-        <button style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.6rem 1.25rem", backgroundColor: "var(--color-blue-500)", color: "var(--color-white)", border: "none", borderRadius: "0.5rem", fontWeight: "500", cursor: "pointer" }}>
+        <button 
+          onClick={handleSaveSettings}
+          style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.6rem 1.25rem", backgroundColor: "var(--color-blue-500)", color: "var(--color-white)", border: "none", borderRadius: "0.5rem", fontWeight: "500", cursor: "pointer" }}
+        >
           <Save size={18} /> Save Settings
         </button>
       </div>
 
       <div style={{ backgroundColor: "var(--color-white)", borderRadius: "0.75rem", border: "1px solid #e2e8f0", padding: "2rem", boxShadow: "0 1px 3px rgba(0,0,0,0.05)" }}>
         
+        {successMsg && (
+          <div style={{ padding: "1rem", backgroundColor: "#dcfce7", color: "#166534", borderRadius: "0.5rem", marginBottom: "1.5rem", border: "1px solid #bbf7d0" }}>
+            {successMsg}
+          </div>
+        )}
+        
+        {errorMsg && (
+          <div style={{ padding: "1rem", backgroundColor: "#fee2e2", color: "#b91c1c", borderRadius: "0.5rem", marginBottom: "1.5rem", border: "1px solid #fecaca" }}>
+            {errorMsg}
+          </div>
+        )}
+
+        
         <h2 style={{ fontSize: "1.25rem", fontWeight: "bold", color: "var(--color-slate-900)", marginBottom: "1.5rem", borderBottom: "1px solid #e2e8f0", paddingBottom: "0.5rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
           <User size={20} color="var(--color-purple-500)" /> Profile
         </h2>
 
         <form style={{ display: "flex", flexDirection: "column", gap: "1.5rem", marginBottom: "3rem" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "1.5rem" }}>
+            <div style={{ position: "relative" }}>
+              {profile?.profilePicture ? (
+                <img src={profile.profilePicture} alt="Profile" style={{ width: "80px", height: "80px", borderRadius: "50%", objectFit: "cover", border: "2px solid var(--color-slate-200)" }} />
+              ) : (
+                <div style={{ width: "80px", height: "80px", borderRadius: "50%", backgroundColor: "var(--color-blue-100)", color: "var(--color-blue-600)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "2rem", fontWeight: "bold" }}>
+                  <User size={32} />
+                </div>
+              )}
+              <div style={{ position: "absolute", bottom: "-5px", right: "-5px", width: "30px", height: "30px", borderRadius: "50%", backgroundColor: "var(--color-white)", border: "1px solid #e2e8f0", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--color-slate-600)", cursor: "pointer", boxShadow: "0 2px 4px rgba(0,0,0,0.1)", zIndex: 10, overflow: "hidden" }}>
+                <input type="file" accept="image/*" style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", opacity: 0, cursor: "pointer" }} onChange={handleImageUpload} />
+                <Camera size={14} />
+              </div>
+            </div>
+            <div>
+              <h3 style={{ fontSize: "1.1rem", fontWeight: "600", color: "var(--color-slate-900)", marginBottom: "0.25rem" }}>Profile Picture</h3>
+              <p style={{ fontSize: "0.85rem", color: "var(--color-slate-500)" }}>Upload a new profile picture. Recommended size: 256x256px.</p>
+            </div>
+          </div>
           <div>
             <label style={{ display: "block", fontSize: "0.9rem", fontWeight: "600", color: "var(--color-slate-900)", marginBottom: "0.5rem" }}>Business Address</label>
             <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
@@ -110,14 +183,17 @@ export default function SettingsPage() {
             <label style={{ display: "block", fontSize: "0.9rem", fontWeight: "600", color: "var(--color-slate-900)", marginBottom: "0.5rem" }}>Region</label>
             <select 
               value={region} 
-              onChange={(e) => setRegion(e.target.value)}
-              style={{ width: "100%", maxWidth: "300px", padding: "0.75rem", borderRadius: "8px", border: "1px solid #e2e8f0", fontSize: "0.95rem", outline: "none", backgroundColor: "white", color: "var(--color-slate-900)" }}
+              disabled
+              style={{ width: "100%", maxWidth: "300px", padding: "0.75rem", borderRadius: "8px", border: "1px solid #e2e8f0", fontSize: "0.95rem", outline: "none", backgroundColor: "#f8fafc", color: "var(--color-slate-500)", cursor: "not-allowed" }}
             >
               <option value="US">United States</option>
               <option value="EU">Europe</option>
-              <option value="UK">United Kingdom</option>
+              <option value="GB">United Kingdom</option>
               <option value="NP">Nepal</option>
             </select>
+            <p style={{ fontSize: "0.8rem", color: "var(--color-slate-500)", marginTop: "0.5rem" }}>
+              Currency and Region are automatically set based on your Business Address location.
+            </p>
           </div>
         </form>
 

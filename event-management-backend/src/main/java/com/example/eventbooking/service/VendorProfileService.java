@@ -48,6 +48,13 @@ public class VendorProfileService {
         if (dto.getLongitude() != null) vendor.setLongitude(dto.getLongitude());
         if (dto.getPayoutMethod() != null) vendor.setPayoutMethod(dto.getPayoutMethod());
         if (dto.getPayoutAccount() != null) vendor.setPayoutAccount(dto.getPayoutAccount());
+        if (dto.getCitizenshipImage() != null) vendor.setCitizenshipImage(dto.getCitizenshipImage());
+        if (dto.getPassportPhoto() != null) vendor.setPassportPhoto(dto.getPassportPhoto());
+        if (dto.getPanVatImage() != null) vendor.setPanVatImage(dto.getPanVatImage());
+
+        if (dto.getProfilePicture() != null) {
+            vendor.getUser().setProfilePicture(dto.getProfilePicture());
+        }
 
         if (dto.getLoginEmail() != null && !dto.getLoginEmail().equals(vendor.getUser().getEmail())) {
             // Check if email already exists
@@ -76,6 +83,10 @@ public class VendorProfileService {
         dto.setLoginEmail(vendor.getUser().getEmail());
         dto.setLatitude(vendor.getLatitude());
         dto.setLongitude(vendor.getLongitude());
+        dto.setProfilePicture(vendor.getUser().getProfilePicture());
+        dto.setCitizenshipImage(vendor.getCitizenshipImage());
+        dto.setPassportPhoto(vendor.getPassportPhoto());
+        dto.setPanVatImage(vendor.getPanVatImage());
         return dto;
     }
 }

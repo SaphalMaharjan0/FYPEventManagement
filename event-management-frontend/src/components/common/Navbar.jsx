@@ -154,22 +154,26 @@ export default function Header({ onMobileDrawerOpen, onNavigate, currentUser, on
                   <span style={{ color: "var(--color-white)", fontSize: "0.85rem", fontWeight: 700 }}>{currentUser.name}</span>
                   <span style={{ color: "rgba(255, 255, 255, 0.6)", fontSize: "0.7rem", fontWeight: 600, textTransform: "uppercase" }}>{currentUser.role}</span>
                 </div>
-                <div style={{
-                  width: "36px",
-                  height: "36px",
-                  borderRadius: "50%",
-                  backgroundColor: currentUser.role === "admin" ? "var(--color-red-500)" : currentUser.role === "vendor" ? "#16a34a" : "var(--color-blue-600)",
-                  color: "var(--color-white)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontWeight: 700,
-                  fontSize: "0.85rem",
-                  boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
-                  border: "2px solid rgba(255, 255, 255, 0.2)"
-                }}>
-                  {currentUser.name ? currentUser.name.split(" ").map(n => n[0]).join("") : "U"}
-                </div>
+                {currentUser.profilePicture ? (
+                  <img src={currentUser.profilePicture} alt="Profile" style={{ width: "36px", height: "36px", borderRadius: "50%", objectFit: "cover", border: "2px solid rgba(255, 255, 255, 0.2)", boxShadow: "0 2px 8px rgba(0,0,0,0.2)" }} />
+                ) : (
+                  <div style={{
+                    width: "36px",
+                    height: "36px",
+                    borderRadius: "50%",
+                    backgroundColor: currentUser.role === "admin" ? "var(--color-red-500)" : currentUser.role === "vendor" ? "#16a34a" : "var(--color-blue-600)",
+                    color: "var(--color-white)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontWeight: 700,
+                    fontSize: "0.85rem",
+                    boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
+                    border: "2px solid rgba(255, 255, 255, 0.2)"
+                  }}>
+                    {currentUser.name ? currentUser.name.split(" ").map(n => n[0]).join("") : "U"}
+                  </div>
+                )}
                 <button 
                   onClick={onLogout}
                   style={{

@@ -17,6 +17,7 @@ const pageToUrl = (page) => {
   return `/${page}`;
 };
 import { FavoritesProvider } from "./contexts/FavoritesContext";
+import { SettingsProvider } from "./contexts/SettingsContext";
 import ConfirmModal from "./components/common/ConfirmModal";
 
 export default function App() {
@@ -47,6 +48,19 @@ export default function App() {
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const [toast, setToast] = useState(null);
+  const [customAlert, setCustomAlert] = useState(null);
+
+  useEffect(() => {
+    const originalAlert = window.alert;
+    window.alert = (message) => {
+      // Ensure we don't try to render objects directly
+      const textMessage = typeof message === 'object' ? JSON.stringify(message) : String(message);
+      setCustomAlert(textMessage);
+    };
+    return () => {
+      window.alert = originalAlert;
+    };
+  }, []);
 
   const [eventsPageCategory, setEventsPageCategory] = useState("all");
   const [eventsPageSearch, setEventsPageSearch] = useState("");
@@ -265,6 +279,7 @@ export default function App() {
   const upcomingEvents = filteredEvents.filter(e => !e.featured);
 
   return (
+    <SettingsProvider currentUser={currentUser}>
     <FavoritesProvider currentUser={currentUser}>
       <AppRoutes
         onUpdateUser={handleUpdateUser}
@@ -307,6 +322,42 @@ export default function App() {
           <span>{toast}</span>
         </div>
       )}
+
+      {customAlert && (
+        <div style={{
+          position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: "rgba(15, 23, 42, 0.6)", display: "flex",
+          alignItems: "center", justifyContent: "center", zIndex: 9999,
+          backdropFilter: "blur(4px)"
+        }}>
+          <div style={{
+            backgroundColor: "white", borderRadius: "0.75rem",
+            padding: "2rem", width: "400px", maxWidth: "90%",
+            boxShadow: "0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04)",
+            border: "1px solid #e2e8f0"
+          }}>
+            <h3 style={{ fontSize: "1.2rem", fontWeight: "bold", color: "#0f172a", marginBottom: "0.5rem" }}>
+              Notification
+            </h3>
+            <p style={{ color: "#64748b", fontSize: "0.95rem", marginBottom: "1.5rem", whiteSpace: "pre-wrap" }}>
+              {customAlert}
+            </p>
+            <div style={{ display: "flex", justifyContent: "flex-end" }}>
+              <button
+                onClick={() => setCustomAlert(null)}
+                style={{
+                  padding: "0.5rem 1.5rem", backgroundColor: "#3b82f6",
+                  color: "white", border: "none",
+                  borderRadius: "0.5rem", fontWeight: "600", fontSize: "0.9rem",
+                  cursor: "pointer"
+                }}
+              >
+                OK
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       
       <ConfirmModal 
         isOpen={showLogoutModal}
@@ -318,5 +369,6 @@ export default function App() {
         confirmColor="#ef4444"
       />
     </FavoritesProvider>
+    </SettingsProvider>
   );
 }

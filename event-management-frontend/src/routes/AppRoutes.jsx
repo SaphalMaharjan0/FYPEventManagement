@@ -30,6 +30,7 @@ import VendorDashboard from '../pages/vendor/VendorDashboard';
 import ServiceListingsPage from '../pages/vendor/ServiceListingsPage';
 import AddServicePage from '../pages/vendor/AddServicePage';
 import VendorRequestsPage from '../pages/vendor/RequestsPage';
+import VendorEventsPage from '../pages/vendor/VendorEventsPage';
 import VendorAvailabilityPage from '../pages/vendor/AvailabilityPage';
 import VendorSettingsPage from '../pages/vendor/SettingsPage';
 import VendorProfilePage from '../pages/vendor/ProfilePage';
@@ -42,6 +43,7 @@ import ManageEventsPage from '../pages/admin/ManageEventsPage';
 import ReportsPage from '../pages/admin/ReportsPage';
 import ManageVendorsPage from '../pages/admin/ManageVendorsPage';
 import ManageBookingsPage from '../pages/admin/ManageBookingsPage';
+import AdminServiceRequestsPage from '../pages/admin/AdminServiceRequestsPage';
 import AdminSettingsPage from '../pages/admin/AdminSettingsPage';
 import AdminProfilePage from '../pages/admin/AdminProfilePage';
 import AdminNotificationsPage from '../pages/admin/AdminNotificationsPage';
@@ -277,7 +279,7 @@ export default function AppRoutes({
           </AuthLayout>
         } />
         <Route path="/register" element={
-          <AuthLayout onLogoClick={() => onNavigate("landing")}>
+          <AuthLayout onLogoClick={() => onNavigate("landing")} reverseLayout={true}>
             <RegisterPage
               onNavigateToLogin={() => onNavigate("login")}
               onRegisterSuccess={handleRegisterSuccess}
@@ -368,6 +370,7 @@ export default function AppRoutes({
           <Route path="dashboard" element={<VendorDashboard currentUser={currentUser} />} />
           <Route path="services" element={<ServiceListingsPage onNavigate={onNavigate} />} />
           <Route path="add-service" element={<AddServicePage />} />
+          <Route path="events" element={<VendorEventsPage currentUser={currentUser} />} />
           <Route path="requests" element={<VendorRequestsPage />} />
           <Route path="availability" element={<VendorAvailabilityPage />} />
           <Route path="settings" element={<VendorSettingsPage />} />
@@ -391,6 +394,7 @@ export default function AppRoutes({
           <Route path="events" element={<ManageEventsPage />} />
           <Route path="vendors" element={<ManageVendorsPage />} />
           <Route path="bookings" element={<ManageBookingsPage />} />
+          <Route path="requests" element={<AdminServiceRequestsPage currentUser={currentUser} />} />
           <Route path="reports" element={<ReportsPage />} />
           <Route path="settings" element={<AdminSettingsPage />} />
           <Route path="profile" element={<AdminProfilePage currentUser={currentUser} />} />

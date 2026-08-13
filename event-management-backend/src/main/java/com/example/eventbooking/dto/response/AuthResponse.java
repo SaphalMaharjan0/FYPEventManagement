@@ -27,5 +27,6 @@ public class AuthResponse {
         private Role role;
         @com.fasterxml.jackson.annotation.JsonProperty("isSuperAdmin")
         private boolean isSuperAdmin;
+        private String profilePicture;
     }
 }

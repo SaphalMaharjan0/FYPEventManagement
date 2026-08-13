@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { User, Mail, Phone, MapPin, Camera } from "lucide-react";
 import { useFetch } from "../../hooks/useFetch";
 import MapPickerModal from "../../components/common/MapPickerModal";
@@ -14,7 +14,8 @@ export default function ProfilePage({ currentUser, onUpdateUser }) {
     lastName: currentUser?.fullName?.split(" ").slice(1).join(" ") || "",
     email: currentUser?.email || "",
     phone: currentUser?.phone || "",
-    location: currentUser?.location || ""
+    location: currentUser?.location || "",
+    profilePicture: currentUser?.profilePicture || ""
   });
 
   const [password, setPassword] = useState("");
@@ -41,6 +42,7 @@ export default function ProfilePage({ currentUser, onUpdateUser }) {
           phone: formData.phone,
           email: formData.email,
           location: formData.location,
+          profilePicture: formData.profilePicture,
           password: password
         })
       });
@@ -55,6 +57,17 @@ export default function ProfilePage({ currentUser, onUpdateUser }) {
       alert(err.message || "Failed to update profile. Please verify your password.");
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData({ ...formData, profilePicture: reader.result });
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -96,13 +109,18 @@ export default function ProfilePage({ currentUser, onUpdateUser }) {
         {/* Profile Header Card */}
         <div style={{ backgroundColor: "var(--color-white)", borderRadius: "0.75rem", border: "1px solid #e2e8f0", padding: "2rem", display: "flex", alignItems: "center", gap: "2rem", boxShadow: "0 1px 3px rgba(0,0,0,0.05)" }}>
           <div style={{ position: "relative" }}>
-            <div style={{ width: "100px", height: "100px", borderRadius: "50%", backgroundColor: "var(--color-blue-600)", color: "var(--color-white)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "2.5rem", fontWeight: "bold" }}>
-              {formData.firstName[0]}{formData.lastName[0]}
-            </div>
+            {formData.profilePicture ? (
+              <img src={formData.profilePicture} alt="Profile" style={{ width: "100px", height: "100px", borderRadius: "50%", objectFit: "cover", border: "2px solid var(--color-slate-200)" }} />
+            ) : (
+              <div style={{ width: "100px", height: "100px", borderRadius: "50%", backgroundColor: "var(--color-blue-600)", color: "var(--color-white)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "2.5rem", fontWeight: "bold" }}>
+                {formData.firstName[0]}{formData.lastName[0]}
+              </div>
+            )}
             {isEditing && (
-              <button style={{ position: "absolute", bottom: "0", right: "0", width: "32px", height: "32px", borderRadius: "50%", backgroundColor: "var(--color-white)", border: "1px solid #e2e8f0", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--color-slate-500)", cursor: "pointer", boxShadow: "0 2px 4px rgba(0,0,0,0.1)" }}>
+              <div style={{ position: "absolute", bottom: "0", right: "0", width: "32px", height: "32px", borderRadius: "50%", backgroundColor: "var(--color-white)", border: "1px solid #e2e8f0", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--color-slate-500)", cursor: "pointer", boxShadow: "0 2px 4px rgba(0,0,0,0.1)", zIndex: 10, overflow: "hidden" }}>
+                <input type="file" accept="image/*" style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", opacity: 0, cursor: "pointer" }} onChange={handleImageUpload} />
                 <Camera size={16} />
-              </button>
+              </div>
             )}
           </div>
           <div>

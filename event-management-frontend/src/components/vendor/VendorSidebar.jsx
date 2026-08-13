@@ -17,6 +17,7 @@ export default function VendorSidebar({ currentPage, onNavigate, currentUser, on
     { id: "vendor-dashboard", label: "Dashboard", icon: Home },
     { id: "vendor-services", label: "Service Listings", icon: Package },
     { id: "vendor-add-service", label: "Add Service", icon: Plus },
+    { id: "vendor-events", label: "Browse Events", icon: Calendar },
     { id: "vendor-requests", label: "Requests", icon: Inbox },
     { id: "vendor-availability", label: "Availability", icon: Calendar },
     { id: "vendor-notifications", label: "Notifications", icon: Bell },

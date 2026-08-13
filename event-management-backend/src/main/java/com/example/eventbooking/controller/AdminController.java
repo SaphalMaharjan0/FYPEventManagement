@@ -102,4 +102,23 @@ public class AdminController {
     public ResponseEntity<List<ServiceDto>> getAllAvailableServices() {
         return ResponseEntity.ok(adminService.getAllAvailableServices());
     }
+
+    @GetMapping("/vendor-applications")
+    public ResponseEntity<List<com.example.eventbooking.dto.response.ServiceRequestDto>> getVendorApplications(@AuthenticationPrincipal User currentUser) {
+        return ResponseEntity.ok(adminService.getVendorApplications(currentUser));
+    }
+
+    @PostMapping("/vendor-applications/{requestId}/accept")
+    public ResponseEntity<com.example.eventbooking.dto.response.ServiceRequestDto> acceptVendorApplication(
+            @AuthenticationPrincipal User currentUser,
+            @PathVariable Integer requestId) {
+        return ResponseEntity.ok(adminService.updateVendorApplicationStatus(currentUser, requestId, "accepted"));
+    }
+
+    @PostMapping("/vendor-applications/{requestId}/reject")
+    public ResponseEntity<com.example.eventbooking.dto.response.ServiceRequestDto> rejectVendorApplication(
+            @AuthenticationPrincipal User currentUser,
+            @PathVariable Integer requestId) {
+        return ResponseEntity.ok(adminService.updateVendorApplicationStatus(currentUser, requestId, "rejected"));
+    }
 }

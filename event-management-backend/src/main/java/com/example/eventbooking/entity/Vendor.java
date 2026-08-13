@@ -53,6 +53,15 @@ public class Vendor {
     @Column(name = "longitude")
     private Double longitude;
 
+    @Column(name = "citizenship_image", columnDefinition = "TEXT")
+    private String citizenshipImage;
+
+    @Column(name = "passport_photo", columnDefinition = "TEXT")
+    private String passportPhoto;
+
+    @Column(name = "pan_vat_image", columnDefinition = "TEXT")
+    private String panVatImage;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;

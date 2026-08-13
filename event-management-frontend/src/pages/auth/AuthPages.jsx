@@ -19,7 +19,7 @@ export default function AuthPages({
   }
 
   return (
-    <AuthLayout onLogoClick={onLogoClick}>
+    <AuthLayout onLogoClick={onLogoClick} reverseLayout={currentPage === "register"}>
       {currentPage === "login" && (
         <LoginPage
           onNavigateToRegister={onNavigateToRegister}

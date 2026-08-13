@@ -42,4 +42,21 @@ public class VendorServiceRequestController {
         
         return ResponseEntity.ok(requestService.updateRequestStatus(id, status, email));
     }
+
+    @PostMapping("/events/{eventId}/apply")
+    @PreAuthorize("hasRole('VENDOR')")
+    public ResponseEntity<ServiceRequestDto> applyToEvent(
+            @PathVariable Integer eventId,
+            @RequestBody Map<String, Integer> payload,
+            Authentication authentication) {
+        
+        String email = authentication.getName();
+        Integer serviceId = payload.get("serviceId");
+        
+        if (serviceId == null) {
+            throw new IllegalArgumentException("serviceId is required");
+        }
+        
+        return ResponseEntity.ok(requestService.applyToEvent(eventId, serviceId, email));
+    }
 }

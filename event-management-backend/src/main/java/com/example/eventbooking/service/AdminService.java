@@ -315,6 +315,7 @@ public class AdminService {
                         .role(user.getRole() != null ? user.getRole().name() : "customer")
                         .status("Active") // Defaulting for now
                         .joinedDate(user.getCreatedAt() != null ? user.getCreatedAt().format(FORMATTER) : "N/A")
+                        .profilePicture(user.getProfilePicture())
                         .isSuperAdmin(user.isSuperAdmin())
                         .build())
                 .collect(Collectors.toList());
@@ -391,6 +392,10 @@ public class AdminService {
                         .contactEmail(vendor.getContactEmail())
                         .contactPhone(vendor.getContactPhone())
                         .businessAddress(vendor.getBusinessAddress())
+                        .profilePicture(vendor.getUser().getProfilePicture())
+                        .citizenshipImage(vendor.getCitizenshipImage())
+                        .passportPhoto(vendor.getPassportPhoto())
+                        .panVatImage(vendor.getPanVatImage())
                         .build())
                 .collect(Collectors.toList());
     }
@@ -441,6 +446,7 @@ public class AdminService {
                     .role(user.getRole() != null ? user.getRole().name() : "customer")
                     .status(user.isActive() ? "Active" : "Inactive")
                     .joinedDate(user.getCreatedAt() != null ? user.getCreatedAt().format(FORMATTER) : "N/A")
+                    .profilePicture(user.getProfilePicture())
                     .isSuperAdmin(user.isSuperAdmin())
                     .build();
         } catch (Exception e) {
@@ -520,6 +526,7 @@ public class AdminService {
         if (!currentUser.isSuperAdmin() && !event.getOrganizer().getUserId().equals(currentUser.getUserId())) {
             throw new org.springframework.security.access.AccessDeniedException("Access denied: you can only update your own events");
         }
+        EventStatus oldStatus = event.getStatus();
         event.setTitle(dto.getName());
         event.setCategory(dto.getCategory());
         event.setVenue(dto.getVenue());
@@ -577,6 +584,12 @@ public class AdminService {
         
         // Update chosen vendor services
         updateEventServices(event, currentUser, dto.getServiceIds());
+
+        if (oldStatus != EventStatus.published && event.getStatus() == EventStatus.published) {
+            String title = "New Event Published: " + event.getTitle();
+            String message = "A new event '" + event.getTitle() + "' in the " + event.getCategory() + " category has just been announced! Book your tickets now.";
+            notificationService.notifyAllCustomersAndVendors(title, message, "event_alert", event.getEventId());
+        }
 
         return AdminEventDto.builder()
                 .dbId(event.getEventId())
@@ -662,6 +675,12 @@ public class AdminService {
 
         // Update chosen vendor services
         updateEventServices(event, currentUser, dto.getServiceIds());
+
+        if (event.getStatus() == EventStatus.published) {
+            String title = "New Event Published: " + event.getTitle();
+            String message = "A new event '" + event.getTitle() + "' in the " + event.getCategory() + " category has just been announced! Book your tickets now.";
+            notificationService.notifyAllCustomersAndVendors(title, message, "event_alert", event.getEventId());
+        }
 
         return AdminEventDto.builder()
                 .dbId(event.getEventId())
@@ -765,6 +784,10 @@ public class AdminService {
                 .contactEmail(vendor.getContactEmail())
                 .contactPhone(vendor.getContactPhone())
                 .businessAddress(vendor.getBusinessAddress())
+                .profilePicture(user.getProfilePicture())
+                .citizenshipImage(vendor.getCitizenshipImage())
+                .passportPhoto(vendor.getPassportPhoto())
+                .panVatImage(vendor.getPanVatImage())
                 .build();
     }
 
@@ -825,6 +848,7 @@ public class AdminService {
                     .role(user.getRole().name())
                     .status("Active")
                     .joinedDate(user.getCreatedAt() != null ? user.getCreatedAt().format(FORMATTER) : "Just now")
+                    .profilePicture(user.getProfilePicture())
                     .isSuperAdmin(user.isSuperAdmin())
                     .build();
 
@@ -873,6 +897,68 @@ public class AdminService {
         userRepository.delete(user);
     }
 
+    public List<com.example.eventbooking.dto.response.ServiceRequestDto> getVendorApplications(User currentUser) {
+        // Super admins see all, regular admins see only for their events
+        List<com.example.eventbooking.entity.ServiceRequest> applications = serviceRequestRepository.findAll().stream()
+                .filter(r -> "vendor_proposed".equals(r.getStatus()))
+                .filter(r -> currentUser.isSuperAdmin() || 
+                             (r.getEvent().getOrganizer() != null && r.getEvent().getOrganizer().getUserId().equals(currentUser.getUserId())))
+                .collect(Collectors.toList());
+
+        return applications.stream().map(this::convertServiceRequestToDto).collect(Collectors.toList());
+    }
+
+    public com.example.eventbooking.dto.response.ServiceRequestDto updateVendorApplicationStatus(User currentUser, Integer requestId, String newStatus) {
+        com.example.eventbooking.entity.ServiceRequest request = serviceRequestRepository.findById(requestId)
+                .orElseThrow(() -> new ResourceNotFoundException("Service request not found"));
+
+        if (!currentUser.isSuperAdmin() && !request.getEvent().getOrganizer().getUserId().equals(currentUser.getUserId())) {
+            throw new org.springframework.security.access.AccessDeniedException("Access denied: you can only manage applications for your own events");
+        }
+
+        request.setStatus(newStatus);
+        request = serviceRequestRepository.save(request);
+
+        // Notify Vendor
+        User vendorUser = request.getClient();
+        if (vendorUser != null) {
+            String title = newStatus.equals("accepted") ? "Application Accepted" : "Application Rejected";
+            String msg = newStatus.equals("accepted") ? 
+                    "Your application to provide '" + request.getService().getServiceName() + "' for the event '" + request.getEvent().getTitle() + "' was accepted!" :
+                    "Your application to provide '" + request.getService().getServiceName() + "' for the event '" + request.getEvent().getTitle() + "' was declined.";
+            notificationService.createNotification(vendorUser, title, msg, "request", request.getEvent().getEventId(), request.getId());
+        }
+
+        return convertServiceRequestToDto(request);
+    }
+
+    private com.example.eventbooking.dto.response.ServiceRequestDto convertServiceRequestToDto(com.example.eventbooking.entity.ServiceRequest request) {
+        com.example.eventbooking.dto.response.ServiceRequestDto dto = new com.example.eventbooking.dto.response.ServiceRequestDto();
+        dto.setId("REQ-" + String.format("%03d", request.getId()));
+        dto.setRawId(request.getId());
+        dto.setClient(request.getService().getVendor().getBusinessName());
+        dto.setEventTitle(request.getEvent() != null ? request.getEvent().getTitle() : "Unknown Event");
+        dto.setService(request.getService().getServiceName());
+        dto.setDate(request.getEventDate());
+        dto.setAmount(request.getAmount());
+        dto.setStatus(request.getStatus());
+
+        if (request.getEvent() != null) {
+            com.example.eventbooking.dto.response.EventDto eventDto = com.example.eventbooking.dto.response.EventDto.builder()
+                .id(request.getEvent().getEventId())
+                .title(request.getEvent().getTitle())
+                .category(request.getEvent().getCategory())
+                .date(request.getEvent().getEventDate() != null ? request.getEvent().getEventDate().toString() : "N/A")
+                .time(request.getEvent().getStartTime() != null ? request.getEvent().getStartTime().toString() : "N/A")
+                .venue(request.getEvent().getVenue())
+                .description(request.getEvent().getDescription())
+                .imageUrl(request.getEvent().getImageUrl())
+                .build();
+            dto.setEventDetails(eventDto);
+        }
+        return dto;
+    }
+
     public List<ServiceDto> getAllAvailableServices() {
         return serviceRepository.findAll().stream()
                 .map(s -> {
@@ -885,6 +971,7 @@ public class AdminService {
                     dto.setIsActive(s.getIsActive());
                     dto.setImageUrl(s.getImageUrl());
                     dto.setDescription(s.getDescription());
+                    dto.setRegion(s.getRegion());
                     return dto;
                 })
                 .collect(Collectors.toList());

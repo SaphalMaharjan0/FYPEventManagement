@@ -1,7 +1,8 @@
 import React from "react";
 import { Calendar, CheckCircle2, Sparkles } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
-export default function AuthLayout({ children, onLogoClick }) {
+export default function AuthLayout({ children, onLogoClick, reverseLayout = false }) {
   const bulletFeatures = [
     "10,000+ events listed monthly",
     "Instant ticket delivery",
@@ -13,6 +14,11 @@ export default function AuthLayout({ children, onLogoClick }) {
       <style>{`
         *, *::before, *::after {
           box-sizing: border-box;
+        }
+
+        @keyframes fadeIn {
+          0% { opacity: 0; }
+          100% { opacity: 1; }
         }
 
         .auth-container {
@@ -31,6 +37,7 @@ export default function AuthLayout({ children, onLogoClick }) {
             height: 100dvh;
             overflow: hidden;
             padding-top: 0;
+            flex-direction: ${reverseLayout ? 'row-reverse' : 'row'};
           }
 
           .auth-left-panel {
@@ -42,9 +49,11 @@ export default function AuthLayout({ children, onLogoClick }) {
             justify-content: space-between;
             background: linear-gradient(135deg, #090d16 0%, #151e33 60%, #1d2b4a 100%);
             color: #ffffff;
-            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            border-right: ${reverseLayout ? 'none' : '1px solid rgba(255, 255, 255, 0.1)'};
+            border-left: ${reverseLayout ? '1px solid rgba(255, 255, 255, 0.1)' : 'none'};
             padding: 2.25rem 3rem;
             height: 100%;
+            z-index: 10;
           }
 
           .auth-right-panel {
@@ -57,6 +66,8 @@ export default function AuthLayout({ children, onLogoClick }) {
             align-items: center;
             padding: 2rem;
             height: 100%;
+            background-color: #ffffff;
+            z-index: 5;
           }
         }
 
@@ -89,7 +100,11 @@ export default function AuthLayout({ children, onLogoClick }) {
       `}</style>
 
       {/* Left Branding Panel (LG Desktop Only) */}
-      <div className="auth-left-panel">
+      <motion.div 
+        layout
+        transition={{ type: "spring", stiffness: 200, damping: 25, mass: 1 }}
+        className="auth-left-panel"
+      >
         {/* Logo */}
         <div
           onClick={onLogoClick}
@@ -193,12 +208,27 @@ export default function AuthLayout({ children, onLogoClick }) {
         >
           © 2026 EventPulse. All rights reserved.
         </div>
-      </div>
+      </motion.div>
 
       {/* Right Form Panel (Wider container) */}
-      <div className="auth-right-panel" style={{ backgroundColor: "#ffffff" }}>
-        <div style={{ width: "100%", maxWidth: "400px" }}>{children}</div>
-      </div>
+      <motion.div 
+        layout
+        transition={{ type: "spring", stiffness: 200, damping: 25, mass: 1 }}
+        className="auth-right-panel"
+      >
+        <AnimatePresence mode="wait">
+          <motion.div 
+            key={reverseLayout ? 'register' : 'login'}
+            initial={{ opacity: 0, x: reverseLayout ? -20 : 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: reverseLayout ? 20 : -20 }}
+            transition={{ duration: 0.2 }}
+            style={{ width: "100%", maxWidth: "400px" }}
+          >
+            {children}
+          </motion.div>
+        </AnimatePresence>
+      </motion.div>
     </div>
   );
 }

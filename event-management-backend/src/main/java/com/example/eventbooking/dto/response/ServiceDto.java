@@ -13,4 +13,5 @@ public class ServiceDto {
     private BigDecimal price;
     private Boolean isActive;
     private String imageUrl;
+    private String region;
 }

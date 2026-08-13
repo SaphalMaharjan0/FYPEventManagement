@@ -140,7 +140,7 @@ export default function ManageUsersPage() {
     const matchesRole = roleFilter === "All" || (user.role && user.role.toLowerCase() === roleFilter.toLowerCase());
     const matchesStatus = statusFilter === "All" || (user.status && user.status.toLowerCase() === statusFilter.toLowerCase());
     return matchesSearch && matchesRole && matchesStatus;
-  });
+  }).sort((a, b) => a.dbId - b.dbId);
 
   const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
   const paginatedUsers = filteredUsers.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
@@ -272,8 +272,12 @@ export default function ManageUsersPage() {
                     <td style={{ padding: "1rem 1.5rem", fontSize: "0.85rem", color: "var(--color-slate-500)", fontFamily: "monospace" }}>{user.id}</td>
                     <td style={{ padding: "1rem 1.5rem" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-                        <div style={{ width: "32px", height: "32px", borderRadius: "50%", backgroundColor: "#e0e7ff", color: "#4f46e5", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: "bold", fontSize: "0.8rem" }}>
-                          {user.name ? user.name.substring(0,2).toUpperCase() : "U"}
+                        <div style={{ width: "32px", height: "32px", borderRadius: "50%", backgroundColor: "#e0e7ff", color: "#4f46e5", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: "bold", fontSize: "0.8rem", overflow: "hidden" }}>
+                          {user.profilePicture ? (
+                            <img src={user.profilePicture} alt={user.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                          ) : (
+                            user.name ? user.name.substring(0,2).toUpperCase() : "U"
+                          )}
                         </div>
                         <span style={{ fontWeight: "500", color: "var(--color-slate-900)", fontSize: "0.95rem" }}>{user.name}</span>
                       </div>

@@ -60,6 +60,12 @@ public class VendorServiceListingService {
         if (dto.getImageUrl() != null) {
             service.setImageUrl(dto.getImageUrl());
         }
+        if (dto.getRegion() != null && !dto.getRegion().isEmpty()) {
+            service.setRegion(dto.getRegion());
+        } else {
+            // Default to vendor's business address if region is not provided
+            service.setRegion(vendor.getBusinessAddress());
+        }
         
         service = serviceRepository.save(service);
         return convertToDto(service);
@@ -96,6 +102,7 @@ public class VendorServiceListingService {
         if (dto.getPrice() != null) service.setPrice(dto.getPrice());
         if (dto.getIsActive() != null) service.setIsActive(dto.getIsActive());
         if (dto.getImageUrl() != null) service.setImageUrl(dto.getImageUrl());
+        if (dto.getRegion() != null) service.setRegion(dto.getRegion());
 
         service = serviceRepository.save(service);
         return convertToDto(service);
@@ -111,6 +118,7 @@ public class VendorServiceListingService {
         dto.setPrice(service.getPrice());
         dto.setIsActive(service.getIsActive());
         dto.setImageUrl(service.getImageUrl());
+        dto.setRegion(service.getRegion());
         return dto;
     }
 }

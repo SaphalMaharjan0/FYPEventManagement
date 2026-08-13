@@ -24,4 +24,8 @@ public class AdminVendorDto {
     private String contactEmail;
     private String contactPhone;
     private String businessAddress;
+    private String profilePicture;
+    private String citizenshipImage;
+    private String passportPhoto;
+    private String panVatImage;
 }

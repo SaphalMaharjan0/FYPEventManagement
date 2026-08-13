@@ -23,6 +23,7 @@ export default function ManageVendorsPage() {
   // View Modal State
   const [showViewModal, setShowViewModal] = useState(false);
   const [viewData, setViewData] = useState(null);
+  const [selectedImage, setSelectedImage] = useState(null);
 
   // Confirm Modal State
   const [confirmModal, setConfirmModal] = useState(null);
@@ -169,7 +170,7 @@ export default function ManageVendorsPage() {
                           (vendor.email && vendor.email.toLowerCase().includes(searchQuery.toLowerCase()));
     const matchesStatus = statusFilter === "All" || (vendor.status && vendor.status.toLowerCase() === statusFilter.toLowerCase());
     return matchesSearch && matchesStatus;
-  });
+  }).sort((a, b) => a.dbId - b.dbId);
 
   return (
     <div style={{ maxWidth: "1400px", margin: "0 auto", position: "relative" }}>
@@ -288,9 +289,18 @@ export default function ManageVendorsPage() {
                   <tr key={vendor.id} style={{ borderBottom: idx !== filteredVendors.length - 1 ? "1px solid #e2e8f0" : "none" }}>
                     <td style={{ padding: "1rem 1.5rem", fontSize: "0.85rem", color: "var(--color-slate-500)", fontFamily: "monospace" }}>{vendor.id}</td>
                     <td style={{ padding: "1rem 1.5rem" }}>
-                      <div>
-                        <span style={{ fontWeight: "600", color: "var(--color-slate-900)", fontSize: "0.95rem", display: "block" }}>{vendor.name}</span>
-                        <span style={{ fontSize: "0.8rem", color: "var(--color-slate-500)" }}>{vendor.owner}</span>
+                      <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+                        <div style={{ width: "32px", height: "32px", borderRadius: "50%", backgroundColor: "#e0e7ff", color: "#4f46e5", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: "bold", fontSize: "0.8rem", overflow: "hidden", flexShrink: 0 }}>
+                          {vendor.profilePicture ? (
+                            <img src={vendor.profilePicture} alt={vendor.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                          ) : (
+                            vendor.name ? vendor.name.substring(0,2).toUpperCase() : "V"
+                          )}
+                        </div>
+                        <div>
+                          <span style={{ fontWeight: "600", color: "var(--color-slate-900)", fontSize: "0.95rem", display: "block" }}>{vendor.name}</span>
+                          <span style={{ fontSize: "0.8rem", color: "var(--color-slate-500)" }}>{vendor.owner}</span>
+                        </div>
                       </div>
                     </td>
                     <td style={{ padding: "1rem 1.5rem", fontSize: "0.9rem", color: "var(--color-slate-600)" }}>{vendor.email}</td>
@@ -525,6 +535,39 @@ export default function ManageVendorsPage() {
               </p>
             </div>
 
+            <div style={{ marginBottom: "1.5rem" }}>
+              <h3 style={{ fontSize: "0.85rem", textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--color-slate-500)", marginBottom: "0.75rem" }}>Business Documents</h3>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: "1rem" }}>
+                {viewData.citizenshipImage && (
+                  <div>
+                    <span style={{ fontSize: "0.8rem", color: "var(--color-slate-600)", display: "block", marginBottom: "0.25rem", fontWeight: "500" }}>Citizenship</span>
+                    <div onClick={() => setSelectedImage(viewData.citizenshipImage)} style={{ display: "block" }}>
+                      <img src={viewData.citizenshipImage} alt="Citizenship" style={{ width: "100%", height: "120px", objectFit: "cover", borderRadius: "6px", border: "1px solid #e2e8f0", cursor: "pointer" }} title="Click to enlarge" />
+                    </div>
+                  </div>
+                )}
+                {viewData.passportPhoto && (
+                  <div>
+                    <span style={{ fontSize: "0.8rem", color: "var(--color-slate-600)", display: "block", marginBottom: "0.25rem", fontWeight: "500" }}>Passport Photo</span>
+                    <div onClick={() => setSelectedImage(viewData.passportPhoto)} style={{ display: "block" }}>
+                      <img src={viewData.passportPhoto} alt="Passport Photo" style={{ width: "100%", height: "120px", objectFit: "cover", borderRadius: "6px", border: "1px solid #e2e8f0", cursor: "pointer" }} title="Click to enlarge" />
+                    </div>
+                  </div>
+                )}
+                {viewData.panVatImage && (
+                  <div>
+                    <span style={{ fontSize: "0.8rem", color: "var(--color-slate-600)", display: "block", marginBottom: "0.25rem", fontWeight: "500" }}>PAN/VAT Card</span>
+                    <div onClick={() => setSelectedImage(viewData.panVatImage)} style={{ display: "block" }}>
+                      <img src={viewData.panVatImage} alt="PAN/VAT Card" style={{ width: "100%", height: "120px", objectFit: "cover", borderRadius: "6px", border: "1px solid #e2e8f0", cursor: "pointer" }} title="Click to enlarge" />
+                    </div>
+                  </div>
+                )}
+                {!viewData.citizenshipImage && !viewData.passportPhoto && !viewData.panVatImage && (
+                  <p style={{ margin: 0, fontSize: "0.95rem", color: "var(--color-slate-500)", fontStyle: "italic" }}>No documents uploaded.</p>
+                )}
+              </div>
+            </div>
+
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <div style={{ display: "flex", gap: "1rem" }}>
                 {viewData.status === "Pending" && (
@@ -567,6 +610,20 @@ export default function ManageVendorsPage() {
         isLoading={confirmLoading}
       />
 
+      {/* Full Image Modal */}
+      {selectedImage && (
+        <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: "rgba(0,0,0,0.9)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 2000 }}>
+          <div style={{ position: "relative", maxWidth: "90vw", maxHeight: "90vh" }}>
+            <button 
+              onClick={() => setSelectedImage(null)}
+              style={{ position: "absolute", top: "-2rem", right: "-2rem", background: "transparent", border: "none", color: "white", cursor: "pointer" }}
+            >
+              <X size={32} />
+            </button>
+            <img src={selectedImage} alt="Full screen document" style={{ maxWidth: "100%", maxHeight: "90vh", objectFit: "contain", borderRadius: "8px" }} />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

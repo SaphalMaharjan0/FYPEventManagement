@@ -57,6 +57,7 @@ export default function ServiceListingsPage() {
       serviceName: service.serviceName,
       category: service.category,
       price: service.price,
+      region: service.region || "",
       description: service.description || "",
       isActive: service.isActive
     });
@@ -142,7 +143,13 @@ export default function ServiceListingsPage() {
 
             <div style={{ padding: "1.25rem", display: "flex", flexDirection: "column", flex: 1 }}>
               <h3 style={{ fontSize: "1.05rem", fontWeight: "700", color: "var(--color-slate-900)", marginBottom: "0.25rem" }}>{service.serviceName}</h3>
-              <p style={{ color: "var(--color-slate-500)", fontSize: "0.85rem", marginBottom: "1rem" }}>{service.category}</p>
+              <p style={{ color: "var(--color-slate-500)", fontSize: "0.85rem", marginBottom: "0.5rem" }}>{service.category}</p>
+              {service.region && (
+                <p style={{ color: "var(--color-slate-400)", fontSize: "0.8rem", marginBottom: "1rem", display: "flex", alignItems: "center", gap: "0.25rem" }}>
+                  <span style={{ display: "inline-block", width: "12px", height: "12px", borderRadius: "50%", backgroundColor: "var(--color-blue-100)", border: "2px solid var(--color-blue-500)" }}></span>
+                  {service.region}
+                </p>
+              )}
               
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: "1.5rem", flex: 1 }}>
                 <div>
@@ -216,7 +223,17 @@ export default function ServiceListingsPage() {
               </div>
 
               <div style={{ marginBottom: "1rem" }}>
-                <label style={{ display: "block", fontSize: "0.9rem", fontWeight: "500", color: "var(--color-slate-700)", marginBottom: "0.5rem" }}>Price (USD)</label>
+                <label style={{ display: "block", fontSize: "0.9rem", fontWeight: "500", color: "var(--color-slate-700)", marginBottom: "0.5rem" }}>Region / City (Optional)</label>
+                <input 
+                  type="text" 
+                  value={editForm.region}
+                  onChange={e => setEditForm({...editForm, region: e.target.value})}
+                  style={{ width: "100%", padding: "0.75rem", borderRadius: "0.5rem", border: "1px solid #e2e8f0", outline: "none" }}
+                />
+              </div>
+
+              <div style={{ marginBottom: "1rem" }}>
+                <label style={{ display: "block", fontSize: "0.9rem", fontWeight: "500", color: "var(--color-slate-700)", marginBottom: "0.5rem" }}>Price ({currency})</label>
                 <input 
                   type="number" step="0.01" required min="0"
                   value={editForm.price}

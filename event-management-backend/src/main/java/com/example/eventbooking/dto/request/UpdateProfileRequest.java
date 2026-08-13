@@ -15,4 +15,5 @@ public class UpdateProfileRequest {
     private String email;
     private String location;
     private String password;
+    private String profilePicture;
 }

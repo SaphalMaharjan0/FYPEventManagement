@@ -8,7 +8,8 @@ import {
   Settings, 
   LogOut,
   Layers,
-  Bell
+  Bell,
+  Briefcase
 } from "lucide-react";
 
 export default function AdminSidebar({ currentPage, onNavigate, currentUser, onLogout, isOpen }) {
@@ -22,6 +23,7 @@ export default function AdminSidebar({ currentPage, onNavigate, currentUser, onL
       { id: "admin-vendors", label: "Vendors", icon: Store }
     ] : []),
     { id: "admin-bookings", label: "Bookings", icon: Ticket },
+    { id: "admin-requests", label: "Service Requests", icon: Briefcase },
     { id: "admin-reports", label: "Reports & Analytics", icon: BarChart2 },
     { id: "admin-notifications", label: "Notifications", icon: Bell },
     { id: "admin-settings", label: "Settings", icon: Settings }

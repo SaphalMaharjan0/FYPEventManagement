@@ -70,6 +70,21 @@ public class NotificationService {
     }
 
     /**
+     * Send notification to all customers and vendors asynchronously.
+     */
+    @Async("taskExecutor")
+    public void notifyAllCustomersAndVendors(String title, String message, String type, Integer relatedEventId) {
+        List<User> targetUsers = userRepository.findAll().stream()
+                .filter(u -> u.getRole() != null && 
+                    ("customer".equalsIgnoreCase(u.getRole().name()) || "vendor".equalsIgnoreCase(u.getRole().name())))
+                .toList();
+        
+        for (User user : targetUsers) {
+            createNotification(user, title, message, type, relatedEventId, null);
+        }
+    }
+
+    /**
      * Get all notifications for the current user.
      */
     public List<Notification> getNotifications(String userEmail) {

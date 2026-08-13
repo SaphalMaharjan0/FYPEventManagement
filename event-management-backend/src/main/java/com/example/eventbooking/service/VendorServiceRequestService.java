@@ -10,6 +10,8 @@ import com.example.eventbooking.entity.Vendor;
 import com.example.eventbooking.repository.ServiceRequestRepository;
 import com.example.eventbooking.repository.UserRepository;
 import com.example.eventbooking.repository.VendorRepository;
+import com.example.eventbooking.repository.EventRepository;
+import com.example.eventbooking.repository.ServiceRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -23,6 +25,8 @@ public class VendorServiceRequestService {
     private final ServiceRequestRepository serviceRequestRepository;
     private final UserRepository userRepository;
     private final VendorRepository vendorRepository;
+    private final EventRepository eventRepository;
+    private final ServiceRepository serviceRepository;
     private final NotificationService notificationService;
 
     public List<ServiceRequestDto> getVendorRequests(String userEmail) {
@@ -160,5 +164,54 @@ public class VendorServiceRequestService {
         }
 
         return dto;
+    }
+
+    public ServiceRequestDto applyToEvent(Integer eventId, Integer serviceId, String userEmail) {
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        
+        Vendor vendor = vendorRepository.findByUserId(user.getUserId())
+                .orElseThrow(() -> new ResourceNotFoundException("Vendor profile not found"));
+
+        com.example.eventbooking.entity.Service service = serviceRepository.findById(serviceId)
+                .orElseThrow(() -> new ResourceNotFoundException("Service not found"));
+        
+        if (!service.getVendor().getId().equals(vendor.getId())) {
+            throw new UnauthorizedException("Unauthorized: Service does not belong to you.");
+        }
+
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new ResourceNotFoundException("Event not found"));
+
+        // Check if already applied
+        List<ServiceRequest> existing = serviceRequestRepository.findByEventEventId(eventId);
+        boolean alreadyApplied = existing.stream().anyMatch(r -> r.getService().getId().equals(serviceId));
+        if (alreadyApplied) {
+            throw new IllegalArgumentException("You have already applied with this service to this event.");
+        }
+
+        ServiceRequest req = new ServiceRequest();
+        req.setClient(user); // Vendor is the initiator
+        req.setEvent(event);
+        req.setService(service);
+        req.setEventDate(event.getEventDate());
+        req.setAmount(service.getPrice()); // Default price
+        req.setStatus("vendor_proposed");
+        
+        req = serviceRequestRepository.save(req);
+
+        // Notify Event Organizer
+        if (event.getOrganizer() != null) {
+            notificationService.createNotification(
+                    event.getOrganizer(),
+                    "New Vendor Application",
+                    "Vendor '" + vendor.getBusinessName() + "' has applied to provide '" + service.getServiceName() + "' for your event '" + event.getTitle() + "'.",
+                    "vendor_application",
+                    event.getEventId(),
+                    req.getId()
+            );
+        }
+
+        return convertToDto(req);
     }
 }
