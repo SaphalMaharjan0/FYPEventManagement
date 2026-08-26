@@ -5,6 +5,7 @@ export default function MockKhaltiPage() {
   const [searchParams] = useSearchParams();
   const pidx = searchParams.get("pidx");
   const amount = searchParams.get("amount");
+  const displayAmount = amount ? (parseInt(amount, 10) / 100).toFixed(2) : "0.00";
   
   const handleSuccess = () => {
     // In a real scenario, Khalti redirects back to the merchant's success URL.
@@ -20,7 +21,7 @@ export default function MockKhaltiPage() {
       <img src="https://upload.wikimedia.org/wikipedia/commons/e/ee/Khalti_Digital_Wallet_Logo.png.jpg" alt="Khalti Mock" style={{ height: "60px", marginBottom: "2rem" }} />
       <h1 style={{ fontSize: "1.5rem", marginBottom: "1rem" }}>Khalti Sandbox Payment</h1>
       <p style={{ marginBottom: "2rem", color: "var(--color-slate-600)" }}>
-        You are about to make a mock payment of Rs. {amount}. <br />
+        You are about to make a mock payment of Rs. {displayAmount}. <br />
         This is for testing purposes only. No real money will be deducted.
       </p>
       
@@ -29,7 +30,7 @@ export default function MockKhaltiPage() {
           onClick={handleSuccess}
           style={{ padding: "0.75rem 2rem", backgroundColor: "#5c2d91", color: "white", border: "none", borderRadius: "0.5rem", cursor: "pointer", fontWeight: "bold" }}
         >
-          Pay Rs. {amount}
+          Pay Rs. {displayAmount}
         </button>
         <button 
           onClick={handleFailure}

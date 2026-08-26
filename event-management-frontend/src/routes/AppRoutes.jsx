@@ -1,6 +1,7 @@
 import React from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import ProtectedRoute from './ProtectedRoute';
+import GuestRoute from './GuestRoute';
 
 // Layouts
 import CustomerLayout from '../components/dashboard/CustomerLayout';
@@ -270,36 +271,45 @@ export default function AppRoutes({
 
         {/* Auth Routes */}
         <Route path="/login" element={
-          <AuthLayout onLogoClick={() => onNavigate("landing")}>
-            <LoginPage
-              onNavigateToRegister={() => onNavigate("register")}
-              onNavigateToForgotPassword={() => onNavigate("forgot")}
-              onLoginSuccess={handleLoginSuccess}
-            />
-          </AuthLayout>
+          <GuestRoute currentUser={currentUser}>
+            <AuthLayout onLogoClick={() => onNavigate("landing")}>
+              <LoginPage
+                onNavigateToRegister={() => onNavigate("register")}
+                onNavigateToForgotPassword={() => onNavigate("forgot")}
+                onLoginSuccess={handleLoginSuccess}
+              />
+            </AuthLayout>
+          </GuestRoute>
         } />
         <Route path="/register" element={
-          <AuthLayout onLogoClick={() => onNavigate("landing")} reverseLayout={true}>
-            <RegisterPage
-              onNavigateToLogin={() => onNavigate("login")}
-              onRegisterSuccess={handleRegisterSuccess}
-            />
-          </AuthLayout>
+          <GuestRoute currentUser={currentUser}>
+            <AuthLayout onLogoClick={() => onNavigate("landing")} reverseLayout={true}>
+              <RegisterPage
+                onNavigateToLogin={() => onNavigate("login")}
+                onRegisterSuccess={handleRegisterSuccess}
+              />
+            </AuthLayout>
+          </GuestRoute>
         } />
         <Route path="/forgot" element={
-          <AuthLayout onLogoClick={() => onNavigate("landing")}>
-            <ResetPasswordForm
-              onNavigateToLogin={() => onNavigate("login")}
-              onResetSuccess={handleResetSuccess}
-            />
-          </AuthLayout>
+          <GuestRoute currentUser={currentUser}>
+            <AuthLayout onLogoClick={() => onNavigate("landing")}>
+              <ResetPasswordForm
+                onNavigateToLogin={() => onNavigate("login")}
+                onResetSuccess={handleResetSuccess}
+              />
+            </AuthLayout>
+          </GuestRoute>
         } />
         <Route path="/reset-password" element={
-          <AuthLayout onLogoClick={() => onNavigate("landing")}>
-            <NewPasswordPage
-              onNavigateToLogin={() => onNavigate("login")}
-            />
-          </AuthLayout>
+          <GuestRoute currentUser={currentUser}>
+            <AuthLayout onLogoClick={() => onNavigate("landing")}>
+              <NewPasswordPage
+                onNavigateToLogin={() => onNavigate("login")}
+                onResetSuccess={handleResetSuccess}
+              />
+            </AuthLayout>
+          </GuestRoute>
         } />
 
         {/* Customer Routes */}

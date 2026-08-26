@@ -581,6 +581,31 @@ public class AdminService {
             }
         }
         event = eventRepository.save(event);
+        // Update the event's ticket price if a price is provided in dto
+        if (dto.getPrice() != null) {
+            java.math.BigDecimal newPrice = java.math.BigDecimal.ZERO;
+            if (!dto.getPrice().equalsIgnoreCase("Free")) {
+                try {
+                    newPrice = new java.math.BigDecimal(dto.getPrice().replace("$", "").trim());
+                } catch (Exception e) {}
+            }
+            List<com.example.eventbooking.entity.Ticket> tickets = ticketRepository.findByEventEventId(event.getEventId());
+            for (com.example.eventbooking.entity.Ticket t : tickets) {
+                t.setPrice(newPrice);
+                ticketRepository.save(t);
+            }
+            // If no ticket exists yet, create one
+            if (tickets.isEmpty()) {
+                com.example.eventbooking.entity.Ticket t = com.example.eventbooking.entity.Ticket.builder()
+                        .event(event)
+                        .ticketType("General Admission")
+                        .price(newPrice)
+                        .quantityAvailable(event.getCapacity())
+                        .quantitySold(0)
+                        .build();
+                ticketRepository.save(t);
+            }
+        }
         
         // Update chosen vendor services
         updateEventServices(event, currentUser, dto.getServiceIds());
